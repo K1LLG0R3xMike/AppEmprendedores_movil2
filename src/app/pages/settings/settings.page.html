@@ -1,0 +1,207 @@
+<ion-content [fullscreen]="true" [class.dark]="isDarkMode()">
+  <div class="settings">
+    <!-- Header -->
+    <div class="header">
+      <div class="header-content">
+        <ion-icon name="settings" color="warning" size="large"></ion-icon>
+        <div class="header-text">
+          <h1 class="title">Configuración</h1>
+          <p class="subtitle">Personaliza tu experiencia</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="content">
+      <!-- User Profile Card -->
+      <ion-card class="profile-card">
+        <ion-card-content>
+          <div class="profile-content">
+            <div class="avatar">
+              <ion-icon name="person" color="warning"></ion-icon>
+            </div>
+            <div class="profile-info">
+              <h3>Nombre de Usuario</h3>
+              <p>usuario@email.com</p>
+            </div>
+            <ion-button fill="outline" color="warning" (click)="goToProfile()">
+              Ver perfil
+            </ion-button>
+          </div>
+        </ion-card-content>
+      </ion-card>
+
+      <!-- Appearance Card -->
+      <ion-card class="setting-card">
+        <ion-card-content>
+          <div class="setting-row">
+            <div class="setting-info">
+              <div class="setting-header">
+                <ion-icon [name]="isDarkMode() ? 'moon' : 'sunny'" color="medium"></ion-icon>
+                <span class="setting-title">Apariencia</span>
+              </div>
+              <div class="setting-details">
+                <div class="setting-label">Modo oscuro</div>
+                <div class="setting-description">Cambia entre tema claro y oscuro</div>
+              </div>
+            </div>
+            <ion-toggle 
+              [(ngModel)]="darkMode" 
+              (ionChange)="toggleDarkMode()"
+              color="warning">
+            </ion-toggle>
+          </div>
+        </ion-card-content>
+      </ion-card>
+
+      <!-- Language Card -->
+      <ion-card class="setting-card">
+        <ion-card-content>
+          <div class="setting-header">
+            <ion-icon name="language" color="medium"></ion-icon>
+            <span class="setting-title">Idioma</span>
+          </div>
+          
+          <div class="setting-content">
+            <div class="setting-label">Idioma de la aplicación</div>
+            <ion-select 
+              [(ngModel)]="language" 
+              placeholder="Selecciona idioma"
+              interface="popover"
+              class="language-select">
+              <ion-select-option value="es">Español</ion-select-option>
+              <ion-select-option value="en">English</ion-select-option>
+              <ion-select-option value="pt">Português</ion-select-option>
+              <ion-select-option value="fr">Français</ion-select-option>
+            </ion-select>
+          </div>
+        </ion-card-content>
+      </ion-card>
+
+      <!-- Notifications Card -->
+      <ion-card class="setting-card">
+        <ion-card-content>
+          <div class="setting-header">
+            <ion-icon name="notifications" color="medium"></ion-icon>
+            <span class="setting-title">Notificaciones</span>
+          </div>
+
+          <div class="notifications-list">
+            <div class="notification-item">
+              <div class="notification-info">
+                <div class="notification-label">Notificaciones generales</div>
+                <div class="notification-description">Recibe alertas importantes de la app</div>
+              </div>
+              <ion-toggle [(ngModel)]="notifications" color="warning"></ion-toggle>
+            </div>
+
+            <div class="notification-item">
+              <div class="notification-info">
+                <div class="notification-label">Notificaciones por email</div>
+                <div class="notification-description">Recibe resúmenes y reportes por correo</div>
+              </div>
+              <ion-toggle [(ngModel)]="emailNotifications" color="warning"></ion-toggle>
+            </div>
+
+            <div class="notification-item">
+              <div class="notification-info">
+                <div class="notification-label">Notificaciones push</div>
+                <div class="notification-description">Alertas instantáneas en tu dispositivo</div>
+              </div>
+              <ion-toggle [(ngModel)]="pushNotifications" color="warning"></ion-toggle>
+            </div>
+          </div>
+        </ion-card-content>
+      </ion-card>
+
+      <!-- Security Card -->
+      <ion-card class="setting-card">
+        <ion-card-content>
+          <div class="setting-header">
+            <ion-icon name="shield-checkmark" color="medium"></ion-icon>
+            <span class="setting-title">Seguridad</span>
+          </div>
+
+          <div class="security-buttons">
+            <ion-button 
+              fill="outline" 
+              expand="block" 
+              class="security-button"
+              (click)="changePassword()">
+              Cambiar contraseña
+            </ion-button>
+            
+            <ion-button 
+              fill="outline" 
+              expand="block" 
+              class="security-button"
+              (click)="twoFactorAuth()">
+              Autenticación de dos factores
+            </ion-button>
+            
+            <ion-button 
+              fill="outline" 
+              expand="block" 
+              class="security-button"
+              (click)="connectedDevices()">
+              Dispositivos conectados
+            </ion-button>
+          </div>
+        </ion-card-content>
+      </ion-card>
+
+      <!-- Help & Support Card -->
+      <ion-card class="setting-card">
+        <ion-card-content>
+          <div class="setting-header">
+            <ion-icon name="help-circle-outline" color="medium"></ion-icon>
+            <span class="setting-title">Ayuda y Soporte</span>
+          </div>
+
+          <div class="help-buttons">
+            <ion-button 
+              fill="outline" 
+              expand="block" 
+              class="help-button"
+              (click)="helpCenter()">
+              Centro de ayuda
+            </ion-button>
+            
+            <ion-button 
+              fill="outline" 
+              expand="block" 
+              class="help-button"
+              (click)="contactSupport()">
+              Contactar soporte
+            </ion-button>
+            
+            <ion-button 
+              fill="outline" 
+              expand="block" 
+              class="help-button"
+              (click)="termsConditions()">
+              Términos y condiciones
+            </ion-button>
+            
+            <ion-button 
+              fill="outline" 
+              expand="block" 
+              class="help-button"
+              (click)="privacyPolicy()">
+              Política de privacidad
+            </ion-button>
+          </div>
+        </ion-card-content>
+      </ion-card>
+
+      <!-- App Info Card -->
+      <ion-card class="info-card">
+        <ion-card-content>
+          <div class="app-info">
+            <div class="app-version">FinanceAI v1.0.0</div>
+            <div class="app-copyright">© 2024 FinanceAI. Todos los derechos reservados.</div>
+          </div>
+        </ion-card-content>
+      </ion-card>
+    </div>
+  </div>
+</ion-content>

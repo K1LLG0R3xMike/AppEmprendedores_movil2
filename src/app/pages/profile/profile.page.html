@@ -1,0 +1,225 @@
+<ion-content [fullscreen]="true" class="profile-container">
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="loading-container">
+    <ion-spinner name="crescent"></ion-spinner>
+    <ion-label>Cargando perfil...</ion-label>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="errorMsg && !isLoading" class="error-container">
+    <ion-icon name="alert-circle"></ion-icon>
+    <ion-label>{{ errorMsg }}</ion-label>
+    <ion-button fill="outline" (click)="fetchUserProfile()">
+      <ion-icon name="refresh" slot="start"></ion-icon>
+      Reintentar
+    </ion-button>
+  </div>
+
+  <!-- Main Content -->
+  <div *ngIf="!isLoading && !errorMsg">
+    <!-- Header with back button -->
+    <div class="profile-header">
+      <ion-button fill="clear" (click)="goBack()">
+        <ion-icon name="arrow-back" slot="icon-only"></ion-icon>
+      </ion-button>
+      <div class="header-content">
+        <h1>Mi Perfil</h1>
+        <p>Gestiona tu información personal</p>
+      </div>
+    </div>
+
+    <div class="profile-content">
+      <!-- Profile Picture Card -->
+      <ion-card class="profile-picture-card">
+        <ion-card-content>
+          <div class="avatar-container">
+            <div class="avatar-wrapper">
+              <div class="avatar" [class.dark]="isDarkMode()">
+                {{ getInitials() }}
+              </div>
+              <ion-button class="camera-button" fill="clear" (click)="changeProfilePicture()">
+                <ion-icon name="camera" slot="icon-only"></ion-icon>
+              </ion-button>
+            </div>
+          </div>
+          <div class="profile-info">
+            <h2>{{ profileData.name || 'Usuario' }}</h2>
+            <p>{{ profileData.business || 'Sin negocio' }}</p>
+          </div>
+        </ion-card-content>
+      </ion-card>
+
+      <!-- Personal Information Card -->
+      <ion-card class="info-card">
+        <ion-card-content>
+          <div class="card-header">
+            <h3>Información Personal</h3>
+            <ion-button 
+              *ngIf="!isEditing" 
+              fill="outline" 
+              size="small" 
+              (click)="startEditing()">
+              <ion-icon name="create" slot="start"></ion-icon>
+              Editar
+            </ion-button>
+          </div>
+
+          <div class="form-fields">
+            <!-- Name Field -->
+            <div class="field-group">
+              <ion-label class="field-label">Nombre completo</ion-label>
+              <ion-input
+                [readonly]="!isEditing"
+                [(ngModel)]="profileData.name"
+                [class.editing]="isEditing"
+                placeholder="Ingresa tu nombre completo">
+              </ion-input>
+            </div>
+
+            <!-- Email Field -->
+            <div class="field-group">
+              <ion-label class="field-label">Correo electrónico</ion-label>
+              <ion-input
+                [readonly]="!isEditing"
+                [(ngModel)]="profileData.email"
+                [class.editing]="isEditing"
+                type="email"
+                placeholder="Ingresa tu email">
+              </ion-input>
+            </div>
+
+            <!-- Phone Field -->
+            <div class="field-group">
+              <ion-label class="field-label">Teléfono</ion-label>
+              <ion-input
+                [readonly]="!isEditing"
+                [(ngModel)]="profileData.phone"
+                [class.editing]="isEditing"
+                type="tel"
+                placeholder="Ingresa tu teléfono">
+              </ion-input>
+            </div>
+
+            <!-- Business Field -->
+            <div class="field-group">
+              <ion-label class="field-label">Negocio</ion-label>
+              <ion-input
+                [readonly]="!isEditing"
+                [(ngModel)]="profileData.business"
+                [class.editing]="isEditing"
+                placeholder="Ingresa el nombre de tu negocio">
+              </ion-input>
+            </div>
+
+            <!-- Action Buttons (Edit Mode) -->
+            <div *ngIf="isEditing" class="action-buttons">
+              <ion-button expand="block" (click)="saveChanges()" [disabled]="isSaving">
+                <ion-spinner *ngIf="isSaving" name="crescent" slot="start"></ion-spinner>
+                <ion-icon *ngIf="!isSaving" name="save" slot="start"></ion-icon>
+                {{ isSaving ? 'Guardando...' : 'Guardar Cambios' }}
+              </ion-button>
+              <ion-button expand="block" fill="outline" (click)="cancelEditing()">
+                <ion-icon name="close" slot="start"></ion-icon>
+                Cancelar
+              </ion-button>
+            </div>
+          </div>
+        </ion-card-content>
+      </ion-card>
+
+      <!-- Change Password Card -->
+      <ion-card class="password-card">
+        <ion-card-content>
+          <h3>Cambiar Contraseña</h3>
+          
+          <div class="form-fields">
+            <!-- Current Password -->
+            <div class="field-group">
+              <ion-label class="field-label">Contraseña actual</ion-label>
+              <div class="password-input">
+                <ion-input
+                  [(ngModel)]="currentPassword"
+                  [type]="showCurrentPassword ? 'text' : 'password'"
+                  placeholder="••••••••">
+                </ion-input>
+                <ion-button 
+                  fill="clear" 
+                  class="password-toggle"
+                  (click)="toggleCurrentPassword()">
+                  <ion-icon [name]="showCurrentPassword ? 'eye-off' : 'eye'" slot="icon-only"></ion-icon>
+                </ion-button>
+              </div>
+            </div>
+
+            <!-- New Password -->
+            <div class="field-group">
+              <ion-label class="field-label">Nueva contraseña</ion-label>
+              <div class="password-input">
+                <ion-input
+                  [(ngModel)]="newPassword"
+                  [type]="showNewPassword ? 'text' : 'password'"
+                  placeholder="••••••••">
+                </ion-input>
+                <ion-button 
+                  fill="clear" 
+                  class="password-toggle"
+                  (click)="toggleNewPassword()">
+                  <ion-icon [name]="showNewPassword ? 'eye-off' : 'eye'" slot="icon-only"></ion-icon>
+                </ion-button>
+              </div>
+            </div>
+
+            <!-- Confirm New Password -->
+            <div class="field-group">
+              <ion-label class="field-label">Confirmar nueva contraseña</ion-label>
+              <div class="password-input">
+                <ion-input
+                  [(ngModel)]="confirmNewPassword"
+                  [type]="showConfirmPassword ? 'text' : 'password'"
+                  placeholder="••••••••">
+                </ion-input>
+                <ion-button 
+                  fill="clear" 
+                  class="password-toggle"
+                  (click)="toggleConfirmPassword()">
+                  <ion-icon [name]="showConfirmPassword ? 'eye-off' : 'eye'" slot="icon-only"></ion-icon>
+                </ion-button>
+              </div>
+            </div>
+
+            <!-- Password validation message -->
+            <div *ngIf="passwordError" class="error-message">
+              <ion-icon name="alert-circle"></ion-icon>
+              {{ passwordError }}
+            </div>
+
+            <!-- Update Password Button -->
+            <ion-button 
+              expand="block" 
+              (click)="updatePassword()"
+              [disabled]="!isPasswordFormValid() || isUpdatingPassword">
+              <ion-spinner *ngIf="isUpdatingPassword" name="crescent" slot="start"></ion-spinner>
+              <ion-icon *ngIf="!isUpdatingPassword" name="key" slot="start"></ion-icon>
+              {{ isUpdatingPassword ? 'Actualizando...' : 'Actualizar Contraseña' }}
+            </ion-button>
+          </div>
+        </ion-card-content>
+      </ion-card>
+
+      <!-- Logout Card -->
+      <ion-card class="logout-card">
+        <ion-card-content>
+          <ion-button 
+            expand="block" 
+            color="danger" 
+            (click)="logout()"
+            [disabled]="isLoggingOut">
+            <ion-spinner *ngIf="isLoggingOut" name="crescent" slot="start"></ion-spinner>
+            <ion-icon *ngIf="!isLoggingOut" name="log-out" slot="start"></ion-icon>
+            {{ isLoggingOut ? 'Cerrando sesión...' : 'Cerrar Sesión' }}
+          </ion-button>
+        </ion-card-content>
+      </ion-card>
+    </div>
+  </div>
+</ion-content>

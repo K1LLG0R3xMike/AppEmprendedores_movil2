@@ -1,0 +1,130 @@
+<ion-content [fullscreen]="true" [class.dark]="isDarkMode()">
+  <div class="business">
+    <!-- Header -->
+    <div class="header">
+      <div class="header-content">
+        <div class="header-text">
+          <h1 class="title">Mi Negocio</h1>
+          <p class="subtitle">Gestiona la información de tu negocio</p>
+        </div>
+        <ion-icon name="business" color="warning" size="large"></ion-icon>
+      </div>
+    </div>
+
+    <div class="content">
+      <!-- Business Info Card -->
+      <ion-card class="business-card">
+        <ion-card-content>
+          <div class="card-header">
+            <h2 class="card-title">Información del Negocio</h2>
+            <ion-button 
+              *ngIf="!isEditing" 
+              fill="outline" 
+              size="small" 
+              (click)="toggleEdit()">
+              <ion-icon slot="start" name="pencil"></ion-icon>
+              Editar
+            </ion-button>
+          </div>
+
+          <div class="form-fields">
+            <!-- Business Name -->
+            <div class="field-group">
+              <ion-label class="field-label">Nombre del negocio</ion-label>
+              <ion-input
+                [readonly]="!isEditing"
+                [(ngModel)]="businessData.name"
+                placeholder="Nombre del negocio"
+                class="custom-input">
+              </ion-input>
+            </div>
+
+            <!-- Business Type -->
+            <div class="field-group">
+              <ion-label class="field-label">Tipo de negocio</ion-label>
+              <ion-select 
+                [disabled]="!isEditing"
+                [(ngModel)]="businessData.type"
+                placeholder="Selecciona tipo"
+                interface="popover"
+                class="custom-select">
+                <ion-select-option 
+                  *ngFor="let type of businessTypes" 
+                  [value]="type.value">
+                  {{type.label}}
+                </ion-select-option>
+              </ion-select>
+            </div>
+
+            <!-- Sector -->
+            <div class="field-group">
+              <ion-label class="field-label">Sector</ion-label>
+              <ion-select 
+                [disabled]="!isEditing"
+                [(ngModel)]="businessData.sector"
+                placeholder="Selecciona sector"
+                interface="popover"
+                class="custom-select">
+                <ion-select-option 
+                  *ngFor="let sector of sectors" 
+                  [value]="sector.value">
+                  {{sector.label}}
+                </ion-select-option>
+              </ion-select>
+            </div>
+
+            <!-- Start Date -->
+            <div class="field-group">
+              <ion-label class="field-label">Fecha de inicio</ion-label>
+              <ion-datetime
+                [disabled]="!isEditing"
+                [(ngModel)]="businessData.startDate"
+                presentation="date"
+                class="custom-datetime">
+                <ion-button slot="end" fill="clear">
+                  <ion-icon name="calendar-outline"></ion-icon>
+                </ion-button>
+              </ion-datetime>
+            </div>
+
+            <!-- Action Buttons - Edit Mode -->
+            <div *ngIf="isEditing" class="action-buttons">
+              <ion-button expand="block" color="warning" (click)="handleSave()">
+                <ion-icon slot="start" name="save"></ion-icon>
+                Guardar Cambios
+              </ion-button>
+              <ion-button expand="block" fill="outline" (click)="handleCancel()">
+                Cancelar
+              </ion-button>
+            </div>
+
+            <!-- Delete Button - View Mode -->
+            <div *ngIf="!isEditing" class="action-buttons">
+              <ion-button expand="block" color="danger" (click)="handleDelete()">
+                <ion-icon slot="start" name="trash"></ion-icon>
+                Eliminar Negocio
+              </ion-button>
+            </div>
+          </div>
+        </ion-card-content>
+      </ion-card>
+
+      <!-- Business Stats -->
+      <div class="stats-row">
+        <ion-card class="stat-card">
+          <ion-card-content>
+            <div class="stat-value">2.5</div>
+            <div class="stat-label">Años activo</div>
+          </ion-card-content>
+        </ion-card>
+
+        <ion-card class="stat-card">
+          <ion-card-content>
+            <div class="stat-value">$125K</div>
+            <div class="stat-label">Ingresos totales</div>
+          </ion-card-content>
+        </ion-card>
+      </div>
+    </div>
+  </div>
+</ion-content>

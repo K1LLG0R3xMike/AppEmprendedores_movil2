@@ -3,34 +3,49 @@ import { TabsPage } from './tabs.page';
 
 export const routes: Routes = [
   {
-    path: 'tabs',
+    path: '',
     component: TabsPage,
     children: [
       {
-        path: 'tab1',
+        path: 'dashboard',
         loadComponent: () =>
-          import('../tab1/tab1.page').then((m) => m.Tab1Page),
+          import('../pages/dashboard/dashboard.page').then((m) => m.DashboardPage),
       },
       {
-        path: 'tab2',
+        path: 'business',
         loadComponent: () =>
-          import('../tab2/tab2.page').then((m) => m.Tab2Page),
+          import('../pages/business/business.page').then((m) => m.BusinessPage),
       },
       {
-        path: 'tab3',
+        path: 'ia-panel',
         loadComponent: () =>
-          import('../tab3/tab3.page').then((m) => m.Tab3Page),
+          import('../pages/ia-panel/ia-panel.page').then((m) => m.IaPanelPage),
+      },
+      {
+        path: 'settings',
+        loadComponent: () =>
+          import('../pages/settings/settings.page').then((m) => m.SettingsPage),
+      },
+      {
+        path: 'chat',
+        loadComponent: () =>
+          import('../pages/chat/chat.page').then((m) => m.ChatPage),
+      },
+      {
+        path: 'products',
+        loadComponent: () =>
+          import('../pages/products/products.page').then((m) => m.ProductsPage),
+      },
+      {
+        path: 'profile',
+        loadComponent: () =>
+          import('../pages/profile/profile.page').then((m) => m.ProfilePage),
       },
       {
         path: '',
-        redirectTo: '/tabs/tab1',
+        redirectTo: 'dashboard',
         pathMatch: 'full',
       },
     ],
-  },
-  {
-    path: '',
-    redirectTo: '/tabs/tab1',
-    pathMatch: 'full',
   },
 ];

@@ -1,0 +1,282 @@
+.settings {
+  padding: 0;
+  min-height: 100vh;
+}
+
+/* Header */
+.header {
+  background: var(--ion-color-light);
+  border-bottom: 1px solid var(--ion-color-light-shade);
+  padding: 24px;
+  
+  @media (prefers-color-scheme: dark) {
+    background: var(--ion-color-dark);
+    border-bottom-color: var(--ion-color-dark-shade);
+  }
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.header-text {
+  flex: 1;
+}
+
+.title {
+  font-size: 24px;
+  font-weight: bold;
+  margin: 0;
+  color: var(--ion-color-dark);
+  
+  @media (prefers-color-scheme: dark) {
+    color: var(--ion-color-light);
+  }
+}
+
+.subtitle {
+  font-size: 14px;
+  margin: 4px 0 0 0;
+  color: var(--ion-color-medium);
+}
+
+/* Content */
+.content {
+  padding: 24px;
+}
+
+/* Profile Card */
+.profile-card {
+  margin-bottom: 20px;
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  
+  @media (prefers-color-scheme: dark) {
+    background: var(--ion-color-dark);
+    border: 1px solid var(--ion-color-dark-shade);
+  }
+}
+
+.profile-content {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: rgba(var(--ion-color-warning-rgb), 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  ion-icon {
+    font-size: 36px;
+    color: var(--ion-color-warning);
+  }
+}
+
+.profile-info {
+  flex: 1;
+  
+  h3 {
+    margin: 0 0 4px 0;
+    font-size: 18px;
+    font-weight: bold;
+    color: var(--ion-color-dark);
+    
+    @media (prefers-color-scheme: dark) {
+      color: var(--ion-color-light);
+    }
+  }
+  
+  p {
+    margin: 0;
+    font-size: 14px;
+    color: var(--ion-color-medium);
+  }
+}
+
+/* Setting Cards */
+.setting-card {
+  margin-bottom: 20px;
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  
+  @media (prefers-color-scheme: dark) {
+    background: var(--ion-color-dark);
+    border: 1px solid var(--ion-color-dark-shade);
+  }
+}
+
+.setting-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+  
+  ion-icon {
+    font-size: 22px;
+  }
+}
+
+.setting-title {
+  font-size: 16px;
+  font-weight: bold;
+  color: var(--ion-color-dark);
+  
+  @media (prefers-color-scheme: dark) {
+    color: var(--ion-color-light);
+  }
+}
+
+.setting-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.setting-info {
+  flex: 1;
+}
+
+.setting-details {
+  margin-top: 8px;
+}
+
+.setting-content {
+  margin-top: 12px;
+}
+
+.setting-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ion-color-dark-shade);
+  margin-bottom: 8px;
+  
+  @media (prefers-color-scheme: dark) {
+    color: var(--ion-color-light-shade);
+  }
+}
+
+.setting-description {
+  font-size: 12px;
+  color: var(--ion-color-medium);
+}
+
+/* Language Select */
+.language-select {
+  --background: var(--ion-color-light-tint);
+  --border-radius: 8px;
+  --border-width: 1px;
+  --border-color: var(--ion-color-medium-tint);
+  
+  @media (prefers-color-scheme: dark) {
+    --background: var(--ion-color-dark-shade);
+    --border-color: var(--ion-color-dark-tint);
+  }
+}
+
+/* Notifications */
+.notifications-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.notification-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.notification-info {
+  flex: 1;
+}
+
+.notification-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ion-color-dark-shade);
+  margin-bottom: 2px;
+  
+  @media (prefers-color-scheme: dark) {
+    color: var(--ion-color-light-shade);
+  }
+}
+
+.notification-description {
+  font-size: 12px;
+  color: var(--ion-color-medium);
+}
+
+/* Security & Help Buttons */
+.security-buttons,
+.help-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.security-button,
+.help-button {
+  --border-radius: 8px;
+  --border-width: 1px;
+  --border-color: var(--ion-color-medium-tint);
+  --color: var(--ion-color-dark-shade);
+  --background: transparent;
+  text-align: left;
+  justify-content: flex-start;
+  padding: 14px 16px;
+  
+  @media (prefers-color-scheme: dark) {
+    --border-color: var(--ion-color-dark-tint);
+    --color: var(--ion-color-light-shade);
+  }
+}
+
+/* App Info Card */
+.info-card {
+  margin-bottom: 20px;
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  
+  @media (prefers-color-scheme: dark) {
+    background: var(--ion-color-dark);
+    border: 1px solid var(--ion-color-dark-shade);
+  }
+}
+
+.app-info {
+  text-align: center;
+}
+
+.app-version {
+  font-size: 14px;
+  color: var(--ion-color-medium);
+  margin-bottom: 4px;
+}
+
+.app-copyright {
+  font-size: 12px;
+  color: var(--ion-color-medium-shade);
+}
+
+/* Toggle Styling */
+ion-toggle {
+  --background: var(--ion-color-medium-tint);
+  --background-checked: var(--ion-color-warning);
+  --handle-background: white;
+  --handle-background-checked: white;
+}
+
+/* Dark mode content */
+.dark {
+  --background: var(--ion-color-dark-tint);
+}

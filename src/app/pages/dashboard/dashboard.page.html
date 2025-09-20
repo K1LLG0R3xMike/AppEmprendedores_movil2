@@ -1,0 +1,118 @@
+<ion-content [fullscreen]="true" [class.dark]="isDarkMode()">
+  <div class="dashboard">
+
+    <!-- Header -->
+    <div class="header">
+      <h1 class="title">Dashboard</h1>
+      <p class="subtitle">Resumen de tu negocio</p>
+    </div>
+
+    <!-- Balance General -->
+    <ion-card class="balance-card">
+      <ion-card-content>
+        <div class="balance-header">
+          <ion-icon name="cash-outline" color="warning"></ion-icon>
+          <span class="balance-title">Balance General</span>
+        </div>
+        <div class="balance-value">45,280</div>
+        <div class="balance-label">Balance total</div>
+
+        <div class="row">
+          <div class="income">
+            <div class="label">
+              <ion-icon name="arrow-up-outline" color="success"></ion-icon>
+              <span>Ingresos</span>
+            </div>
+            <div class="value green">12,450</div>
+            <div class="month">Este mes</div>
+          </div>
+
+          <div class="expense">
+            <div class="label">
+              <ion-icon name="arrow-down-outline" color="danger"></ion-icon>
+              <span>Gastos</span>
+            </div>
+            <div class="value red">8,320</div>
+            <div class="month">Este mes</div>
+          </div>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Quick Actions -->
+    <h2 class="section-title">Acciones Rápidas</h2>
+    <div class="row quick-actions">
+      <ion-button fill="outline" (click)="goTo('/products')">
+        <ion-icon slot="start" name="cube-outline" color="warning"></ion-icon>
+        Agregar Producto
+      </ion-button>
+      <ion-button fill="outline" (click)="goTo('/ia')">
+        <ion-icon slot="start" name="hardware-chip-outline" color="warning"></ion-icon>
+        Ver IA
+      </ion-button>
+      <ion-button fill="outline" (click)="goTo('/business')">
+        <ion-icon slot="start" name="business-outline" color="warning"></ion-icon>
+        Ver Negocio
+      </ion-button>
+    </div>
+
+    <!-- KPIs -->
+    <div class="row kpis">
+      <ion-card class="kpi-card">
+        <ion-card-content>
+          <div>
+            <div class="kpi-label">Productos</div>
+            <div class="kpi-value">24</div>
+          </div>
+          <ion-icon name="cube-outline" color="warning"></ion-icon>
+        </ion-card-content>
+      </ion-card>
+
+      <ion-card class="kpi-card">
+        <ion-card-content>
+          <div>
+            <div class="kpi-label">Ganancia</div>
+            <div class="kpi-value">4,130</div>
+          </div>
+          <ion-icon name="trending-up-outline" color="success"></ion-icon>
+        </ion-card-content>
+      </ion-card>
+    </div>
+
+    <!-- Recent Activity -->
+    <ion-card class="recent-activity">
+      <ion-card-header>
+        <ion-card-title>Actividad Reciente</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <div class="activity-item">
+          <div class="icon green-bg">
+            <ion-icon name="trending-up-outline" color="success"></ion-icon>
+          </div>
+          <div class="info">
+            <div class="title">Venta de producto</div>
+            <div class="time">Hace 2 horas</div>
+          </div>
+          <div class="details">
+            <div class="amount green">+\$1,250</div>
+            <div class="badge income">Ingreso</div>
+          </div>
+        </div>
+
+        <div class="activity-item">
+          <div class="icon red-bg">
+            <ion-icon name="trending-down-outline" color="danger"></ion-icon>
+          </div>
+          <div class="info">
+            <div class="title">Gastos de oficina</div>
+            <div class="time">Ayer</div>
+          </div>
+          <div class="details">
+            <div class="amount red">-\$320</div>
+            <div class="badge expense">Gasto</div>
+          </div>
+        </div>
+      </ion-card-content>
+    </ion-card>
+  </div>
+</ion-content>

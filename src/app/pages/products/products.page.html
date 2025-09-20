@@ -1,0 +1,227 @@
+<ion-content [fullscreen]="true" class="products-container">
+  <!-- Header -->
+  <div class="products-header">
+    <div class="header-left">
+      <ion-button fill="clear" (click)="goBack()">
+        <ion-icon name="arrow-back" slot="icon-only"></ion-icon>
+      </ion-button>
+      <h1>Productos</h1>
+    </div>
+    <ion-button (click)="toggleAddForm()" [disabled]="isLoading">
+      <ion-icon name="add" slot="start"></ion-icon>
+      Agregar
+    </ion-button>
+  </div>
+
+  <div class="products-content">
+    <!-- Search Bar -->
+    <div class="search-container">
+      <ion-searchbar
+        [(ngModel)]="searchTerm"
+        placeholder="Buscar productos..."
+        (ionInput)="onSearchChange($event)"
+        show-clear-button="focus">
+      </ion-searchbar>
+    </div>
+
+    <!-- Add Product Form -->
+    <ion-card *ngIf="showAddForm" class="add-form-card">
+      <ion-card-content>
+        <div class="form-header">
+          <h3>{{ editingProduct ? 'Editar Producto' : 'Agregar Nuevo Producto' }}</h3>
+          <ion-button fill="clear" (click)="cancelForm()">
+            <ion-icon name="close" slot="icon-only"></ion-icon>
+          </ion-button>
+        </div>
+
+        <div class="form-fields">
+          <!-- First Row: Name and Category -->
+          <div class="form-row">
+            <div class="form-field">
+              <ion-label class="field-label">Nombre</ion-label>
+              <ion-input
+                [(ngModel)]="productForm.name"
+                placeholder="Nombre del producto"
+                [class.invalid]="!isValidName()">
+              </ion-input>
+            </div>
+            <div class="form-field">
+              <ion-label class="field-label">Categoría</ion-label>
+              <ion-input
+                [(ngModel)]="productForm.category"
+                placeholder="Categoría del producto"
+                [class.invalid]="!isValidCategory()">
+              </ion-input>
+            </div>
+          </div>
+
+          <!-- Second Row: Price, Cost, and Stock -->
+          <div class="form-row">
+            <div class="form-field">
+              <ion-label class="field-label">Precio</ion-label>
+              <ion-input
+                [(ngModel)]="productForm.price"
+                type="number"
+                placeholder="0.00"
+                [class.invalid]="!isValidPrice()">
+              </ion-input>
+            </div>
+            <div class="form-field">
+              <ion-label class="field-label">Costo</ion-label>
+              <ion-input
+                [(ngModel)]="productForm.cost"
+                type="number"
+                placeholder="0.00"
+                [class.invalid]="!isValidCost()">
+              </ion-input>
+            </div>
+            <div class="form-field">
+              <ion-label class="field-label">Stock</ion-label>
+              <ion-input
+                [(ngModel)]="productForm.stock"
+                type="number"
+                placeholder="0"
+                [class.invalid]="!isValidStock()">
+              </ion-input>
+            </div>
+          </div>
+
+          <!-- Form Validation Message -->
+          <div *ngIf="formError" class="error-message">
+            <ion-icon name="alert-circle"></ion-icon>
+            {{ formError }}
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="form-actions">
+            <ion-button 
+              expand="block" 
+              (click)="saveProduct()"
+              [disabled]="!isFormValid() || isSaving">
+              <ion-spinner *ngIf="isSaving" name="crescent" slot="start"></ion-spinner>
+              <ion-icon *ngIf="!isSaving" name="save" slot="start"></ion-icon>
+              {{ isSaving ? 'Guardando...' : (editingProduct ? 'Actualizar' : 'Guardar') }} Producto
+            </ion-button>
+            <ion-button 
+              expand="block" 
+              fill="outline" 
+              (click)="cancelForm()">
+              <ion-icon name="close" slot="start"></ion-icon>
+              Cancelar
+            </ion-button>
+          </div>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Loading State -->
+    <div *ngIf="isLoading" class="loading-container">
+      <ion-spinner name="crescent"></ion-spinner>
+      <ion-label>Cargando productos...</ion-label>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="!isLoading && filteredProducts.length === 0 && searchTerm" class="empty-state">
+      <ion-icon name="search"></ion-icon>
+      <h3>No se encontraron productos</h3>
+      <p>No hay productos que coincidan con "{{ searchTerm }}"</p>
+      <ion-button fill="clear" (click)="clearSearch()">Limpiar búsqueda</ion-button>
+    </div>
+
+    <div *ngIf="!isLoading && products.length === 0 && !searchTerm" class="empty-state">
+      <ion-icon name="cube"></ion-icon>
+      <h3>No hay productos</h3>
+      <p>Comienza agregando tu primer producto</p>
+      <ion-button (click)="toggleAddForm()">
+        <ion-icon name="add" slot="start"></ion-icon>
+        Agregar Producto
+      </ion-button>
+    </div>
+
+    <!-- Products List -->
+    <div *ngIf="!isLoading && filteredProducts.length > 0" class="products-list">
+      <ion-card *ngFor="let product of filteredProducts; trackBy: trackByProductId" class="product-card">
+        <ion-card-content>
+          <!-- Product Header -->
+          <div class="product-header">
+            <div class="product-info">
+              <div class="product-icon">
+                <ion-icon name="cube"></ion-icon>
+              </div>
+              <div class="product-details">
+                <h4>{{ product.name }}</h4>
+                <p>{{ product.category }}</p>
+              </div>
+            </div>
+            <div class="product-actions">
+              <ion-button fill="clear" (click)="editProduct(product)">
+                <ion-icon name="create" slot="icon-only"></ion-icon>
+              </ion-button>
+              <ion-button fill="clear" color="danger" (click)="deleteProduct(product)">
+                <ion-icon name="trash" slot="icon-only"></ion-icon>
+              </ion-button>
+            </div>
+          </div>
+
+          <!-- Product Metrics -->
+          <div class="product-metrics">
+            <div class="metric">
+              <span class="value">${{ product.price | number:'1.2-2' }}</span>
+              <span class="label">Precio</span>
+            </div>
+            <div class="metric">
+              <span class="value">${{ product.cost | number:'1.2-2' }}</span>
+              <span class="label">Costo</span>
+            </div>
+            <div class="metric">
+              <div class="stock-value">
+                <span class="value">{{ product.stock }}</span>
+                <div 
+                  class="stock-indicator" 
+                  [class]="getStockStatusClass(product.stock)">
+                </div>
+              </div>
+              <span class="label">Stock</span>
+            </div>
+            <div class="metric profit">
+              <span class="value">{{ getProfitMargin(product) }}%</span>
+              <span class="label">Margen</span>
+            </div>
+          </div>
+
+          <!-- Stock Status Badge -->
+          <div class="stock-status" [class]="getStockStatusClass(product.stock)">
+            {{ getStockStatusLabel(product.stock) }}
+          </div>
+        </ion-card-content>
+      </ion-card>
+    </div>
+
+    <!-- Products Summary (when products exist) -->
+    <div *ngIf="!isLoading && products.length > 0" class="products-summary">
+      <ion-card>
+        <ion-card-content>
+          <h3>Resumen de Inventario</h3>
+          <div class="summary-metrics">
+            <div class="summary-item">
+              <span class="summary-value">{{ products.length }}</span>
+              <span class="summary-label">Total Productos</span>
+            </div>
+            <div class="summary-item">
+              <span class="summary-value">{{ getTotalStock() }}</span>
+              <span class="summary-label">Unidades en Stock</span>
+            </div>
+            <div class="summary-item">
+              <span class="summary-value">${{ getTotalValue() | number:'1.2-2' }}</span>
+              <span class="summary-label">Valor Total</span>
+            </div>
+            <div class="summary-item">
+              <span class="summary-value">{{ getLowStockCount() }}</span>
+              <span class="summary-label">Stock Bajo</span>
+            </div>
+          </div>
+        </ion-card-content>
+      </ion-card>
+    </div>
+  </div>
+</ion-content>

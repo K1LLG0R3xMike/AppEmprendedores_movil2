@@ -1,0 +1,207 @@
+<ion-content [fullscreen]="true" class="onboarding-container">
+  <div class="onboarding-content">
+    <!-- Step Content -->
+    <div class="step-content">
+      
+      <!-- Step 0: Name and Birthday -->
+      <ion-card *ngIf="currentStep === 0" class="onboarding-card">
+        <ion-card-content>
+          <div class="card-header">
+            <h2>¡Bienvenido! Cuéntanos sobre ti</h2>
+          </div>
+          
+          <div class="form-fields">
+            <!-- Name Field -->
+            <div class="field-group">
+              <ion-input
+                [(ngModel)]="userData.name"
+                label="Nombre completo"
+                labelPlacement="floating"
+                placeholder="Ingresa tu nombre completo"
+                [class.invalid]="nameError"
+                (ionInput)="clearNameError()">
+              </ion-input>
+              <div *ngIf="nameError" class="error-message">
+                <ion-icon name="alert-circle"></ion-icon>
+                {{ nameError }}
+              </div>
+            </div>
+
+            <!-- Birthday Field -->
+            <div class="field-group">
+              <div class="date-input" [class.invalid]="birthdayError" (click)="openDatePicker()">
+                <ion-input
+                  readonly
+                  label="Cumpleaños"
+                  labelPlacement="floating"
+                  [value]="getFormattedDate()"
+                  placeholder="Selecciona tu fecha">
+                </ion-input>
+                <ion-icon name="calendar-outline" class="date-icon"></ion-icon>
+              </div>
+              <div *ngIf="birthdayError" class="error-message">
+                <ion-icon name="alert-circle"></ion-icon>
+                {{ birthdayError }}
+              </div>
+            </div>
+          </div>
+        </ion-card-content>
+      </ion-card>
+
+      <!-- Step 1: Phone -->
+      <ion-card *ngIf="currentStep === 1" class="onboarding-card">
+        <ion-card-content>
+          <div class="card-header">
+            <h2>¿Cuál es tu número de celular?</h2>
+          </div>
+          
+          <div class="form-fields">
+            <div class="field-group">
+              <ion-input
+                [(ngModel)]="userData.phone"
+                type="tel"
+                label="Número de teléfono"
+                labelPlacement="floating"
+                placeholder="Ingresa tu número de teléfono"
+                [class.invalid]="phoneError"
+                (ionInput)="clearPhoneError()">
+              </ion-input>
+              <div *ngIf="phoneError" class="error-message">
+                <ion-icon name="alert-circle"></ion-icon>
+                {{ phoneError }}
+              </div>
+            </div>
+          </div>
+        </ion-card-content>
+      </ion-card>
+
+      <!-- Steps 2-4: Feature Introduction Cards -->
+      <ion-card *ngIf="currentStep >= 2 && currentStep <= 4" class="onboarding-card feature-card">
+        <ion-card-content>
+          <div class="feature-content">
+            <!-- Feature Icon -->
+            <div class="feature-icon" [style.background-color]="getCurrentFeature()?.color">
+              <ion-icon [name]="getCurrentFeature()?.icon"></ion-icon>
+            </div>
+
+            <!-- Feature Title -->
+            <h2>{{ getCurrentFeature()?.title }}</h2>
+
+            <!-- Feature Description -->
+            <p>{{ getCurrentFeature()?.description }}</p>
+
+            <!-- Step Indicators -->
+            <div class="step-indicators">
+              <div 
+                *ngFor="let feature of onboardingFeatures; let i = index"
+                class="indicator"
+                [class.active]="i === currentStep - 2">
+              </div>
+            </div>
+          </div>
+        </ion-card-content>
+      </ion-card>
+
+      <!-- Step 5: Completion -->
+      <ion-card *ngIf="currentStep === 5" class="onboarding-card completion-card">
+        <ion-card-content>
+          <div class="completion-content">
+            <div class="completion-icon">
+              <ion-icon name="checkmark-circle"></ion-icon>
+            </div>
+            <h2>¡Todo listo!</h2>
+            <p>Ya puedes comenzar a usar la aplicación y gestionar tu negocio de manera inteligente.</p>
+            
+            <!-- User Summary -->
+            <div class="user-summary">
+              <div class="summary-item">
+                <ion-icon name="person"></ion-icon>
+                <span>{{ userData.name }}</span>
+              </div>
+              <div class="summary-item" *ngIf="userData.birthday">
+                <ion-icon name="calendar"></ion-icon>
+                <span>{{ getFormattedDate() }}</span>
+              </div>
+              <div class="summary-item">
+                <ion-icon name="call"></ion-icon>
+                <span>{{ userData.phone }}</span>
+              </div>
+            </div>
+          </div>
+        </ion-card-content>
+      </ion-card>
+
+    </div>
+
+    <!-- Navigation Buttons -->
+    <div class="navigation-buttons">
+      <ion-button 
+        fill="clear" 
+        (click)="prevStep()"
+        [disabled]="currentStep === 0">
+        <ion-icon name="chevron-back" slot="start"></ion-icon>
+        Anterior
+      </ion-button>
+
+      <ion-button 
+        (click)="nextStep()"
+        [disabled]="isNextDisabled()">
+        <span *ngIf="currentStep < 5">Siguiente</span>
+        <span *ngIf="currentStep === 5">Comenzar</span>
+        <ion-icon 
+          *ngIf="currentStep < 5" 
+          name="chevron-forward" 
+          slot="end">
+        </ion-icon>
+        <ion-icon 
+          *ngIf="currentStep === 5" 
+          name="checkmark" 
+          slot="end">
+        </ion-icon>
+      </ion-button>
+    </div>
+
+    <!-- Progress Indicator -->
+    <div class="progress-container">
+      <div class="progress-bar">
+        <div 
+          class="progress-fill" 
+          [style.width.%]="getProgressPercentage()">
+        </div>
+      </div>
+      <span class="progress-text">{{ currentStep + 1 }} de {{ totalSteps }}</span>
+    </div>
+  </div>
+
+  <!-- Date Picker Modal -->
+  <ion-modal #dateModal [isOpen]="showDatePicker" (willDismiss)="closeDatePicker()">
+    <ng-template>
+      <ion-header>
+        <ion-toolbar>
+          <ion-title>Selecciona tu cumpleaños</ion-title>
+          <ion-buttons slot="end">
+            <ion-button (click)="closeDatePicker()">
+              <ion-icon name="close"></ion-icon>
+            </ion-button>
+          </ion-buttons>
+        </ion-toolbar>
+      </ion-header>
+      <ion-content>
+        <ion-datetime
+          #datetime
+          [value]="selectedDate"
+          presentation="date"
+          [max]="maxDate"
+          [min]="minDate"
+          (ionChange)="onDateChange($event)">
+        </ion-datetime>
+        <div class="modal-buttons">
+          <ion-button expand="block" (click)="confirmDate()">
+            Confirmar
+          </ion-button>
+        </div>
+      </ion-content>
+    </ng-template>
+  </ion-modal>
+
+</ion-content>

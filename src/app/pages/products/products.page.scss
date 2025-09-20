@@ -1,0 +1,605 @@
+.products-container {
+  background: #f5f5f5;
+  min-height: 100vh;
+  
+  @media (prefers-color-scheme: dark) {
+    background: #1a1a1a;
+  }
+}
+
+// Header
+.products-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px;
+  background: white;
+  border-bottom: 1px solid #e0e0e0;
+  
+  @media (prefers-color-scheme: dark) {
+    background: #2d2d2d;
+    border-bottom-color: #404040;
+  }
+  
+  .header-left {
+    display: flex;
+    align-items: center;
+    
+    ion-button {
+      --color: #333;
+      margin-right: 8px;
+      
+      @media (prefers-color-scheme: dark) {
+        --color: #ffffff;
+      }
+    }
+    
+    h1 {
+      margin: 0;
+      font-size: 22px;
+      font-weight: bold;
+      color: #333;
+      
+      @media (prefers-color-scheme: dark) {
+        color: #ffffff;
+      }
+    }
+  }
+  
+  > ion-button {
+    --background: #ff9500;
+    --background-hover: #ff7b00;
+    --background-activated: #e6850e;
+    --color: white;
+    font-weight: 600;
+    
+    &[disabled] {
+      --background: #cccccc;
+      --color: #666666;
+      
+      @media (prefers-color-scheme: dark) {
+        --background: #555555;
+        --color: #888888;
+      }
+    }
+  }
+}
+
+// Content
+.products-content {
+  padding: 24px;
+}
+
+// Search Container
+.search-container {
+  margin-bottom: 20px;
+  
+  ion-searchbar {
+    --background: white;
+    --color: #333;
+    --placeholder-color: #666;
+    --icon-color: #666;
+    --clear-button-color: #666;
+    --border-radius: 12px;
+    padding: 0;
+    
+    @media (prefers-color-scheme: dark) {
+      --background: #2d2d2d;
+      --color: #ffffff;
+      --placeholder-color: #ccc;
+      --icon-color: #ccc;
+      --clear-button-color: #ccc;
+    }
+  }
+}
+
+// Cards
+ion-card {
+  margin-bottom: 16px;
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e0e0e0;
+  
+  @media (prefers-color-scheme: dark) {
+    background: #2d2d2d;
+    border-color: #404040;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  }
+}
+
+ion-card-content {
+  padding: 20px !important;
+}
+
+// Add Form Card
+.add-form-card {
+  margin-bottom: 24px;
+  
+  .form-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    
+    h3 {
+      margin: 0;
+      font-size: 18px;
+      font-weight: bold;
+      color: #333;
+      
+      @media (prefers-color-scheme: dark) {
+        color: #ffffff;
+      }
+    }
+    
+    ion-button {
+      --color: #666;
+      
+      @media (prefers-color-scheme: dark) {
+        --color: #ccc;
+      }
+    }
+  }
+  
+  .form-fields {
+    .form-row {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 16px;
+      
+      @media (max-width: 768px) {
+        flex-direction: column;
+        gap: 16px;
+      }
+      
+      .form-field {
+        flex: 1;
+        
+        .field-label {
+          display: block;
+          font-size: 14px;
+          font-weight: 600;
+          color: #555;
+          margin-bottom: 8px;
+          
+          @media (prefers-color-scheme: dark) {
+            color: #ccc;
+          }
+        }
+        
+        ion-input {
+          --background: #f5f5f5;
+          --color: #333;
+          --border-radius: 8px;
+          --padding-start: 16px;
+          --padding-end: 16px;
+          border: 2px solid transparent;
+          font-size: 16px;
+          
+          @media (prefers-color-scheme: dark) {
+            --background: #3a3a3a;
+            --color: #ffffff;
+          }
+          
+          &.invalid {
+            border-color: #f44336;
+          }
+          
+          &:focus {
+            border-color: #ff9500;
+          }
+        }
+      }
+    }
+    
+    .error-message {
+      display: flex;
+      align-items: center;
+      background: #ffebee;
+      color: #c62828;
+      padding: 12px 16px;
+      border-radius: 8px;
+      margin-bottom: 16px;
+      font-size: 14px;
+      border-left: 4px solid #f44336;
+      
+      @media (prefers-color-scheme: dark) {
+        background: rgba(244, 67, 54, 0.1);
+        color: #ff6b6b;
+      }
+      
+      ion-icon {
+        margin-right: 8px;
+        font-size: 16px;
+      }
+    }
+    
+    .form-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      
+      ion-button {
+        font-weight: 600;
+        
+        &:first-child {
+          --background: #ff9500;
+          --background-hover: #ff7b00;
+          --background-activated: #e6850e;
+          --color: white;
+        }
+        
+        &:last-child {
+          --color: #666;
+          --border-color: #e0e0e0;
+          
+          @media (prefers-color-scheme: dark) {
+            --color: #ccc;
+            --border-color: #404040;
+          }
+        }
+        
+        ion-spinner {
+          margin-right: 8px;
+        }
+      }
+    }
+  }
+}
+
+// Loading State
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+  
+  ion-spinner {
+    margin-bottom: 16px;
+    --color: #ff9500;
+  }
+  
+  ion-label {
+    font-size: 16px;
+    color: #666;
+    
+    @media (prefers-color-scheme: dark) {
+      color: #ccc;
+    }
+  }
+}
+
+// Empty State
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+  
+  ion-icon {
+    font-size: 64px;
+    color: #ccc;
+    margin-bottom: 16px;
+    
+    @media (prefers-color-scheme: dark) {
+      color: #666;
+    }
+  }
+  
+  h3 {
+    margin: 0 0 8px 0;
+    font-size: 20px;
+    font-weight: bold;
+    color: #333;
+    
+    @media (prefers-color-scheme: dark) {
+      color: #ffffff;
+    }
+  }
+  
+  p {
+    margin: 0 0 24px 0;
+    color: #666;
+    
+    @media (prefers-color-scheme: dark) {
+      color: #ccc;
+    }
+  }
+  
+  ion-button {
+    --background: #ff9500;
+    --background-hover: #ff7b00;
+    --background-activated: #e6850e;
+    --color: white;
+  }
+}
+
+// Products List
+.products-list {
+  margin-bottom: 24px;
+}
+
+// Product Card
+.product-card {
+  .product-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 16px;
+    
+    .product-info {
+      display: flex;
+      align-items: center;
+      
+      .product-icon {
+        width: 48px;
+        height: 48px;
+        background: rgba(255, 149, 0, 0.1);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 12px;
+        
+        ion-icon {
+          font-size: 24px;
+          color: #ff9500;
+        }
+      }
+      
+      .product-details {
+        h4 {
+          margin: 0 0 4px 0;
+          font-size: 16px;
+          font-weight: bold;
+          color: #333;
+          
+          @media (prefers-color-scheme: dark) {
+            color: #ffffff;
+          }
+        }
+        
+        p {
+          margin: 0;
+          font-size: 12px;
+          color: #666;
+          
+          @media (prefers-color-scheme: dark) {
+            color: #ccc;
+          }
+        }
+      }
+    }
+    
+    .product-actions {
+      display: flex;
+      gap: 4px;
+      
+      ion-button {
+        --color: #666;
+        width: 36px;
+        height: 36px;
+        
+        @media (prefers-color-scheme: dark) {
+          --color: #ccc;
+        }
+        
+        &[color="danger"] {
+          --color: #f44336;
+        }
+        
+        &:hover {
+          --background: rgba(0, 0, 0, 0.04);
+          
+          @media (prefers-color-scheme: dark) {
+            --background: rgba(255, 255, 255, 0.04);
+          }
+        }
+      }
+    }
+  }
+  
+  .product-metrics {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 16px;
+    
+    @media (max-width: 480px) {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+    
+    .metric {
+      text-align: center;
+      
+      .value {
+        display: block;
+        font-size: 16px;
+        font-weight: bold;
+        color: #333;
+        margin-bottom: 4px;
+        
+        @media (prefers-color-scheme: dark) {
+          color: #ffffff;
+        }
+      }
+      
+      .label {
+        font-size: 12px;
+        color: #666;
+        
+        @media (prefers-color-scheme: dark) {
+          color: #ccc;
+        }
+      }
+      
+      .stock-value {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        
+        .stock-indicator {
+          width: 8px;
+          height: 8px;
+          border-radius: 50%;
+          
+          &.low {
+            background-color: #f44336;
+          }
+          
+          &.medium {
+            background-color: #ff9800;
+          }
+          
+          &.high {
+            background-color: #4caf50;
+          }
+        }
+      }
+      
+      &.profit .value {
+        color: #4caf50;
+      }
+    }
+  }
+  
+  .stock-status {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 16px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    
+    &.low {
+      background-color: rgba(244, 67, 54, 0.1);
+      color: #f44336;
+    }
+    
+    &.medium {
+      background-color: rgba(255, 152, 0, 0.1);
+      color: #ff9800;
+    }
+    
+    &.high {
+      background-color: rgba(76, 175, 80, 0.1);
+      color: #4caf50;
+    }
+  }
+}
+
+// Products Summary
+.products-summary {
+  h3 {
+    margin: 0 0 16px 0;
+    font-size: 16px;
+    font-weight: bold;
+    color: #333;
+    
+    @media (prefers-color-scheme: dark) {
+      color: #ffffff;
+    }
+  }
+  
+  .summary-metrics {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+    
+    @media (max-width: 480px) {
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+    
+    .summary-item {
+      text-align: center;
+      padding: 12px;
+      background: #f8f9fa;
+      border-radius: 8px;
+      
+      @media (prefers-color-scheme: dark) {
+        background: #3a3a3a;
+      }
+      
+      .summary-value {
+        display: block;
+        font-size: 18px;
+        font-weight: bold;
+        color: #ff9500;
+        margin-bottom: 4px;
+      }
+      
+      .summary-label {
+        font-size: 12px;
+        color: #666;
+        
+        @media (prefers-color-scheme: dark) {
+          color: #ccc;
+        }
+      }
+    }
+  }
+}
+
+// Responsive Design
+@media (max-width: 768px) {
+  .products-content {
+    padding: 16px;
+  }
+  
+  .products-header {
+    padding: 16px;
+    flex-direction: column;
+    gap: 16px;
+    align-items: stretch;
+    
+    .header-left {
+      justify-content: flex-start;
+    }
+    
+    > ion-button {
+      align-self: stretch;
+    }
+  }
+}
+
+// Animations
+ion-card {
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Transitions
+ion-input, ion-button {
+  transition: all 0.2s ease;
+}
+
+.product-actions ion-button {
+  transition: all 0.15s ease;
+}
+
+// Focus states
+ion-input:focus {
+  box-shadow: 0 0 0 2px rgba(255, 149, 0, 0.2);
+}
+
+// Loading spinner colors
+ion-spinner {
+  --color: #ff9500;
+}

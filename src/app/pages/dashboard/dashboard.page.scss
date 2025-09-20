@@ -1,0 +1,177 @@
+.dashboard {
+  padding: 16px;
+}
+
+.header {
+  padding: 16px;
+  border-bottom: 1px solid var(--ion-color-medium);
+}
+
+.title {
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.subtitle {
+  font-size: 14px;
+  color: var(--ion-color-medium);
+}
+
+/* Balance Card */
+.balance-card {
+  margin-top: 16px;
+  border-radius: 12px;
+}
+
+.balance-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.balance-title {
+  font-weight: bold;
+}
+
+.balance-value {
+  margin-top: 16px;
+  font-size: 28px;
+  font-weight: bold;
+  text-align: center;
+}
+
+.balance-label {
+  font-size: 14px;
+  text-align: center;
+  color: var(--ion-color-medium);
+}
+
+.row {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 16px;
+  gap: 12px;
+}
+
+.income, .expense {
+  flex: 1;
+  padding: 12px;
+  border-radius: 10px;
+  background: var(--ion-color-light);
+  text-align: center;
+}
+
+.value.green {
+  color: green;
+  font-weight: bold;
+}
+
+.value.red {
+  color: red;
+  font-weight: bold;
+}
+
+.section-title {
+  margin: 24px 0 12px;
+  font-weight: bold;
+}
+
+.quick-actions ion-button {
+  flex: 1;
+  font-size: 14px;
+}
+
+/* KPIs */
+.kpis {
+  margin-top: 16px;
+}
+
+.kpi-card ion-card-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.kpi-label {
+  font-size: 14px;
+  color: var(--ion-color-medium);
+}
+
+.kpi-value {
+  font-size: 20px;
+  font-weight: bold;
+}
+
+/* Recent Activity */
+.recent-activity {
+  margin-top: 24px;
+}
+
+.activity-item {
+  display: flex;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--ion-color-light);
+}
+
+.activity-item:last-child {
+  border-bottom: none;
+}
+
+.icon {
+  padding: 8px;
+  border-radius: 50%;
+}
+
+.green-bg {
+  background: #d4f8d4;
+}
+
+.red-bg {
+  background: #f8d4d4;
+}
+
+.info {
+  flex: 1;
+  margin-left: 12px;
+}
+
+.title {
+  font-weight: 500;
+}
+
+.time {
+  font-size: 12px;
+  color: var(--ion-color-medium);
+}
+
+.details {
+  text-align: right;
+}
+
+.amount.green {
+  color: green;
+  font-weight: bold;
+}
+
+.amount.red {
+  color: red;
+  font-weight: bold;
+}
+
+.badge {
+  margin-top: 4px;
+  padding: 2px 8px;
+  border-radius: 8px;
+  font-size: 12px;
+}
+
+.badge.income {
+  background: #d4f8d4;
+  color: green;
+}
+
+.badge.expense {
+  background: #f8d4d4;
+  color: red;
+}

@@ -1,0 +1,133 @@
+<ion-content [fullscreen]="true" [class.dark]="isDarkMode()">
+  <div class="register-container">
+    <div class="register-content">
+      <!-- Error Message -->
+      <div *ngIf="errorMessage" class="error-message">
+        <p>{{ errorMessage }}</p>
+      </div>
+
+      <!-- App Icon -->
+      <div class="app-icon">
+        <ion-icon name="phone-portrait" color="warning"></ion-icon>
+      </div>
+
+      <!-- Title -->
+      <h1 class="title">Crear Cuenta</h1>
+      <p class="subtitle">Únete a FinanceAI y transforma tu negocio</p>
+
+      <!-- Registration Form Card -->
+      <ion-card class="register-card">
+        <ion-card-content>
+          <form #registerForm="ngForm" (ngSubmit)="onRegister()">
+            
+            <!-- Email Field -->
+            <div class="field-group">
+              <ion-label class="field-label">Correo electrónico</ion-label>
+              <div class="input-container">
+                <ion-input
+                  name="email"
+                  [(ngModel)]="email"
+                  placeholder="tu@email.com"
+                  type="email"
+                  required
+                  class="custom-input"
+                  (ionInput)="onEmailChange()">
+                </ion-input>
+                <div *ngIf="email.length > 0" class="validation-icon">
+                  <ion-icon 
+                    [name]="emailValid ? 'checkmark' : 'close'" 
+                    [color]="emailValid ? 'success' : 'danger'">
+                  </ion-icon>
+                </div>
+              </div>
+              <div *ngIf="email.length > 0 && !emailValid" class="validation-text error">
+                Correo inválido
+              </div>
+            </div>
+
+            <!-- Password Field -->
+            <div class="field-group">
+              <ion-label class="field-label">Contraseña</ion-label>
+              <div class="input-container">
+                <ion-input
+                  name="password"
+                  [(ngModel)]="password"
+                  placeholder="••••••••"
+                  [type]="showPassword ? 'text' : 'password'"
+                  required
+                  class="custom-input"
+                  (ionInput)="onPasswordChange()">
+                </ion-input>
+                <ion-button 
+                  fill="clear" 
+                  size="small" 
+                  class="toggle-password"
+                  (click)="togglePasswordVisibility()">
+                  <ion-icon 
+                    [name]="showPassword ? 'eye-off' : 'eye'"
+                    color="medium">
+                  </ion-icon>
+                </ion-button>
+              </div>
+              <div *ngIf="password.length > 0" class="validation-text" [class.success]="passwordValid" [class.error]="!passwordValid">
+                {{ passwordValid ? '✓ Contraseña válida' : '✗ Mínimo 8 caracteres' }}
+              </div>
+            </div>
+
+            <!-- Confirm Password Field -->
+            <div class="field-group">
+              <ion-label class="field-label">Confirmar contraseña</ion-label>
+              <div class="input-container">
+                <ion-input
+                  name="confirmPassword"
+                  [(ngModel)]="confirmPassword"
+                  placeholder="••••••••"
+                  [type]="showConfirmPassword ? 'text' : 'password'"
+                  required
+                  class="custom-input"
+                  (ionInput)="onConfirmPasswordChange()">
+                </ion-input>
+                <ion-button 
+                  fill="clear" 
+                  size="small" 
+                  class="toggle-password"
+                  (click)="toggleConfirmPasswordVisibility()">
+                  <ion-icon 
+                    [name]="showConfirmPassword ? 'eye-off' : 'eye'"
+                    color="medium">
+                  </ion-icon>
+                </ion-button>
+              </div>
+              <div *ngIf="confirmPassword.length > 0" class="validation-text" [class.success]="passwordsMatch" [class.error]="!passwordsMatch">
+                {{ passwordsMatch ? '✓ Las contraseñas coinciden' : '✗ Las contraseñas no coinciden' }}
+              </div>
+            </div>
+
+            <!-- Register Button -->
+            <ion-button 
+              expand="block" 
+              color="warning" 
+              type="submit"
+              [disabled]="!isFormValid() || loading"
+              class="register-button">
+              <div *ngIf="loading; else buttonText" class="loading-spinner">
+                <ion-spinner name="crescent" color="light"></ion-spinner>
+              </div>
+              <ng-template #buttonText>
+                Crear Cuenta
+              </ng-template>
+            </ion-button>
+
+            <!-- Login Link -->
+            <div class="login-link">
+              <ion-button fill="clear" color="warning" (click)="goToLogin()">
+                ¿Ya tienes cuenta? Inicia sesión aquí
+              </ion-button>
+            </div>
+
+          </form>
+        </ion-card-content>
+      </ion-card>
+    </div>
+  </div>
+</ion-content>
