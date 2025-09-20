@@ -21,42 +21,44 @@
       </ion-card-header>
 
       <ion-card-content>
-        <!-- Email -->
-        <ion-label class="input-label">Correo electrónico</ion-label>
-        <ion-input
-          type="email"
-          formControlName="email"
-          placeholder="tu@email.com"
-          [formControl]="form.controls.email"
-        ></ion-input>
+        <form [formGroup]="form" (ngSubmit)="handleLogin()">
+          <!-- Email -->
+          <ion-label class="input-label">Correo electrónico</ion-label>
+          <ion-input
+            type="email"
+            formControlName="email"
+            placeholder="tu@email.com"
+          ></ion-input>
 
-        <!-- Password -->
-        <ion-label class="input-label">Contraseña</ion-label>
-        <ion-input
-          [type]="showPassword() ? 'text' : 'password'"
-          placeholder="••••••••"
-          [formControl]="form.controls.password"
-        >
-          <ion-button
-            fill="clear"
-            slot="end"
-            size="small"
-            (click)="showPassword.set(!showPassword())"
+          <!-- Password -->
+          <ion-label class="input-label">Contraseña</ion-label>
+          <ion-input
+            [type]="showPassword() ? 'text' : 'password'"
+            placeholder="••••••••"
+            formControlName="password"
           >
-            <ion-icon [name]="showPassword() ? 'eye-off-outline' : 'eye-outline'"></ion-icon>
-          </ion-button>
-        </ion-input>
+            <ion-button
+              fill="clear"
+              slot="end"
+              size="small"
+              type="button"
+              (click)="showPassword.set(!showPassword())"
+            >
+              <ion-icon [name]="showPassword() ? 'eye-off-outline' : 'eye-outline'"></ion-icon>
+            </ion-button>
+          </ion-input>
 
-        <!-- Botón Login -->
-        <ion-button
-          expand="block"
-          class="login-btn"
-          [disabled]="loading()"
-          (click)="handleLogin()"
-        >
-          <ion-spinner *ngIf="loading()" name="crescent"></ion-spinner>
-          <span *ngIf="!loading()">Iniciar Sesión</span>
-        </ion-button>
+          <!-- Botón Login -->
+          <ion-button
+            expand="block"
+            class="login-btn"
+            type="submit"
+            [disabled]="loading() || form.invalid"
+          >
+            <ion-spinner *ngIf="loading()" name="crescent"></ion-spinner>
+            <span *ngIf="!loading()">Iniciar Sesión</span>
+          </ion-button>
+        </form>
 
         <!-- Registro -->
         <div class="register-link">

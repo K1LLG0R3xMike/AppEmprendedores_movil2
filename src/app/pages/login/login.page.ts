@@ -62,7 +62,7 @@ export class LoginPage {
   async handleLogin() {
     if (this.loading()) return;
     if (this.form.invalid) {
-      this.errorMessage.set('Completa los campos');
+      this.errorMessage.set('Completa todos los campos correctamente');
       return;
     }
 
@@ -73,8 +73,12 @@ export class LoginPage {
       const email = this.form.value.email!;
       const password = this.form.value.password!;
 
+      console.log('🔄 Intentando login...');
+      
       // Usar el AuthService para login
       await this.authService.login(email, password);
+      
+      console.log('✅ Login exitoso');
       
       const toast = await this.toastCtrl.create({
         message: 'Login exitoso',
@@ -83,9 +87,19 @@ export class LoginPage {
       });
       await toast.present();
 
-      // Navegar a la aplicación principal
-      this.router.navigate(['/tabs/dashboard']);
+      // Pequeña pausa antes de navegar
+      setTimeout(async () => {
+        try {
+          // Navegar a la aplicación principal
+          await this.router.navigate(['/tabs'], { replaceUrl: true });
+          console.log('🚀 Navegación completada');
+        } catch (navError) {
+          console.error('❌ Error en navegación:', navError);
+        }
+      }, 500);
+      
     } catch (error: any) {
+      console.error('❌ Error en login:', error);
       const msg = error.message || 'Error al iniciar sesión';
       this.errorMessage.set(msg);
 
@@ -101,6 +115,6 @@ export class LoginPage {
   }
 
   goRegister() {
-    this.router.navigate(['/register']);
+    this.router.navigate(['/register'], { replaceUrl: true });
   }
 }

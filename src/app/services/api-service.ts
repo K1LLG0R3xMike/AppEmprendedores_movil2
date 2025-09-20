@@ -141,7 +141,7 @@ export class ApiService {
       if (response) {
         console.log('[LOGIN] Status: 200');
         console.log('[LOGIN] Login exitoso para:', email, '(uid:', response.localId, ')');
-        
+        console.log('[LOGIN] Token recibido:', response.idToken);
         // Guardar token y UID en el almacenamiento seguro
         await Preferences.set({
           key: 'idToken',
@@ -301,6 +301,61 @@ export class ApiService {
   }
 
   // 🔹 Métodos adicionales para funcionalidades específicas del negocio
+
+  // Crear usuario en el backend después del onboarding
+  async createUser(userData: { name: string, birthdate: string, numeroDeTelefono: string }): Promise<any> {
+    const token = await this.getToken();
+    if (!token) throw new Error('Usuario no autenticado.');
+
+    const url = `${this.baseUrl}/users/`;
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    });
+
+    try {
+      console.log('🚀 [CREATE_USER] Enviando datos al backend:', userData);
+      
+      const response = await this.http.post<any>(url, userData, { headers })
+        .pipe(
+          timeout(this.requestTimeout),
+          catchError(this.handleError.bind(this))
+        )
+        .toPromise();
+      
+      console.log('✅ [CREATE_USER] Usuario creado exitosamente:', response);
+      return response;
+    } catch (error) {
+      console.error('❌ [CREATE_USER] Error creando usuario:', error);
+      throw this.handleHttpError(error);
+    }
+  }
+
+  // Actualizar datos del usuario
+  async updateUser(uid: string, userData: any): Promise<any> {
+    if (!uid || uid.trim() === '') {
+      throw new Error('El UID no puede estar vacío.');
+    }
+
+    const token = await this.getToken();
+    if (!token) throw new Error('Usuario no autenticado.');
+
+    const url = `${this.baseUrl}/users/${uid}`;
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    });
+
+    try {
+      const response = await this.http.put<any>(url, userData, { headers })
+        .pipe(timeout(this.requestTimeout))
+        .toPromise();
+      
+      return response;
+    } catch (error) {
+      throw this.handleHttpError(error);
+    }
+  }
 
   // Obtener datos de productos
   async getProducts(): Promise<any[]> {

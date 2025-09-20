@@ -7,6 +7,11 @@ export const routes: Routes = [
     component: TabsPage,
     children: [
       {
+        path: '',
+        redirectTo: 'dashboard',
+        pathMatch: 'full'
+      },
+      {
         path: 'dashboard',
         loadComponent: () =>
           import('../pages/dashboard/dashboard.page').then((m) => m.DashboardPage),
@@ -40,11 +45,6 @@ export const routes: Routes = [
         path: 'profile',
         loadComponent: () =>
           import('../pages/profile/profile.page').then((m) => m.ProfilePage),
-      },
-      {
-        path: '',
-        redirectTo: 'dashboard',
-        pathMatch: 'full',
       },
     ],
   },

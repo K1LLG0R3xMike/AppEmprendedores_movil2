@@ -37,20 +37,19 @@ import { AuthService } from '../../services/auth';
     IonLabel,
     IonInput,
     IonSpinner,
-    ToastController,
     CommonModule, 
     FormsModule
   ]
 })
 export class RegisterPage implements OnInit {
-  // Form fields
+  // Form fields - exactos como en Flutter
   email: string = '';
   password: string = '';
   confirmPassword: string = '';
 
-  // UI state
-  loading: boolean = false;
-  errorMessage: string = '';
+  // UI state - exactos como en Flutter
+  loading: boolean = false; // _loading en Flutter
+  errorMessage: string | null = null; // _errorMessage en Flutter (puede ser null)
   showPassword: boolean = false;
   showConfirmPassword: boolean = false;
 
@@ -71,11 +70,7 @@ export class RegisterPage implements OnInit {
   ngOnInit() {
   }
 
-  isDarkMode(): boolean {
-    return window.matchMedia('(prefers-color-scheme: dark)').matches;
-  }
-
-  // Validation getters
+  // Validation getters - exactos como en Flutter
   get emailValid(): boolean {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(this.email);
@@ -89,34 +84,32 @@ export class RegisterPage implements OnInit {
     return this.password === this.confirmPassword && this.confirmPassword.length > 0;
   }
 
-  // Form validation
+  // Form validation - lógica exacta de Flutter
   isFormValid(): boolean {
     return this.emailValid && this.passwordValid && this.passwordsMatch;
   }
 
-  // Event handlers
+  // Event handlers - simplificados como Flutter
   onEmailChange(): void {
-    // Clear error message when user starts typing
+    // Solo clear error message como en Flutter
     if (this.errorMessage) {
-      this.errorMessage = '';
+      this.errorMessage = null;
     }
   }
 
   onPasswordChange(): void {
-    // Clear error message when user starts typing
     if (this.errorMessage) {
-      this.errorMessage = '';
+      this.errorMessage = null;
     }
   }
 
   onConfirmPasswordChange(): void {
-    // Clear error message when user starts typing
     if (this.errorMessage) {
-      this.errorMessage = '';
+      this.errorMessage = null;
     }
   }
 
-  // Toggle password visibility
+  // Toggle password visibility - exacto como Flutter
   togglePasswordVisibility(): void {
     this.showPassword = !this.showPassword;
   }
@@ -125,71 +118,47 @@ export class RegisterPage implements OnInit {
     this.showConfirmPassword = !this.showConfirmPassword;
   }
 
-  // Registration logic
+  // Registration logic - exacta como Flutter
   async onRegister(): Promise<void> {
     if (!this.isFormValid()) {
       return;
     }
 
     this.loading = true;
-    this.errorMessage = '';
+    this.errorMessage = null;
 
     try {
-      // Usar el AuthService para registro
+      // Solo registrar en Firebase Auth y backend usando AuthService.register
       await this.authService.register(this.email, this.password);
       
-      const toast = await this.toastCtrl.create({
-        message: 'Registro exitoso',
-        duration: 2000,
-        color: 'success'
-      });
-      await toast.present();
-
-      // Navigate to dashboard on success
-      this.router.navigate(['/tabs/dashboard']);
+      // Llamar onRegister callback (como en Flutter widget.onRegister())
+      this.onRegisterSuccess();
       
     } catch (error: any) {
-      const msg = error.message || 'Error en el registro';
-      this.errorMessage = msg;
+      this.errorMessage = error.toString();
       
+      // Mostrar SnackBar como en Flutter
       const toast = await this.toastCtrl.create({
-        message: msg,
+        message: this.errorMessage || 'Error desconocido',
         duration: 3000,
         color: 'danger'
       });
       await toast.present();
       
-      console.error('Registration error:', error);
     } finally {
       this.loading = false;
     }
   }
 
-  // Simulate registration API call
-  private async registerUser(email: string, password: string): Promise<void> {
-    return new Promise((resolve, reject) => {
-      setTimeout(() => {
-        // Simulate different scenarios
-        if (email === 'test@error.com') {
-          reject(new Error('Este email ya está registrado'));
-        } else if (password === 'weakpass') {
-          reject(new Error('La contraseña no cumple con los requisitos de seguridad'));
-        } else {
-          console.log('User registered successfully:', { email });
-          resolve();
-        }
-      }, 2000); // Simulate network delay
-    });
-  }
-
-  // Navigation
+  // Navigation - como Flutter widget.onGoToLogin()
   goToLogin(): void {
-    this.router.navigate(['/login']);
+    this.router.navigate(['/login'], { replaceUrl: true });
   }
 
-  // Handle registration success (callback for parent component if needed)
+  // Handle registration success - como callback en Flutter
   onRegisterSuccess(): void {
     console.log('Registration successful');
-    // Could emit event or call parent callback here
+    // Navigate to onboarding for new users (corrección del flujo)
+    this.router.navigate(['/onboarding'], { replaceUrl: true });
   }
 }

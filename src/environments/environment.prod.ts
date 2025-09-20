@@ -1,5 +1,5 @@
 export const environment = {
   production: true,
-  firebaseApiKey: 'YOUR_FIREBASE_API_KEY_HERE', // Reemplaza con tu API key real
+  firebaseApiKey: 'AIzaSyA1yWyrDp_wlwZflfgKmw4SSnP7cTbU1Fs', // Reemplaza con tu API key real
   apiBaseUrl: 'https://your-production-api.com/api' // Cambia por tu URL de producción
 };

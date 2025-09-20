@@ -12,6 +12,8 @@ import {
   IonInput,
   IonSpinner
 } from '@ionic/angular/standalone';
+import { AuthService } from '../../services/auth';
+import { ApiService } from '../../services/api-service';
 import { addIcons } from 'ionicons';
 import { 
   arrowBack,
@@ -89,7 +91,14 @@ export class ProfilePage implements OnInit {
     business: ''
   };
 
-  constructor(private router: Router) {
+  constructor(
+    private router: Router,
+    public authService: AuthService,
+    private apiService: ApiService
+  ) {
+    console.log('[PROFILE] 🏗️ ProfilePage constructor ejecutado');
+    console.log('[PROFILE] - Servicios inyectados correctamente');
+    
     addIcons({ 
       arrowBack,
       camera,
@@ -104,9 +113,17 @@ export class ProfilePage implements OnInit {
       refresh,
       checkmark
     });
+    
+    console.log('[PROFILE] - Iconos registrados');
   }
 
   ngOnInit() {
+    console.log('[PROFILE] 🎬 ProfilePage iniciado');
+    console.log('[PROFILE] - Verificando estado inicial del AuthService...');
+    console.log('[PROFILE] - isAuthenticated:', this.authService.isAuthenticated);
+    console.log('[PROFILE] - uid:', this.authService.uid);
+    console.log('[PROFILE] - token:', this.authService.token ? 'Token presente' : 'No token');
+    
     this.fetchUserProfile();
   }
 
@@ -115,26 +132,78 @@ export class ProfilePage implements OnInit {
   }
 
   async fetchUserProfile(): Promise<void> {
+    console.log('[PROFILE] 🚀 Iniciando carga de perfil de usuario...');
     this.isLoading = true;
     this.errorMsg = '';
 
     try {
-      // Simulate API call to fetch user profile
-      await this.simulateApiCall(1500);
+      // Verificar si el usuario está autenticado
+      console.log('[PROFILE] 🔍 Verificando autenticación...');
+      console.log('[PROFILE] - AuthService.isAuthenticated:', this.authService.isAuthenticated);
+      console.log('[PROFILE] - AuthService.uid:', this.authService.uid);
       
-      // Mock data - replace with actual API call
+      if (!this.authService.isAuthenticated || !this.authService.uid) {
+        console.log('[PROFILE] ❌ Usuario no autenticado, redirigiendo al login');
+        throw new Error('Usuario no autenticado');
+      }
+
+      console.log('[PROFILE] ✅ Usuario autenticado, obteniendo datos...');
+      console.log('[PROFILE] - UID del usuario:', this.authService.uid);
+
+      // Obtener los datos del usuario usando getUserByUid
+      console.log('[PROFILE] 📡 Llamando a getUserByUid...');
+      const userData = await this.apiService.getUserByUid(this.authService.uid);
+      
+      console.log('[PROFILE] 📦 Datos recibidos del servidor:');
+      console.log('[PROFILE] - Raw userData:', JSON.stringify(userData, null, 2));
+      
+      // Verificar si los datos están anidados en una propiedad 'data'
+      const actualData = userData['data'] || userData;
+      
+      console.log('[PROFILE] - Datos extraídos:', JSON.stringify(actualData, null, 2));
+      console.log('[PROFILE] - actualData.name:', actualData['name']);
+      console.log('[PROFILE] - actualData.email:', actualData['email']);
+      console.log('[PROFILE] - actualData.numeroDeTelefono:', actualData['numeroDeTelefono']);
+      console.log('[PROFILE] - actualData.phone:', actualData['phone']);
+      console.log('[PROFILE] - actualData.business:', actualData['business']);
+      
+      // Mapear los datos del usuario al formato del perfil
       this.profileData = {
-        name: 'Juan Carlos Pérez',
-        email: 'juan.perez@empresa.com',
-        phone: '+57 300 123 4567',
-        business: 'Tienda Virtual JCP'
+        name: actualData['name'] || actualData['displayName'] || 'Usuario',
+        email: actualData['email'] || '',
+        phone: actualData['phone'] || actualData['phoneNumber'] || actualData['numeroDeTelefono'] || '',
+        business: actualData['business'] || actualData['businessName'] || ''
       };
+
+      console.log('[PROFILE] 🎯 Datos mapeados al perfil:');
+      console.log('[PROFILE] - profileData.name:', this.profileData.name);
+      console.log('[PROFILE] - profileData.email:', this.profileData.email);
+      console.log('[PROFILE] - profileData.phone:', this.profileData.phone);
+      console.log('[PROFILE] - profileData.business:', this.profileData.business);
 
       this.backupProfileData();
       this.isLoading = false;
+      console.log('[PROFILE] ✅ Perfil cargado exitosamente');
     } catch (error) {
+      console.error('[PROFILE] ❌ Error cargando perfil de usuario:', error);
+      console.log('[PROFILE] - Error type:', typeof error);
+      console.log('[PROFILE] - Error instanceof Error:', error instanceof Error);
+      
+      if (error instanceof Error) {
+        console.log('[PROFILE] - Error message:', error.message);
+        console.log('[PROFILE] - Error stack:', error.stack);
+      }
+      
+      if (error instanceof Error && error.message === 'Usuario no autenticado') {
+        console.log('[PROFILE] 🔄 Redirigiendo al login...');
+        // Redirigir al login si no está autenticado
+        this.router.navigate(['/login']);
+        return;
+      }
+      
       this.errorMsg = 'Error al cargar perfil: ' + (error instanceof Error ? error.message : 'Error desconocido');
       this.isLoading = false;
+      console.log('[PROFILE] - Error final mostrado al usuario:', this.errorMsg);
     }
   }
 
@@ -155,27 +224,63 @@ export class ProfilePage implements OnInit {
   }
 
   async saveChanges(): Promise<void> {
+    console.log('[PROFILE] 💾 Iniciando guardado de cambios...');
+    console.log('[PROFILE] - Datos actuales del perfil:', JSON.stringify(this.profileData, null, 2));
+    
     if (!this.isProfileFormValid()) {
+      console.log('[PROFILE] ❌ Formulario no válido, cancelando guardado');
       return;
     }
 
+    console.log('[PROFILE] ✅ Formulario válido, verificando autenticación...');
+    if (!this.authService.isAuthenticated || !this.authService.uid) {
+      console.log('[PROFILE] ❌ Usuario no autenticado, redirigiendo al login');
+      this.router.navigate(['/login']);
+      return;
+    }
+
+    console.log('[PROFILE] 🔄 Iniciando proceso de guardado...');
     this.isSaving = true;
 
     try {
-      // Simulate API call to save profile
-      await this.simulateApiCall(2000);
+      // Preparar los datos del usuario para enviar al backend
+      const userData = {
+        name: this.profileData.name.trim(),
+        email: this.profileData.email.trim(),
+        phone: this.profileData.phone.trim(),
+        business: this.profileData.business.trim()
+      };
+
+      console.log('[PROFILE] 📤 Datos preparados para enviar:');
+      console.log('[PROFILE] - userData:', JSON.stringify(userData, null, 2));
+      console.log('[PROFILE] - UID del usuario:', this.authService.uid);
+
+      // Llamar al API para actualizar el usuario
+      console.log('[PROFILE] 📡 Llamando a updateUser...');
+      const response = await this.apiService.updateUser(this.authService.uid, userData);
+      console.log('[PROFILE] 📦 Respuesta del servidor:', response);
       
-      console.log('Profile saved:', this.profileData);
+      console.log('[PROFILE] ✅ Perfil guardado exitosamente');
       this.isEditing = false;
       this.backupProfileData(); // Update backup after successful save
       
-      // Show success message (you could use a toast here)
+      // TODO: Show success toast message
+      console.log('[PROFILE] 🎉 Perfil actualizado correctamente');
       
     } catch (error) {
-      console.error('Error saving profile:', error);
-      // Show error message
+      console.error('[PROFILE] ❌ Error guardando perfil:', error);
+      console.log('[PROFILE] - Error type:', typeof error);
+      
+      if (error instanceof Error) {
+        console.log('[PROFILE] - Error message:', error.message);
+        console.log('[PROFILE] - Error stack:', error.stack);
+      }
+      
+      this.errorMsg = 'Error al guardar perfil: ' + (error instanceof Error ? error.message : 'Error desconocido');
+      console.log('[PROFILE] - Error mostrado al usuario:', this.errorMsg);
     } finally {
       this.isSaving = false;
+      console.log('[PROFILE] 🏁 Proceso de guardado finalizado');
     }
   }
 
@@ -277,25 +382,28 @@ export class ProfilePage implements OnInit {
   }
 
   async logout(): Promise<void> {
+    console.log('[PROFILE] 🚪 Iniciando proceso de logout...');
     this.isLoggingOut = true;
 
     try {
-      // Simulate logout API call
-      await this.simulateApiCall(1500);
+      console.log('[PROFILE] 📡 Llamando a AuthService.logout()...');
+      // Usar el método logout del AuthService
+      await this.authService.logout();
       
-      // Clear any stored authentication data
-      localStorage.removeItem('authToken');
-      localStorage.removeItem('userId');
+      console.log('[PROFILE] ✅ Logout exitoso');
+      console.log('[PROFILE] 🔄 Navegando al login...');
       
       // Navigate to login page
       this.router.navigate(['/login']);
       
     } catch (error) {
-      console.error('Error during logout:', error);
+      console.error('[PROFILE] ❌ Error durante el logout:', error);
+      console.log('[PROFILE] 🔄 Navegando al login de todas formas...');
       // Show error message but still navigate to login
       this.router.navigate(['/login']);
     } finally {
       this.isLoggingOut = false;
+      console.log('[PROFILE] 🏁 Proceso de logout finalizado');
     }
   }
 
@@ -326,5 +434,33 @@ export class ProfilePage implements OnInit {
     if (this.passwordError) {
       this.passwordError = '';
     }
+  }
+
+  // 🔍 Método de debugging para verificar el estado actual
+  debugCurrentState(): void {
+    console.log('[PROFILE DEBUG] 🔍 Estado actual del ProfilePage:');
+    console.log('[PROFILE DEBUG] ==========================================');
+    console.log('[PROFILE DEBUG] 🔐 Estado de Autenticación:');
+    console.log('[PROFILE DEBUG] - isAuthenticated:', this.authService.isAuthenticated);
+    console.log('[PROFILE DEBUG] - uid:', this.authService.uid);
+    console.log('[PROFILE DEBUG] - token presente:', this.authService.token ? 'Sí' : 'No');
+    console.log('[PROFILE DEBUG] ');
+    console.log('[PROFILE DEBUG] 📊 Estado de la UI:');
+    console.log('[PROFILE DEBUG] - isLoading:', this.isLoading);
+    console.log('[PROFILE DEBUG] - errorMsg:', this.errorMsg);
+    console.log('[PROFILE DEBUG] - isEditing:', this.isEditing);
+    console.log('[PROFILE DEBUG] - isSaving:', this.isSaving);
+    console.log('[PROFILE DEBUG] ');
+    console.log('[PROFILE DEBUG] 👤 Datos del Perfil:');
+    console.log('[PROFILE DEBUG] - profileData:', JSON.stringify(this.profileData, null, 2));
+    console.log('[PROFILE DEBUG] - originalProfileData:', JSON.stringify(this.originalProfileData, null, 2));
+    console.log('[PROFILE DEBUG] ==========================================');
+  }
+
+  // 🔄 Método para forzar recarga de datos (útil para debugging)
+  async forceReload(): Promise<void> {
+    console.log('[PROFILE] 🔄 Forzando recarga de datos...');
+    this.debugCurrentState();
+    await this.fetchUserProfile();
   }
 }

@@ -28,6 +28,29 @@
       </div>
     </div>
 
+    <!-- 🔍 DEBUG SECTION - Remove in production -->
+    <ion-card class="debug-card" style="margin: 10px; border: 2px dashed #3880ff; background-color: #f0f8ff;">
+      <ion-card-content>
+        <h4 style="color: #3880ff; margin: 0 0 10px 0;">🔍 Debug Controls</h4>
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+          <ion-button size="small" fill="outline" (click)="debugCurrentState()">
+            📊 Ver Estado
+          </ion-button>
+          <ion-button size="small" fill="outline" (click)="forceReload()">
+            🔄 Forzar Recarga
+          </ion-button>
+          <ion-button size="small" fill="outline" (click)="fetchUserProfile()">
+            📡 Recargar Perfil
+          </ion-button>
+        </div>
+        <div style="margin-top: 10px; font-size: 12px; color: #666;">
+          <p style="margin: 2px 0;">Estado: {{ isLoading ? 'Cargando...' : errorMsg ? 'Error' : 'Cargado' }}</p>
+          <p style="margin: 2px 0;">Autenticado: {{ authService.isAuthenticated ? 'Sí' : 'No' }}</p>
+          <p style="margin: 2px 0;">UID: {{ authService.uid || 'No disponible' }}</p>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
     <div class="profile-content">
       <!-- Profile Picture Card -->
       <ion-card class="profile-picture-card">

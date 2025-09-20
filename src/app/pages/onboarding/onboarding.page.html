@@ -35,10 +35,20 @@
                   label="Cumpleaños"
                   labelPlacement="floating"
                   [value]="getFormattedDate()"
-                  placeholder="Selecciona tu fecha">
+                  placeholder="Selecciona tu fecha de nacimiento">
                 </ion-input>
                 <ion-icon name="calendar-outline" class="date-icon"></ion-icon>
               </div>
+              
+              <!-- Debug button - temporal para testing -->
+              <ion-button 
+                fill="outline" 
+                size="small" 
+                (click)="openDatePicker()"
+                style="margin-top: 8px;">
+                🔧 Abrir Selector (Debug)
+              </ion-button>
+              
               <div *ngIf="birthdayError" class="error-message">
                 <ion-icon name="alert-circle"></ion-icon>
                 {{ birthdayError }}
@@ -102,35 +112,6 @@
         </ion-card-content>
       </ion-card>
 
-      <!-- Step 5: Completion -->
-      <ion-card *ngIf="currentStep === 5" class="onboarding-card completion-card">
-        <ion-card-content>
-          <div class="completion-content">
-            <div class="completion-icon">
-              <ion-icon name="checkmark-circle"></ion-icon>
-            </div>
-            <h2>¡Todo listo!</h2>
-            <p>Ya puedes comenzar a usar la aplicación y gestionar tu negocio de manera inteligente.</p>
-            
-            <!-- User Summary -->
-            <div class="user-summary">
-              <div class="summary-item">
-                <ion-icon name="person"></ion-icon>
-                <span>{{ userData.name }}</span>
-              </div>
-              <div class="summary-item" *ngIf="userData.birthday">
-                <ion-icon name="calendar"></ion-icon>
-                <span>{{ getFormattedDate() }}</span>
-              </div>
-              <div class="summary-item">
-                <ion-icon name="call"></ion-icon>
-                <span>{{ userData.phone }}</span>
-              </div>
-            </div>
-          </div>
-        </ion-card-content>
-      </ion-card>
-
     </div>
 
     <!-- Navigation Buttons -->
@@ -146,15 +127,15 @@
       <ion-button 
         (click)="nextStep()"
         [disabled]="isNextDisabled()">
-        <span *ngIf="currentStep < 5">Siguiente</span>
-        <span *ngIf="currentStep === 5">Comenzar</span>
+        <span *ngIf="currentStep < 4">Siguiente</span>
+        <span *ngIf="currentStep === 4">Comenzar</span>
         <ion-icon 
-          *ngIf="currentStep < 5" 
+          *ngIf="currentStep < 4" 
           name="chevron-forward" 
           slot="end">
         </ion-icon>
         <ion-icon 
-          *ngIf="currentStep === 5" 
+          *ngIf="currentStep === 4" 
           name="checkmark" 
           slot="end">
         </ion-icon>
@@ -173,35 +154,39 @@
     </div>
   </div>
 
-  <!-- Date Picker Modal -->
-  <ion-modal #dateModal [isOpen]="showDatePicker" (willDismiss)="closeDatePicker()">
-    <ng-template>
-      <ion-header>
-        <ion-toolbar>
-          <ion-title>Selecciona tu cumpleaños</ion-title>
-          <ion-buttons slot="end">
-            <ion-button (click)="closeDatePicker()">
-              <ion-icon name="close"></ion-icon>
-            </ion-button>
-          </ion-buttons>
-        </ion-toolbar>
-      </ion-header>
-      <ion-content>
+  <!-- Date Picker Modal - Versión Simplificada -->
+  <ion-modal [isOpen]="showDatePicker">
+    <ion-header>
+      <ion-toolbar color="primary">
+        <ion-title>Selecciona tu cumpleaños</ion-title>
+        <ion-buttons slot="end">
+          <ion-button (click)="closeDatePicker()">
+            <ion-icon name="close"></ion-icon>
+          </ion-button>
+        </ion-buttons>
+      </ion-toolbar>
+    </ion-header>
+    <ion-content>
+      <div style="padding: 20px;">
+        <h3>Estado Debug:</h3>
+        <p>showDatePicker: {{ showDatePicker }}</p>
+        <p>selectedDate: {{ selectedDate }}</p>
+        <p>userData.birthday: {{ userData.birthday }}</p>
+        
         <ion-datetime
-          #datetime
-          [value]="selectedDate"
+          [(ngModel)]="selectedDate"
           presentation="date"
           [max]="maxDate"
-          [min]="minDate"
-          (ionChange)="onDateChange($event)">
+          [min]="minDate">
         </ion-datetime>
-        <div class="modal-buttons">
+        
+        <div style="margin-top: 20px;">
           <ion-button expand="block" (click)="confirmDate()">
-            Confirmar
+            Confirmar Fecha
           </ion-button>
         </div>
-      </ion-content>
-    </ng-template>
+      </div>
+    </ion-content>
   </ion-modal>
 
 </ion-content>

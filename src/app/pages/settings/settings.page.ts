@@ -42,8 +42,6 @@ import { AuthService } from '../../services/auth';
     IonToggle,
     IonSelect,
     IonSelectOption,
-    ToastController,
-    AlertController,
     CommonModule, 
     FormsModule
   ]
@@ -93,7 +91,7 @@ export class SettingsPage implements OnInit {
 
   // Navigation methods
   goToProfile(): void {
-    this.router.navigate(['/profile']);
+    this.router.navigate(['/tabs/profile']);
   }
 
   // Security methods
