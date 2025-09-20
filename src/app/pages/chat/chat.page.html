@@ -1,81 +1,35 @@
-<ion-content [fullscreen]="true" [class.dark]="isDarkMode()">
-  <div class="chat-container">
-    <!-- Header -->
-    <div class="chat-header">
-      <ion-button fill="clear" (click)="goBack()">
-        <ion-icon slot="icon-only" name="arrow-back" color="warning"></ion-icon>
-      </ion-button>
-      
-      <div class="avatar">
-        <ion-icon name="hardware-chip" color="warning"></ion-icon>
-      </div>
-      
-      <div class="header-info">
-        <h3>Asistente FinanceAI</h3>
-        <p>En línea • Responde en segundos</p>
-      </div>
-    </div>
+<ion-header>
+  <ion-toolbar>
+    <ion-title>AI Chat</ion-title>
+  </ion-toolbar>
+</ion-header>
 
-    <!-- Messages Area -->
-    <div class="messages-container" #messagesContainer>
-      <div class="messages-list">
-        <div 
-          *ngFor="let message of messages; trackBy: trackByMessageId" 
-          class="message-wrapper"
-          [class.user-message]="message.type === 'user'"
-          [class.ai-message]="message.type === 'ai'">
-          
-          <div class="message-content">
-            <!-- AI Avatar -->
-            <div *ngIf="message.type === 'ai'" class="message-avatar ai-avatar">
-              <ion-icon name="hardware-chip" color="warning"></ion-icon>
-            </div>
-
-            <!-- Message Bubble -->
-            <div class="message-bubble" [class.user-bubble]="message.type === 'user'">
-              <p>{{ message.content }}</p>
-            </div>
-
-            <!-- User Avatar -->
-            <div *ngIf="message.type === 'user'" class="message-avatar user-avatar">
-              <ion-icon name="person"></ion-icon>
-            </div>
-          </div>
-
-          <!-- Timestamp -->
-          <div class="message-timestamp" [class.user-timestamp]="message.type === 'user'">
-            {{ message.timestamp }}
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Input Area -->
-    <div class="input-area">
-      <ion-button fill="clear" size="small">
-        <ion-icon slot="icon-only" name="attach"></ion-icon>
-      </ion-button>
-
-      <div class="input-container">
-        <ion-input
-          [(ngModel)]="newMessage"
-          placeholder="Escribe tu mensaje..."
-          (keydown.enter)="handleSendMessage()"
-          class="message-input">
-        </ion-input>
-        
-        <ion-button fill="clear" size="small" class="mic-button">
-          <ion-icon slot="icon-only" name="mic"></ion-icon>
-        </ion-button>
-      </div>
-
-      <ion-button 
-        color="warning" 
-        [disabled]="!canSendMessage()"
-        (click)="handleSendMessage()"
-        class="send-button">
-        <ion-icon slot="icon-only" name="send"></ion-icon>
-      </ion-button>
-    </div>
-  </div>
+<ion-content>
+  <ion-list>
+    <ion-item *ngFor="let m of messages; let i = index" lines="none">
+      <ion-label>
+        <b>{{ m.role === 'user' ? 'Tú' : 'IA' }}</b>
+        <div style="white-space: pre-wrap">{{ m.content }}</div>
+      </ion-label>
+    </ion-item>
+    <ion-item *ngIf="loading" lines="none">
+      <ion-label>
+        <ion-spinner name="dots"></ion-spinner>
+        &nbsp;escribiendo…
+      </ion-label>
+    </ion-item>
+  </ion-list>
 </ion-content>
+
+<ion-footer>
+  <ion-item>
+    <ion-input
+      [(ngModel)]="text"
+      placeholder="Escribe tu mensaje…"
+      (keyup.enter)="send()">
+    </ion-input>
+    <ion-button slot="end" (click)="send()" [disabled]="loading || !text?.trim()">Enviar</ion-button>
+    <ion-button slot="end" fill="outline" color="medium" (click)="stop()" [disabled]="!loading">Detener</ion-button>
+    <ion-button slot="end" fill="clear" color="danger" (click)="reset()">Reset</ion-button>
+  </ion-item>
+</ion-footer>
