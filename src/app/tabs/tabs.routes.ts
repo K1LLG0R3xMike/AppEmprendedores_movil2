@@ -17,9 +17,9 @@ export const routes: Routes = [
           import('../pages/dashboard/dashboard.page').then((m) => m.DashboardPage),
       },
       {
-        path: 'business',
+        path: 'product',
         loadComponent: () =>
-          import('../pages/business/business.page').then((m) => m.BusinessPage),
+          import('../pages/products/products.page').then((m) => m.ProductsPage),
       },
       {
         path: 'settings',
@@ -32,9 +32,9 @@ export const routes: Routes = [
           import('../pages/chat/chat.page').then((m) => m.ChatPage),
       },
       {
-        path: 'products',
+        path: 'business',
         loadComponent: () =>
-          import('../pages/products/products.page').then((m) => m.ProductsPage),
+          import('../pages/business/business.page').then((m) => m.BusinessPage),
       },
       {
         path: 'profile',

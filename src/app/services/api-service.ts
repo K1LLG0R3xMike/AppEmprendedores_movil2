@@ -217,6 +217,78 @@ export class ApiService {
     }
   }
 
+  // 🔹 Crear negocio en el backend
+  async createBusiness(businessData: any): Promise<BusinessData> {
+    const token = await this.getToken();
+    if (!token) {
+      throw new Error('Usuario no autenticado.');
+    }
+
+    const url = `${this.baseUrl}/business`;
+
+    try {
+      const headers = new HttpHeaders({
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      });
+
+      const response = await this.http.post<BusinessData>(url, businessData, { headers })
+        .pipe(
+          timeout(this.requestTimeout),
+          catchError(this.handleError.bind(this))
+        )
+        .toPromise();
+
+      if (!response) {
+        throw new Error('Respuesta vacía del servidor.');
+      }
+
+      return response;
+    } catch (error: any) {
+      throw this.handleHttpError(error);
+    }
+  }
+
+  // 🔹 Obtener negocios por UID del usuario
+  async getBusinessByUserId(uid: string): Promise<BusinessData[]> {
+    if (!uid || uid.trim() === '') {
+      throw new Error('El UID no puede estar vacío.');
+    }
+
+    const token = await this.getToken();
+    if (!token) {
+      throw new Error('Usuario no autenticado.');
+    }
+
+    const url = `${this.baseUrl}/business/user/${uid}`;
+
+    try {
+      const headers = new HttpHeaders({
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      });
+
+      const response = await this.http.get<{ message: string, data: BusinessData[] }>(url, { headers })
+        .pipe(
+          timeout(this.requestTimeout),
+          catchError(this.handleError.bind(this))
+        )
+        .toPromise();
+
+      if (!response) {
+        throw new Error('Respuesta vacía del servidor.');
+      }
+
+      return response.data || [];
+    } catch (error: any) {
+      if (error.status === 404) {
+        // No se encontraron negocios para este usuario
+        return [];
+      }
+      throw this.handleHttpError(error);
+    }
+  }
+
   // 🔹 Logout → elimina token y UID
   async logout(): Promise<void> {
     try {
@@ -302,6 +374,40 @@ export class ApiService {
 
   // 🔹 Métodos adicionales para funcionalidades específicas del negocio
 
+  // Obtener email del usuario desde Firebase Auth
+  async getUserEmail(uid: string): Promise<string | null> {
+    if (!uid || uid.trim() === '') {
+      throw new Error('El UID no puede estar vacío.');
+    }
+
+    const token = await this.getToken();
+    if (!token) throw new Error('Usuario no autenticado.');
+
+    const url = `${this.baseUrl}/users/${uid}/email`;
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    });
+
+    try {
+      console.log('📧 [GET_USER_EMAIL] Obteniendo email del usuario:', uid);
+      
+      const response = await this.http.get<{ message: string, email: string | null }>(url, { headers })
+        .pipe(
+          timeout(this.requestTimeout),
+          catchError(this.handleError.bind(this))
+        )
+        .toPromise();
+      
+      console.log('✅ [GET_USER_EMAIL] Email obtenido:', response?.email);
+      return response?.email || null;
+    } catch (error) {
+      console.error('❌ [GET_USER_EMAIL] Error obteniendo email:', error);
+      // No lanzar error, simplemente retornar null si no se puede obtener
+      return null;
+    }
+  }
+
   // Crear usuario en el backend después del onboarding
   async createUser(userData: { name: string, birthdate: string, numeroDeTelefono: string }): Promise<any> {
     const token = await this.getToken();
@@ -357,7 +463,101 @@ export class ApiService {
     }
   }
 
-  // Obtener datos de productos
+  // 🔹 Obtener productos por negocio
+  async getProductsByBusiness(idNegocio: string): Promise<any[]> {
+    if (!idNegocio || idNegocio.trim() === '') {
+      throw new Error('El ID del negocio no puede estar vacío.');
+    }
+
+    const token = await this.getToken();
+    if (!token) {
+      throw new Error('Usuario no autenticado.');
+    }
+
+    const url = `${this.baseUrl}/product/business/${idNegocio}`;
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    });
+
+    try {
+      const response = await this.http.get<any>(url, { headers })
+        .pipe(timeout(this.requestTimeout))
+        .toPromise();
+      
+      return response?.data || [];
+    } catch (error: any) {
+      if (error.status === 404) {
+        return []; // No products found for this business
+      }
+      throw this.handleHttpError(error);
+    }
+  }
+
+  // 🔹 Crear producto
+  async createProduct(productData: {
+    idNegocio: string;
+    nombreProducto: string;
+    precioVenta: number;
+    costoProduccion: number;
+    stock: number;
+  }): Promise<any> {
+    const token = await this.getToken();
+    if (!token) {
+      throw new Error('Usuario no autenticado.');
+    }
+
+    const url = `${this.baseUrl}/product/`;
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    });
+
+    try {
+      const response = await this.http.post<any>(url, productData, { headers })
+        .pipe(timeout(this.requestTimeout))
+        .toPromise();
+      
+      return response?.data;
+    } catch (error) {
+      throw this.handleHttpError(error);
+    }
+  }
+
+  // 🔹 Disminuir stock de producto
+  async decreaseStock(idProducto: string, cantidad: number): Promise<any> {
+    if (!idProducto || !cantidad) {
+      throw new Error('ID del producto y cantidad son requeridos.');
+    }
+
+    const token = await this.getToken();
+    if (!token) {
+      throw new Error('Usuario no autenticado.');
+    }
+
+    const url = `${this.baseUrl}/products/decrease-stock`;
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    });
+
+    const body = {
+      idProducto,
+      cantidad
+    };
+
+    try {
+      const response = await this.http.post<any>(url, body, { headers })
+        .pipe(timeout(this.requestTimeout))
+        .toPromise();
+      
+      return response;
+    } catch (error) {
+      throw this.handleHttpError(error);
+    }
+  }
+
+  // Obtener datos de productos (deprecated - use getProductsByBusiness instead)
   async getProducts(): Promise<any[]> {
     const token = await this.getToken();
     if (!token) throw new Error('Usuario no autenticado.');
@@ -374,28 +574,6 @@ export class ApiService {
         .toPromise();
       
       return response || [];
-    } catch (error) {
-      throw this.handleHttpError(error);
-    }
-  }
-
-  // Crear producto
-  async createProduct(productData: any): Promise<any> {
-    const token = await this.getToken();
-    if (!token) throw new Error('Usuario no autenticado.');
-
-    const url = `${this.baseUrl}/products`;
-    const headers = new HttpHeaders({
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`
-    });
-
-    try {
-      const response = await this.http.post<any>(url, productData, { headers })
-        .pipe(timeout(this.requestTimeout))
-        .toPromise();
-      
-      return response;
     } catch (error) {
       throw this.handleHttpError(error);
     }

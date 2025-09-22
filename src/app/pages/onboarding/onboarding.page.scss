@@ -1,10 +1,7 @@
 .onboarding-container {
-  background: #f5f5f5;
+  background: var(--ion-background-color);
   min-height: 100vh;
-  
-  @media (prefers-color-scheme: dark) {
-    background: #1a1a1a;
-  }
+  transition: background-color 0.3s ease;
 }
 
 .onboarding-content {
@@ -34,13 +31,9 @@
   margin: 0 auto;
   border-radius: 16px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-  border: 1px solid #e0e0e0;
-  
-  @media (prefers-color-scheme: dark) {
-    background: #2d2d2d;
-    border-color: #404040;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-  }
+  border: 1px solid var(--ion-color-step-150);
+  background: var(--ion-card-background);
+  transition: background-color 0.3s ease, border-color 0.3s ease;
   
   ion-card-content {
     padding: 32px !important;
@@ -60,12 +53,9 @@
     margin: 0;
     font-size: 22px;
     font-weight: bold;
-    color: #333;
+    color: var(--ion-text-color);
     line-height: 1.3;
-    
-    @media (prefers-color-scheme: dark) {
-      color: #ffffff;
-    }
+    transition: color 0.3s ease;
     
     @media (max-width: 480px) {
       font-size: 20px;
@@ -78,30 +68,21 @@
   .field-group {
     margin-bottom: 24px;
     
-    ion-input {
-      --background: #f8f9fa;
-      --color: #333;
+    ion-input, ion-select, ion-textarea {
+      --background: var(--ion-color-step-50);
+      --color: var(--ion-text-color);
       --border-radius: 12px;
       --padding-start: 16px;
       --padding-end: 16px;
       --padding-top: 12px;
       --padding-bottom: 12px;
-      border: 2px solid #e0e0e0;
+      border: 2px solid var(--ion-color-step-150);
       font-size: 16px;
-      
-      @media (prefers-color-scheme: dark) {
-        --background: #3a3a3a;
-        --color: #ffffff;
-        border-color: #555;
-      }
+      transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
       
       &.invalid {
         border-color: #f44336;
-        --background: #ffebee;
-        
-        @media (prefers-color-scheme: dark) {
-          --background: rgba(244, 67, 54, 0.1);
-        }
+        --background: rgba(244, 67, 54, 0.1);
       }
       
       &:focus {
@@ -110,16 +91,61 @@
       }
     }
     
-    .date-input {
+    .date-input-wrapper {
       position: relative;
-      cursor: pointer;
       
-      &.invalid ion-input {
-        border-color: #f44336;
-        --background: #ffebee;
+      .date-label {
+        position: absolute;
+        top: -8px;
+        left: 12px;
+        background: var(--ion-card-background);
+        padding: 0 4px;
+        font-size: 12px;
+        color: var(--ion-color-medium);
+        z-index: 1;
+        transition: background-color 0.3s ease, color 0.3s ease;
+      }
+      
+      .native-date-input {
+        width: 100%;
+        background: var(--ion-color-step-50);
+        color: var(--ion-text-color);
+        border-radius: 12px;
+        padding: 16px 50px 16px 16px;
+        border: 2px solid var(--ion-color-step-150);
+        font-size: 16px;
+        font-family: inherit;
+        transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
         
-        @media (prefers-color-scheme: dark) {
-          --background: rgba(244, 67, 54, 0.1);
+        &:focus {
+          outline: none;
+          border-color: #ff9500;
+          box-shadow: 0 0 0 3px rgba(255, 149, 0, 0.1);
+        }
+        
+        // Ocultar el icono predeterminado del navegador en algunos casos
+        &::-webkit-calendar-picker-indicator {
+          opacity: 0;
+          position: absolute;
+          right: 16px;
+          width: 20px;
+          height: 20px;
+          cursor: pointer;
+        }
+        
+        &::-webkit-date-and-time-value {
+          text-align: left;
+        }
+      }
+      
+      &.invalid {
+        .native-date-input {
+          border-color: #f44336;
+          background: var(--ion-color-danger-tint);
+        }
+        
+        .date-label {
+          color: #f44336;
         }
       }
       
@@ -128,13 +154,10 @@
         right: 16px;
         top: 50%;
         transform: translateY(-50%);
-        color: #666;
+        color: var(--ion-color-medium);
         font-size: 20px;
         pointer-events: none;
-        
-        @media (prefers-color-scheme: dark) {
-          color: #ccc;
-        }
+        z-index: 2;
       }
       
       &:hover .date-icon {
@@ -181,22 +204,14 @@
       margin: 0 0 16px 0;
       font-size: 22px;
       font-weight: bold;
-      color: #333;
-      
-      @media (prefers-color-scheme: dark) {
-        color: #ffffff;
-      }
+      color: var(--ion-text-color);
     }
     
     p {
       margin: 0 0 24px 0;
       font-size: 16px;
       line-height: 1.5;
-      color: #666;
-      
-      @media (prefers-color-scheme: dark) {
-        color: #ccc;
-      }
+      color: var(--ion-color-medium);
     }
     
     .step-indicators {
@@ -208,12 +223,8 @@
         width: 10px;
         height: 10px;
         border-radius: 50%;
-        background-color: #e0e0e0;
+        background-color: var(--ion-color-step-150);
         transition: all 0.3s ease;
-        
-        @media (prefers-color-scheme: dark) {
-          background-color: #555;
-        }
         
         &.active {
           background-color: #ff9500;
@@ -235,11 +246,7 @@
     font-weight: 600;
     
     &:first-child {
-      --color: #666;
-      
-      @media (prefers-color-scheme: dark) {
-        --color: #ccc;
-      }
+      --color: var(--ion-color-medium);
       
       &[disabled] {
         opacity: 0.4;
@@ -256,13 +263,8 @@
       --padding-end: 24px;
       
       &[disabled] {
-        --background: #cccccc;
-        --color: #666666;
-        
-        @media (prefers-color-scheme: dark) {
-          --background: #555555;
-          --color: #888888;
-        }
+        --background: var(--ion-color-step-200);
+        --color: var(--ion-color-step-400);
       }
     }
   }
@@ -277,14 +279,10 @@
   .progress-bar {
     width: 100%;
     height: 4px;
-    background-color: #e0e0e0;
+    background-color: var(--ion-color-step-150);
     border-radius: 2px;
     overflow: hidden;
     margin-bottom: 8px;
-    
-    @media (prefers-color-scheme: dark) {
-      background-color: #555;
-    }
     
     .progress-fill {
       height: 100%;
@@ -296,84 +294,8 @@
   
   .progress-text {
     font-size: 12px;
-    color: #666;
+    color: var(--ion-color-medium);
     font-weight: 500;
-    
-    @media (prefers-color-scheme: dark) {
-      color: #ccc;
-    }
-  }
-}
-
-// Date Picker Modal
-ion-modal {
-  --width: 90%;
-  --max-width: 400px;
-  --height: auto;
-  --border-radius: 16px;
-  
-  ion-header {
-    ion-toolbar {
-      --background: #ff9500;
-      --color: white;
-      
-      ion-title {
-        font-weight: 600;
-        font-size: 18px;
-      }
-      
-      ion-button {
-        --color: white;
-        
-        ion-icon {
-          font-size: 20px;
-        }
-      }
-    }
-  }
-  
-  ion-content {
-    --padding-top: 20px;
-    --padding-bottom: 20px;
-    
-    &.date-picker-content {
-      display: flex;
-      flex-direction: column;
-      min-height: 400px;
-    }
-    
-    ion-datetime {
-      --background: transparent;
-      --color: #333;
-      padding: 0 16px;
-      flex: 1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      
-      @media (prefers-color-scheme: dark) {
-        --color: #ffffff;
-      }
-    }
-    
-    .modal-buttons {
-      padding: 20px;
-      
-      ion-button {
-        --background: #ff9500;
-        --background-hover: #ff7b00;
-        --background-activated: #e6850e;
-        --color: white;
-        --border-radius: 12px;
-        font-weight: 600;
-        font-size: 16px;
-        height: 48px;
-        
-        ion-icon {
-          margin-right: 8px;
-        }
-      }
-    }
   }
 }
 

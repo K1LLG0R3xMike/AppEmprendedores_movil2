@@ -27,8 +27,7 @@ import {
   logOut,
   alertCircle,
   refresh,
-  checkmark
-} from 'ionicons/icons';
+  checkmark, business } from 'ionicons/icons';
 
 interface ProfileData {
   name: string;
@@ -99,20 +98,7 @@ export class ProfilePage implements OnInit {
     console.log('[PROFILE] 🏗️ ProfilePage constructor ejecutado');
     console.log('[PROFILE] - Servicios inyectados correctamente');
     
-    addIcons({ 
-      arrowBack,
-      camera,
-      create,
-      save,
-      close,
-      eye,
-      eyeOff,
-      key,
-      logOut,
-      alertCircle,
-      refresh,
-      checkmark
-    });
+    addIcons({alertCircle,refresh,arrowBack,camera,create,business,save,close,key,logOut,eye,eyeOff,checkmark});
     
     console.log('[PROFILE] - Iconos registrados');
   }
@@ -166,14 +152,35 @@ export class ProfilePage implements OnInit {
       console.log('[PROFILE] - actualData.numeroDeTelefono:', actualData['numeroDeTelefono']);
       console.log('[PROFILE] - actualData.phone:', actualData['phone']);
       console.log('[PROFILE] - actualData.business:', actualData['business']);
+
+      // 🔹 Cargar datos del negocio usando la misma lógica que business.page.ts
+      console.log('[PROFILE] 🏢 Cargando datos del negocio...');
+      const businessName = await this.loadBusinessData();
       
       // Mapear los datos del usuario al formato del perfil
       this.profileData = {
         name: actualData['name'] || actualData['displayName'] || 'Usuario',
         email: actualData['email'] || '',
         phone: actualData['phone'] || actualData['phoneNumber'] || actualData['numeroDeTelefono'] || '',
-        business: actualData['business'] || actualData['businessName'] || ''
+        business: businessName || actualData['business'] || actualData['businessName'] || 'Sin negocio'
       };
+
+      // Si no hay email en los datos del usuario, intentar obtenerlo desde Firebase Auth
+      if (!this.profileData.email && this.authService.uid) {
+        console.log('[PROFILE] 📧 Email no encontrado en datos, obteniendo desde Firebase Auth...');
+        try {
+          const emailFromAuth = await this.apiService.getUserEmail(this.authService.uid);
+          if (emailFromAuth) {
+            this.profileData.email = emailFromAuth;
+            console.log('[PROFILE] ✅ Email obtenido desde Firebase Auth:', emailFromAuth);
+          } else {
+            console.log('[PROFILE] ⚠️ No se pudo obtener email desde Firebase Auth');
+          }
+        } catch (error) {
+          console.log('[PROFILE] ❌ Error obteniendo email desde Firebase Auth:', error);
+          // No hacer nada, continuar sin email
+        }
+      }
 
       console.log('[PROFILE] 🎯 Datos mapeados al perfil:');
       console.log('[PROFILE] - profileData.name:', this.profileData.name);
@@ -183,7 +190,7 @@ export class ProfilePage implements OnInit {
 
       this.backupProfileData();
       this.isLoading = false;
-      console.log('[PROFILE] ✅ Perfil cargado exitosamente');
+      console.log('[PROFILE] ✅ Perfil cargado exitosamente con negocio:', this.profileData.business);
     } catch (error) {
       console.error('[PROFILE] ❌ Error cargando perfil de usuario:', error);
       console.log('[PROFILE] - Error type:', typeof error);
@@ -462,5 +469,50 @@ export class ProfilePage implements OnInit {
     console.log('[PROFILE] 🔄 Forzando recarga de datos...');
     this.debugCurrentState();
     await this.fetchUserProfile();
+  }
+
+  // 🏢 Método para cargar solo los datos del negocio
+  private async loadBusinessData(): Promise<string> {
+    try {
+      if (!this.authService.uid) {
+        console.log('[PROFILE] ❌ No hay UID para cargar negocio');
+        return 'Sin negocio';
+      }
+
+      console.log('[PROFILE] 🏢 Cargando datos del negocio para UID:', this.authService.uid);
+      const businessResponse: any = await this.apiService.getBusinessByUserId(this.authService.uid);
+      
+      // Handle different response formats (same logic as business page)
+      let businessList: any[] = [];
+      
+      if (Array.isArray(businessResponse)) {
+        businessList = businessResponse;
+      } else if (businessResponse && businessResponse.data && Array.isArray(businessResponse.data)) {
+        businessList = businessResponse.data;
+      } else if (businessResponse) {
+        businessList = [businessResponse];
+      }
+      
+      if (businessList && businessList.length > 0) {
+        const business = businessList[0];
+        const businessName = business.nombreNegocio || business.name || '';
+        console.log('[PROFILE] ✅ Negocio encontrado:', businessName);
+        return businessName;
+      } else {
+        console.log('[PROFILE] ℹ️ No se encontraron negocios');
+        return 'Sin negocio';
+      }
+    } catch (error) {
+      console.log('[PROFILE] ⚠️ Error cargando negocio:', error);
+      return 'Sin negocio';
+    }
+  }
+
+  // 🔄 Método para refrescar solo el negocio
+  async refreshBusinessData(): Promise<void> {
+    console.log('[PROFILE] 🔄 Refrescando datos del negocio...');
+    const businessName = await this.loadBusinessData();
+    this.profileData.business = businessName;
+    console.log('[PROFILE] ✅ Negocio actualizado:', businessName);
   }
 }

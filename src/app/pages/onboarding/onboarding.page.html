@@ -29,25 +29,19 @@
 
             <!-- Birthday Field -->
             <div class="field-group">
-              <div class="date-input" [class.invalid]="birthdayError" (click)="openDatePicker()">
-                <ion-input
-                  readonly
-                  label="Cumpleaños"
-                  labelPlacement="floating"
-                  [value]="getFormattedDate()"
+              <div class="date-input-wrapper" [class.invalid]="birthdayError">
+                <label class="date-label">Cumpleaños</label>
+                <input 
+                  type="date"
+                  class="native-date-input"
+                  [value]="getDateInputValue()"
+                  [max]="getMaxDateString()"
+                  [min]="getMinDateString()"
+                  (change)="onNativeDateChange($event)"
+                  (focus)="clearBirthdayError()"
                   placeholder="Selecciona tu fecha de nacimiento">
-                </ion-input>
                 <ion-icon name="calendar-outline" class="date-icon"></ion-icon>
               </div>
-              
-              <!-- Debug button - temporal para testing -->
-              <ion-button 
-                fill="outline" 
-                size="small" 
-                (click)="openDatePicker()"
-                style="margin-top: 8px;">
-                🔧 Abrir Selector (Debug)
-              </ion-button>
               
               <div *ngIf="birthdayError" class="error-message">
                 <ion-icon name="alert-circle"></ion-icon>
@@ -85,8 +79,87 @@
         </ion-card-content>
       </ion-card>
 
-      <!-- Steps 2-4: Feature Introduction Cards -->
-      <ion-card *ngIf="currentStep >= 2 && currentStep <= 4" class="onboarding-card feature-card">
+      <!-- Step 2: Business Data -->
+      <ion-card *ngIf="currentStep === 2" class="onboarding-card">
+        <ion-card-content>
+          <div class="card-header">
+            <h2>Cuéntanos sobre tu negocio</h2>
+          </div>
+          
+          <div class="form-fields">
+            <!-- Business Name Field -->
+            <div class="field-group">
+              <ion-input
+                [(ngModel)]="businessData.nombreNegocio"
+                label="Nombre del negocio"
+                labelPlacement="floating"
+                placeholder="Ingresa el nombre de tu negocio"
+                [class.invalid]="businessNameError"
+                (ionInput)="clearBusinessNameError()">
+              </ion-input>
+              <div *ngIf="businessNameError" class="error-message">
+                <ion-icon name="alert-circle"></ion-icon>
+                {{ businessNameError }}
+              </div>
+            </div>
+
+            <!-- Business Description Field -->
+            <div class="field-group">
+              <ion-input
+                [(ngModel)]="businessData.descripcion"
+                label="Descripción del negocio"
+                labelPlacement="floating"
+                placeholder="Describe brevemente tu negocio"
+                [class.invalid]="businessDescriptionError"
+                (ionInput)="clearBusinessDescriptionError()">
+              </ion-input>
+              <div *ngIf="businessDescriptionError" class="error-message">
+                <ion-icon name="alert-circle"></ion-icon>
+                {{ businessDescriptionError }}
+              </div>
+            </div>
+
+            <!-- Business Sector Field -->
+            <div class="field-group">
+              <ion-select
+                [(ngModel)]="businessData.sector"
+                label="Sector del negocio"
+                labelPlacement="floating"
+                placeholder="Selecciona el sector"
+                [class.invalid]="businessSectorError"
+                (ionChange)="clearBusinessSectorError()">
+                <ion-select-option *ngFor="let sector of businessSectors" [value]="sector">
+                  {{ sector }}
+                </ion-select-option>
+              </ion-select>
+              <div *ngIf="businessSectorError" class="error-message">
+                <ion-icon name="alert-circle"></ion-icon>
+                {{ businessSectorError }}
+              </div>
+            </div>
+
+            <!-- Capital Initial Field -->
+            <div class="field-group">
+              <ion-input
+                [(ngModel)]="businessData.capitalInicial"
+                type="number"
+                label="Capital inicial (USD)"
+                labelPlacement="floating"
+                placeholder="Ingresa el capital inicial"
+                [class.invalid]="businessCapitalError"
+                (ionInput)="clearBusinessCapitalError()">
+              </ion-input>
+              <div *ngIf="businessCapitalError" class="error-message">
+                <ion-icon name="alert-circle"></ion-icon>
+                {{ businessCapitalError }}
+              </div>
+            </div>
+          </div>
+        </ion-card-content>
+      </ion-card>
+
+      <!-- Steps 3-5: Feature Introduction Cards -->
+      <ion-card *ngIf="currentStep >= 3 && currentStep <= 5" class="onboarding-card feature-card">
         <ion-card-content>
           <div class="feature-content">
             <!-- Feature Icon -->
@@ -105,7 +178,7 @@
               <div 
                 *ngFor="let feature of onboardingFeatures; let i = index"
                 class="indicator"
-                [class.active]="i === currentStep - 2">
+                [class.active]="i === currentStep - 3">
               </div>
             </div>
           </div>
@@ -127,15 +200,15 @@
       <ion-button 
         (click)="nextStep()"
         [disabled]="isNextDisabled()">
-        <span *ngIf="currentStep < 4">Siguiente</span>
-        <span *ngIf="currentStep === 4">Comenzar</span>
+        <span *ngIf="currentStep < 5">Siguiente</span>
+        <span *ngIf="currentStep === 5">Comenzar</span>
         <ion-icon 
-          *ngIf="currentStep < 4" 
+          *ngIf="currentStep < 5" 
           name="chevron-forward" 
           slot="end">
         </ion-icon>
         <ion-icon 
-          *ngIf="currentStep === 4" 
+          *ngIf="currentStep === 5" 
           name="checkmark" 
           slot="end">
         </ion-icon>
@@ -153,40 +226,5 @@
       <span class="progress-text">{{ currentStep + 1 }} de {{ totalSteps }}</span>
     </div>
   </div>
-
-  <!-- Date Picker Modal - Versión Simplificada -->
-  <ion-modal [isOpen]="showDatePicker">
-    <ion-header>
-      <ion-toolbar color="primary">
-        <ion-title>Selecciona tu cumpleaños</ion-title>
-        <ion-buttons slot="end">
-          <ion-button (click)="closeDatePicker()">
-            <ion-icon name="close"></ion-icon>
-          </ion-button>
-        </ion-buttons>
-      </ion-toolbar>
-    </ion-header>
-    <ion-content>
-      <div style="padding: 20px;">
-        <h3>Estado Debug:</h3>
-        <p>showDatePicker: {{ showDatePicker }}</p>
-        <p>selectedDate: {{ selectedDate }}</p>
-        <p>userData.birthday: {{ userData.birthday }}</p>
-        
-        <ion-datetime
-          [(ngModel)]="selectedDate"
-          presentation="date"
-          [max]="maxDate"
-          [min]="minDate">
-        </ion-datetime>
-        
-        <div style="margin-top: 20px;">
-          <ion-button expand="block" (click)="confirmDate()">
-            Confirmar Fecha
-          </ion-button>
-        </div>
-      </div>
-    </ion-content>
-  </ion-modal>
 
 </ion-content>

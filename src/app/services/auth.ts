@@ -177,6 +177,20 @@ export class AuthService {
     }
   }
 
+  /// Obtener email del usuario actual desde Firebase Auth
+  async getCurrentUserEmail(): Promise<string | null> {
+    if (!this.uid) {
+      throw new Error('Usuario no autenticado');
+    }
+    
+    try {
+      return await this.apiService.getUserEmail(this.uid);
+    } catch (error) {
+      console.error('Error getting current user email:', error);
+      return null;
+    }
+  }
+
   /// Método privado para actualizar el estado y notificar a los suscriptores
   private updateAuthState(newState: AuthState): void {
     this._authState.next(newState);

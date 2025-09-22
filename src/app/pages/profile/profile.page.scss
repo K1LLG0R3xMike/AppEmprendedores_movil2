@@ -1,10 +1,8 @@
+// Profile Page Styles with Dark Mode Support - Flutter-like UI
 .profile-container {
-  background: #f5f5f5;
+  background: var(--ion-background-color);
   min-height: 100vh;
-  
-  @media (prefers-color-scheme: dark) {
-    background: #1a1a1a;
-  }
+  transition: background-color 0.3s ease;
 }
 
 // Loading and Error States
@@ -24,18 +22,15 @@
   
   ion-icon {
     font-size: 48px;
-    color: #f44336;
+    color: var(--ion-color-danger);
     margin-bottom: 16px;
   }
   
   ion-label {
     font-size: 16px;
-    color: #666;
+    color: var(--ion-color-medium);
     margin-bottom: 24px;
-    
-    @media (prefers-color-scheme: dark) {
-      color: #ccc;
-    }
+    transition: color 0.3s ease;
   }
   
   ion-button {
@@ -44,18 +39,14 @@
   }
 }
 
-// Header
+// Header - Flutter-like
 .profile-header {
   display: flex;
   align-items: center;
   padding: 24px 16px;
-  background: white;
-  border-bottom: 1px solid #e0e0e0;
-  
-  @media (prefers-color-scheme: dark) {
-    background: #2d2d2d;
-    border-bottom-color: #404040;
-  }
+  background: var(--ion-card-background);
+  border-bottom: 1px solid var(--ion-color-step-150);
+  transition: background-color 0.3s ease, border-color 0.3s ease;
   
   ion-button {
     --color: #ff9500;
@@ -67,71 +58,59 @@
       margin: 0;
       font-size: 22px;
       font-weight: bold;
-      color: #333;
-      
-      @media (prefers-color-scheme: dark) {
-        color: #ffffff;
-      }
+      color: var(--ion-text-color);
+      transition: color 0.3s ease;
     }
     
     p {
       margin: 4px 0 0 0;
       font-size: 14px;
-      color: #666;
-      
-      @media (prefers-color-scheme: dark) {
-        color: #ccc;
-      }
+      color: var(--ion-color-medium);
+      transition: color 0.3s ease;
     }
   }
 }
 
 // Content
 .profile-content {
-  padding: 24px 24px 40px 24px;
+  padding: 24px;
+  padding-bottom: 20px; // Matching Flutter's bottom: 20
 }
 
-// Cards
+// Cards - Flutter-like rounded corners and spacing
 ion-card {
   margin-bottom: 20px;
   border-radius: 16px;
+  background: var(--ion-card-background);
+  border: 1px solid var(--ion-color-step-150);
+  transition: background-color 0.3s ease, border-color 0.3s ease;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  border: 1px solid #e0e0e0;
-  
-  @media (prefers-color-scheme: dark) {
-    background: #2d2d2d;
-    border-color: #404040;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-  }
 }
 
-ion-card-content {
-  padding: 24px !important;
-}
-
-// Profile Picture Card
+// Profile Picture Card - Like Flutter CircleAvatar with Stack
 .profile-picture-card {
-  text-align: center;
-  
   .avatar-container {
-    margin-bottom: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 24px;
     
     .avatar-wrapper {
       position: relative;
-      display: inline-block;
+      margin-bottom: 12px;
       
       .avatar {
-        width: 96px;
+        width: 96px; // radius: 48 in Flutter = 96px diameter
         height: 96px;
         border-radius: 50%;
-        background: #ff9500;
         display: flex;
         align-items: center;
         justify-content: center;
+        background: #ff9500;
+        color: white;
         font-size: 32px;
         font-weight: bold;
-        color: white;
-        margin: 0 auto;
+        text-transform: uppercase;
       }
       
       .camera-button {
@@ -143,144 +122,211 @@ ion-card-content {
         border-radius: 50%;
         --background: #ff9500;
         --color: white;
-        --box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        --padding-start: 0;
+        --padding-end: 0;
         
         ion-icon {
-          font-size: 16px;
+          font-size: 20px;
         }
       }
     }
   }
   
   .profile-info {
+    text-align: center;
+    
     h2 {
-      margin: 0 0 4px 0;
+      margin: 0;
       font-size: 20px;
       font-weight: bold;
-      color: #333;
-      
-      @media (prefers-color-scheme: dark) {
-        color: #ffffff;
-      }
+      color: var(--ion-text-color);
+      transition: color 0.3s ease;
     }
     
     p {
+      margin: 4px 0 0 0;
+      font-size: 14px;
+      color: var(--ion-color-medium);
+      transition: color 0.3s ease;
+    }
+  }
+}
+
+// Information Card - Flutter-like structure
+.info-card {
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    
+    h3 {
       margin: 0;
-      font-size: 14px;
-      color: #666;
-      
-      @media (prefers-color-scheme: dark) {
-        color: #ccc;
-      }
-    }
-  }
-}
-
-// Card Headers
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 24px;
-  
-  h3 {
-    margin: 0;
-    font-size: 16px;
-    font-weight: bold;
-    color: #333;
-    
-    @media (prefers-color-scheme: dark) {
-      color: #ffffff;
-    }
-  }
-  
-  ion-button {
-    --color: #666;
-    --border-color: #e0e0e0;
-    
-    @media (prefers-color-scheme: dark) {
-      --color: #ccc;
-      --border-color: #404040;
-    }
-    
-    ion-icon {
-      font-size: 14px;
-    }
-  }
-}
-
-// Form Fields
-.form-fields {
-  .field-group {
-    margin-bottom: 20px;
-    
-    .field-label {
-      display: block;
-      font-size: 14px;
-      font-weight: 600;
-      color: #555;
-      margin-bottom: 8px;
-      
-      @media (prefers-color-scheme: dark) {
-        color: #ccc;
-      }
-    }
-    
-    ion-input {
-      --background: #f5f5f5;
-      --color: #333;
-      --border-radius: 8px;
-      --padding-start: 16px;
-      --padding-end: 16px;
-      border: 1px solid #e0e0e0;
       font-size: 16px;
+      font-weight: bold;
+      color: var(--ion-text-color);
+      transition: color 0.3s ease;
+    }
+    
+    ion-button {
+      --color: var(--ion-text-color);
+      --border-color: var(--ion-color-step-300);
+      --background: transparent;
+      height: 32px;
+      font-size: 14px;
       
-      @media (prefers-color-scheme: dark) {
-        --background: #3a3a3a;
-        --color: #ffffff;
-        border-color: #555;
+      ion-icon {
+        font-size: 18px;
+      }
+    }
+  }
+  
+  .form-fields {
+    .field-group {
+      margin-bottom: 12px;
+      
+      .field-label {
+        display: block;
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--ion-text-color);
+        margin-bottom: 4px;
+        transition: color 0.3s ease;
       }
       
-      &.editing {
-        --background: white;
-        border-color: #ff9500;
+      ion-input {
+        --color: var(--ion-text-color);
+        --background: var(--ion-color-step-50);
+        --placeholder-color: var(--ion-color-medium);
+        border-radius: 8px;
+        border: 1px solid var(--ion-color-step-150);
+        transition: background-color 0.3s ease, border-color 0.3s ease;
+        font-size: 16px;
         
-        @media (prefers-color-scheme: dark) {
-          --background: #404040;
+        &[readonly] {
+          --background: var(--ion-color-step-100);
+          opacity: 0.8;
+        }
+        
+        &.editing {
+          --background: var(--ion-color-step-100);
+          border-color: var(--ion-color-step-200);
+        }
+      }
+    }
+    
+    .action-buttons {
+      margin-top: 16px;
+      display: flex;
+      gap: 12px;
+      
+      .save-button {
+        --background: #ff9500;
+        --color: white;
+        flex: 1;
+        
+        ion-icon {
+          font-size: 18px;
         }
       }
       
-      &[readonly] {
-        opacity: 0.7;
+      .cancel-button {
+        --color: var(--ion-text-color);
+        --border-color: var(--ion-color-step-300);
+        --background: transparent;
+        flex: 1;
       }
     }
   }
 }
 
-// Password Input
-.password-input {
-  position: relative;
-  
-  ion-input {
-    --padding-end: 48px;
+// Password Card - Flutter-like password fields
+.password-card {
+  h3 {
+    margin: 0 0 16px 0;
+    font-size: 16px;
+    font-weight: bold;
+    color: var(--ion-text-color);
+    transition: color 0.3s ease;
   }
   
-  .password-toggle {
-    position: absolute;
-    right: 8px;
-    top: 50%;
-    transform: translateY(-50%);
-    --color: #666;
-    width: 32px;
-    height: 32px;
-    
-    @media (prefers-color-scheme: dark) {
-      --color: #ccc;
+  .form-fields {
+    .field-group {
+      margin-bottom: 12px;
+      
+      .field-label {
+        display: block;
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--ion-text-color);
+        margin-bottom: 4px;
+        transition: color 0.3s ease;
+      }
+      
+      .password-input {
+        position: relative;
+        
+        ion-input {
+          --color: var(--ion-text-color);
+          --background: var(--ion-color-step-100);
+          --placeholder-color: var(--ion-color-medium);
+          border-radius: 8px;
+          border: 1px solid var(--ion-color-step-150);
+          transition: background-color 0.3s ease, border-color 0.3s ease;
+          font-size: 16px;
+          --padding-end: 40px;
+        }
+        
+        .password-toggle {
+          position: absolute;
+          right: 4px;
+          top: 50%;
+          transform: translateY(-50%);
+          --color: var(--ion-color-medium);
+          --background: transparent;
+          width: 36px;
+          height: 36px;
+          
+          ion-icon {
+            font-size: 20px;
+          }
+        }
+      }
     }
     
-    &:hover {
-      --color: #ff9500;
+    .error-message {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      background: rgba(244, 67, 54, 0.1);
+      color: var(--ion-color-danger);
+      border-radius: 8px;
+      margin-bottom: 12px;
+      font-size: 14px;
+      
+      ion-icon {
+        font-size: 16px;
+      }
     }
+    
+    .update-password-button {
+      --background: #ff9500;
+      --color: white;
+      margin-top: 16px;
+      
+      ion-icon {
+        font-size: 18px;
+      }
+    }
+  }
+}
+
+// Logout Card - Flutter-like danger button
+.logout-card {
+  .logout-button {
+    --background: #f44336;
+    --color: white;
     
     ion-icon {
       font-size: 18px;
@@ -288,115 +334,35 @@ ion-card-content {
   }
 }
 
-// Action Buttons
-.action-buttons {
-  margin-top: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  
-  ion-button {
-    font-weight: 600;
-    
-    &:first-child {
-      --background: #ff9500;
-      --background-hover: #ff7b00;
-      --background-activated: #e6850e;
-      --color: white;
-    }
-    
-    &:last-child {
-      --color: #666;
-      --border-color: #e0e0e0;
-      
-      @media (prefers-color-scheme: dark) {
-        --color: #ccc;
-        --border-color: #404040;
-      }
-    }
-    
-    ion-spinner {
-      margin-right: 8px;
-    }
+// General text elements
+h1, h2, h3, h4, h5, h6 {
+  color: var(--ion-text-color);
+  transition: color 0.3s ease;
+}
+
+p, span, div {
+  color: var(--ion-text-color);
+  transition: color 0.3s ease;
+}
+
+// Animations - Flutter-like smooth transitions
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
-// Error Messages
-.error-message {
-  display: flex;
-  align-items: center;
-  background: #ffebee;
-  color: #c62828;
-  padding: 12px 16px;
-  border-radius: 8px;
-  margin-bottom: 16px;
-  font-size: 14px;
-  border-left: 4px solid #f44336;
-  
-  @media (prefers-color-scheme: dark) {
-    background: rgba(244, 67, 54, 0.1);
-    color: #ff6b6b;
-  }
-  
-  ion-icon {
-    margin-right: 8px;
-    font-size: 16px;
-  }
+.profile-content {
+  animation: fadeIn 0.3s ease-out;
 }
 
-// Password Card
-.password-card {
-  h3 {
-    margin: 0 0 24px 0;
-    font-size: 16px;
-    font-weight: bold;
-    color: #333;
-    
-    @media (prefers-color-scheme: dark) {
-      color: #ffffff;
-    }
-  }
-  
-  ion-button[expand="block"] {
-    --background: #ff9500;
-    --background-hover: #ff7b00;
-    --background-activated: #e6850e;
-    --color: white;
-    font-weight: 600;
-    
-    &[disabled] {
-      --background: #cccccc;
-      --color: #666666;
-      
-      @media (prefers-color-scheme: dark) {
-        --background: #555555;
-        --color: #888888;
-      }
-    }
-    
-    ion-spinner {
-      margin-right: 8px;
-    }
-  }
-}
-
-// Logout Card
-.logout-card {
-  ion-button {
-    font-weight: 600;
-    
-    &[disabled] {
-      opacity: 0.6;
-    }
-    
-    ion-spinner {
-      margin-right: 8px;
-    }
-  }
-}
-
-// Responsive Design
-@media (max-width: 480px) {
+// Responsive Design - Flutter adaptive layout
+@media (max-width: 768px) {
   .profile-content {
     padding: 16px;
   }
@@ -405,57 +371,32 @@ ion-card-content {
     padding: 16px;
   }
   
-  ion-card-content {
-    padding: 20px !important;
-  }
-  
-  .avatar-container .avatar-wrapper .avatar {
+  .profile-picture-card .avatar-container .avatar-wrapper .avatar {
     width: 80px;
     height: 80px;
     font-size: 28px;
   }
   
-  .action-buttons {
+  .info-card .card-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    
     ion-button {
-      height: 48px;
+      align-self: flex-end;
     }
   }
 }
 
-// Animations
-ion-card {
-  animation: slideUp 0.3s ease-out;
-}
-
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
+@media (max-width: 480px) {
+  .profile-picture-card .avatar-container .avatar-wrapper .avatar {
+    width: 60px;
+    height: 60px;
+    font-size: 24px;
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+  
+  .info-card .action-buttons {
+    flex-direction: column;
+    gap: 8px;
   }
-}
-
-// Transitions
-ion-input, ion-button {
-  transition: all 0.2s ease;
-}
-
-.password-toggle {
-  transition: color 0.2s ease;
-}
-
-// Focus states
-ion-input.editing {
-  &:focus {
-    border-color: #ff9500;
-    box-shadow: 0 0 0 2px rgba(255, 149, 0, 0.2);
-  }
-}
-
-// Loading spinner colors
-ion-spinner {
-  --color: #ff9500;
 }

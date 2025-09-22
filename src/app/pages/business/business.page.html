@@ -1,4 +1,4 @@
-<ion-content [fullscreen]="true" [class.dark]="isDarkMode()">
+<ion-content [fullscreen]="true">
   <div class="business">
     <!-- Header -->
     <div class="header">
@@ -7,13 +7,37 @@
           <h1 class="title">Mi Negocio</h1>
           <p class="subtitle">Gestiona la información de tu negocio</p>
         </div>
-        <ion-icon name="business" color="warning" size="large"></ion-icon>
+        <div class="header-actions">
+
+          <ion-icon name="business" color="warning" size="large"></ion-icon>
+        </div>
       </div>
     </div>
 
     <div class="content">
+      <!-- No Business State -->
+      <div *ngIf="!businessData.nombreNegocio && !isLoading" class="no-business-state">
+        <ion-card>
+          <ion-card-content>
+            <div class="empty-state">
+              <ion-icon name="business" size="large" color="medium"></ion-icon>
+              <h3>No hay negocio registrado</h3>
+              <p>Parece que aún no tienes un negocio asociado a tu cuenta.</p>
+              <ion-button expand="block" routerLink="/tabs/settings">
+                <ion-icon slot="start" name="add"></ion-icon>
+                Crear Negocio
+              </ion-button>
+              <ion-button expand="block" fill="outline" (click)="refreshData()">
+                <ion-icon slot="start" name="refresh"></ion-icon>
+                Intentar de nuevo
+              </ion-button>
+            </div>
+          </ion-card-content>
+        </ion-card>
+      </div>
+
       <!-- Business Info Card -->
-      <ion-card class="business-card">
+      <ion-card *ngIf="businessData.nombreNegocio" class="business-card">
         <ion-card-content>
           <div class="card-header">
             <h2 class="card-title">Información del Negocio</h2>
@@ -33,8 +57,48 @@
               <ion-label class="field-label">Nombre del negocio</ion-label>
               <ion-input
                 [readonly]="!isEditing"
-                [(ngModel)]="businessData.name"
+                [(ngModel)]="businessData.nombreNegocio"
                 placeholder="Nombre del negocio"
+                class="custom-input">
+              </ion-input>
+            </div>
+
+            <!-- Business Description -->
+            <div class="field-group">
+              <ion-label class="field-label">Descripción del negocio</ion-label>
+              <ion-input
+                [readonly]="!isEditing"
+                [(ngModel)]="businessData.descripcion"
+                placeholder="Descripción del negocio"
+                class="custom-input">
+              </ion-input>
+            </div>
+
+            <!-- Sector -->
+            <div class="field-group">
+              <ion-label class="field-label">Sector</ion-label>
+              <ion-select 
+                [disabled]="!isEditing"
+                [(ngModel)]="businessData.sector"
+                placeholder="Selecciona sector"
+                interface="popover"
+                class="custom-select">
+                <ion-select-option 
+                  *ngFor="let sector of sectors" 
+                  [value]="sector.value">
+                  {{sector.label}}
+                </ion-select-option>
+              </ion-select>
+            </div>
+
+            <!-- Capital Inicial -->
+            <div class="field-group">
+              <ion-label class="field-label">Capital inicial (USD)</ion-label>
+              <ion-input
+                [readonly]="!isEditing"
+                [(ngModel)]="businessData.capitalInicial"
+                type="number"
+                placeholder="Capital inicial"
                 class="custom-input">
               </ion-input>
             </div>
@@ -52,23 +116,6 @@
                   *ngFor="let type of businessTypes" 
                   [value]="type.value">
                   {{type.label}}
-                </ion-select-option>
-              </ion-select>
-            </div>
-
-            <!-- Sector -->
-            <div class="field-group">
-              <ion-label class="field-label">Sector</ion-label>
-              <ion-select 
-                [disabled]="!isEditing"
-                [(ngModel)]="businessData.sector"
-                placeholder="Selecciona sector"
-                interface="popover"
-                class="custom-select">
-                <ion-select-option 
-                  *ngFor="let sector of sectors" 
-                  [value]="sector.value">
-                  {{sector.label}}
                 </ion-select-option>
               </ion-select>
             </div>
@@ -113,15 +160,15 @@
       <div class="stats-row">
         <ion-card class="stat-card">
           <ion-card-content>
-            <div class="stat-value">2.5</div>
-            <div class="stat-label">Años activo</div>
+            <div class="stat-value">${{ businessData.capitalInicial || 0 | number }}</div>
+            <div class="stat-label">Capital inicial</div>
           </ion-card-content>
         </ion-card>
 
         <ion-card class="stat-card">
           <ion-card-content>
-            <div class="stat-value">$125K</div>
-            <div class="stat-label">Ingresos totales</div>
+            <div class="stat-value">{{ businessData.sector || 'N/A' }}</div>
+            <div class="stat-label">Sector</div>
           </ion-card-content>
         </ion-card>
       </div>

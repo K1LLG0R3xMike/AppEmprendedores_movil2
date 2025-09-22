@@ -1,26 +1,92 @@
 .dashboard {
-  padding: 16px;
+  padding: 0;
+  background-color: var(--ion-background-color);
+  min-height: 100vh;
+  transition: background-color 0.3s ease;
 }
 
+/* Header */
 .header {
-  padding: 16px;
-  border-bottom: 1px solid var(--ion-color-medium);
+  background: var(--ion-card-background);
+  border-bottom: 1px solid var(--ion-color-step-150);
+  padding: 24px;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.header-text {
+  flex: 1;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  
+  ion-button {
+    --color: var(--ion-text-color);
+    --background: transparent;
+    --background-hover: rgba(255, 149, 0, 0.1);
+    --background-activated: rgba(255, 149, 0, 0.2);
+    --border-radius: 12px;
+    --padding-start: 16px;
+    --padding-end: 16px;
+    --padding-top: 16px;
+    --padding-bottom: 16px;
+    
+    transition: all 0.2s ease;
+    
+    ion-icon {
+      font-size: 28px;
+      color: var(--ion-color-medium);
+      transition: color 0.2s ease;
+    }
+    
+    &:hover {
+      ion-icon {
+        color: #ff9500;
+      }
+    }
+    
+    &:active {
+      transform: scale(0.95);
+    }
+  }
 }
 
 .title {
   font-size: 24px;
   font-weight: bold;
+  margin: 0;
+  color: var(--ion-text-color);
+  transition: color 0.3s ease;
 }
 
 .subtitle {
   font-size: 14px;
+  margin: 4px 0 0 0;
   color: var(--ion-color-medium);
+  transition: color 0.3s ease;
+}
+
+/* Content */
+.content {
+  padding: 24px;
+  background: var(--ion-background-color);
+  transition: background-color 0.3s ease;
 }
 
 /* Balance Card */
 .balance-card {
-  margin-top: 16px;
+  margin-bottom: 20px;
   border-radius: 12px;
+  background: var(--ion-card-background);
+  border: 1px solid var(--ion-color-step-150);
+  transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
 .balance-header {
@@ -31,6 +97,8 @@
 
 .balance-title {
   font-weight: bold;
+  color: var(--ion-text-color);
+  transition: color 0.3s ease;
 }
 
 .balance-value {
@@ -38,12 +106,15 @@
   font-size: 28px;
   font-weight: bold;
   text-align: center;
+  color: var(--ion-text-color);
+  transition: color 0.3s ease;
 }
 
 .balance-label {
   font-size: 14px;
   text-align: center;
   color: var(--ion-color-medium);
+  transition: color 0.3s ease;
 }
 
 .row {
@@ -57,23 +128,27 @@
   flex: 1;
   padding: 12px;
   border-radius: 10px;
-  background: var(--ion-color-light);
+  background: var(--ion-color-step-50);
   text-align: center;
+  border: 1px solid var(--ion-color-step-150);
+  transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
 .value.green {
-  color: green;
+  color: var(--ion-color-success);
   font-weight: bold;
 }
 
 .value.red {
-  color: red;
+  color: var(--ion-color-danger);
   font-weight: bold;
 }
 
 .section-title {
-  margin: 24px 0 12px;
+  margin: 16px 0 12px;
   font-weight: bold;
+  color: var(--ion-text-color);
+  transition: color 0.3s ease;
 }
 
 .quick-actions ion-button {
@@ -83,7 +158,13 @@
 
 /* KPIs */
 .kpis {
-  margin-top: 16px;
+  margin-top: 8px;
+}
+
+.kpi-card {
+  background: var(--ion-card-background);
+  border: 1px solid var(--ion-color-step-150);
+  transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
 .kpi-card ion-card-content {
@@ -95,23 +176,27 @@
 .kpi-label {
   font-size: 14px;
   color: var(--ion-color-medium);
+  transition: color 0.3s ease;
 }
 
 .kpi-value {
   font-size: 20px;
   font-weight: bold;
+  color: var(--ion-text-color);
+  transition: color 0.3s ease;
 }
 
 /* Recent Activity */
 .recent-activity {
-  margin-top: 24px;
+  margin-top: 16px;
 }
 
 .activity-item {
   display: flex;
   align-items: center;
   padding: 12px 0;
-  border-bottom: 1px solid var(--ion-color-light);
+  border-bottom: 1px solid var(--ion-color-step-150);
+  transition: border-color 0.3s ease;
 }
 
 .activity-item:last-child {
@@ -124,11 +209,11 @@
 }
 
 .green-bg {
-  background: #d4f8d4;
+  background: rgba(76, 175, 80, 0.2);
 }
 
 .red-bg {
-  background: #f8d4d4;
+  background: rgba(244, 67, 54, 0.2);
 }
 
 .info {
@@ -138,15 +223,20 @@
 
 .title {
   font-weight: 500;
+  color: var(--ion-text-color);
+  transition: color 0.3s ease;
 }
 
 .time {
   font-size: 12px;
   color: var(--ion-color-medium);
+  transition: color 0.3s ease;
 }
 
 .details {
   text-align: right;
+  color: var(--ion-text-color);
+  transition: color 0.3s ease;
 }
 
 .amount.green {
@@ -174,4 +264,38 @@
 .badge.expense {
   background: #f8d4d4;
   color: red;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .header {
+    padding: 16px;
+  }
+  
+  .content {
+    padding: 16px;
+  }
+  
+  .header-content {
+    gap: 12px;
+  }
+  
+  .header-actions ion-button {
+    --padding-start: 12px;
+    --padding-end: 12px;
+    --padding-top: 12px;
+    --padding-bottom: 12px;
+    
+    ion-icon {
+      font-size: 26px;
+    }
+  }
+  
+  .title {
+    font-size: 20px;
+  }
+  
+  .subtitle {
+    font-size: 13px;
+  }
 }

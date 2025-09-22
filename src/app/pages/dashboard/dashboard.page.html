@@ -1,14 +1,25 @@
-<ion-content [fullscreen]="true" [class.dark]="isDarkMode()">
+<ion-content [fullscreen]="true">
   <div class="dashboard">
 
     <!-- Header -->
     <div class="header">
-      <h1 class="title">Dashboard</h1>
-      <p class="subtitle">Resumen de tu negocio</p>
+      <div class="header-content">
+        <div class="header-text">
+          <h1 class="title">Hola, {{ userName }}</h1>
+          <p class="subtitle">Resumen de tu negocio</p>
+        </div>
+        <div class="header-actions">
+          <ion-button fill="clear" size="large" (click)="goToSettings()">
+            <ion-icon name="settings-outline" slot="icon-only"></ion-icon>
+          </ion-button>
+        </div>
+      </div>
     </div>
-
-    <!-- Balance General -->
-    <ion-card class="balance-card">
+    
+    <!-- Content -->
+    <div class="content">
+      <!-- Balance General -->
+      <ion-card class="balance-card">
       <ion-card-content>
         <div class="balance-header">
           <ion-icon name="cash-outline" color="warning"></ion-icon>
@@ -42,15 +53,15 @@
     <!-- Quick Actions -->
     <h2 class="section-title">Acciones Rápidas</h2>
     <div class="row quick-actions">
-      <ion-button fill="outline" (click)="goTo('/products')">
+      <ion-button fill="outline" (click)="goTo('tabs/products')">
         <ion-icon slot="start" name="cube-outline" color="warning"></ion-icon>
         Agregar Producto
       </ion-button>
-      <ion-button fill="outline" (click)="goTo('/ia')">
+      <ion-button fill="outline" (click)="goTo('tabs/ia')">
         <ion-icon slot="start" name="hardware-chip-outline" color="warning"></ion-icon>
         Ver IA
       </ion-button>
-      <ion-button fill="outline" (click)="goTo('/business')">
+      <ion-button fill="outline" (click)="goTo('tabs/business')">
         <ion-icon slot="start" name="business-outline" color="warning"></ion-icon>
         Ver Negocio
       </ion-button>
@@ -114,5 +125,6 @@
         </div>
       </ion-card-content>
     </ion-card>
+    </div> <!-- End content -->
   </div>
 </ion-content>

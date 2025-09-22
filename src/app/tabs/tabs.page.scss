@@ -1,1 +1,102 @@
-﻿ion-tab-bar { --color-selected: #ff9500; } ion-tab-button { --color-selected: #ff9500; }
+﻿/* Tab Bar Styling - Flutter inspired */
+ion-tab-bar {
+  --background: var(--ion-card-background, white);
+  --color: var(--ion-color-medium, #666666);
+  --color-selected: #ff9500; /* Orange 500 equivalent */
+  
+  border-top: 1px solid var(--ion-color-step-150, #e0e0e0);
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+  
+  /* Fixed positioning and height */
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 60px;
+  z-index: 10;
+}
+
+ion-tab-button {
+  --color: var(--ion-color-medium, #666666);
+  --color-selected: #ff9500;
+  --background-focused: rgba(255, 149, 0, 0.1);
+  --background-focused-opacity: 0.1;
+  
+  /* Button styling */
+  max-width: none;
+  font-size: 12px;
+  font-weight: 500;
+  
+  /* Icon styling */
+  ion-icon {
+    font-size: 22px;
+    margin-bottom: 2px;
+    transition: color 0.2s ease, transform 0.2s ease;
+  }
+  
+  /* Label styling */
+  ion-label {
+    font-size: 11px;
+    font-weight: 500;
+    margin-top: 2px;
+    transition: color 0.2s ease;
+  }
+  
+  /* Selected state */
+  &.tab-selected {
+    --color: #ff9500;
+    
+    ion-icon {
+      color: #ff9500;
+      transform: scale(1.1);
+    }
+    
+    ion-label {
+      color: #ff9500;
+      font-weight: 600;
+    }
+  }
+  
+  /* Hover effect */
+  &:hover {
+    --background-focused: rgba(255, 149, 0, 0.05);
+    
+    ion-icon {
+      transform: scale(1.05);
+    }
+  }
+  
+  /* Active state */
+  &:active {
+    --background-focused: rgba(255, 149, 0, 0.15);
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  ion-tab-bar {
+    --background: var(--ion-card-background, #1e1e1e);
+    --color: var(--ion-color-medium, #a0a0a0);
+    border-top-color: var(--ion-color-step-150, #333333);
+    box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.3);
+  }
+  
+  ion-tab-button {
+    --color: var(--ion-color-medium, #a0a0a0);
+    
+    &:hover {
+      --background-focused: rgba(255, 149, 0, 0.08);
+    }
+  }
+}
+
+/* Ensure content doesn't go under the tab bar */
+ion-router-outlet {
+  padding-bottom: 60px;
+}
+
+/* Animation for tab switching */
+ion-tab-button {
+  transition: all 0.2s ease;
+}

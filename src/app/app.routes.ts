@@ -22,4 +22,8 @@ export const routes: Routes = [
     path: 'tabs',
     loadChildren: () => import('./tabs/tabs.routes').then((m) => m.routes),
   },
+  {
+    path: 'ia-panel',
+    loadComponent: () => import('./pages/ia-panel/ia-panel.page').then( m => m.IaPanelPage)
+  },
 ];

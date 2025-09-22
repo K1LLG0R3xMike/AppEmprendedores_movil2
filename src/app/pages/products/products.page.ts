@@ -11,7 +11,8 @@ import {
   IonLabel,
   IonInput,
   IonSpinner,
-  IonSearchbar
+  IonSearchbar,
+  ToastController
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import { 
@@ -23,23 +24,23 @@ import {
   close,
   search,
   cube,
-  alertCircle
-} from 'ionicons/icons';
+  alertCircle, bug } from 'ionicons/icons';
+import { ApiService } from '../../services/api-service';
+import { AuthService } from '../../services/auth';
 
 interface Product {
-  id: number;
-  name: string;
-  price: number;
-  cost: number;
+  idProducto: string;
+  idNegocio: string;
+  nombreProducto: string;
+  precioVenta: number;
+  costoProduccion: number;
   stock: number;
-  category: string;
 }
 
 interface ProductForm {
-  name: string;
-  category: string;
-  price: number | null;
-  cost: number | null;
+  nombreProducto: string;
+  precioVenta: number | null;
+  costoProduccion: number | null;
   stock: number | null;
 }
 
@@ -69,12 +70,8 @@ interface StockStatus {
 })
 export class ProductsPage implements OnInit {
   // Data
-  products: Product[] = [
-    { id: 1, name: 'Camiseta Básica', price: 25.99, cost: 12.50, stock: 45, category: 'Ropa' },
-    { id: 2, name: 'Jeans Premium', price: 89.99, cost: 45.00, stock: 23, category: 'Ropa' },
-    { id: 3, name: 'Zapatillas Deportivas', price: 129.99, cost: 65.00, stock: 12, category: 'Calzado' },
-    { id: 4, name: 'Mochila Urbana', price: 45.99, cost: 22.00, stock: 8, category: 'Accesorios' }
-  ];
+  products: Product[] = [];
+  currentBusinessId: string = '';
 
   // UI State
   searchTerm: string = '';
@@ -85,35 +82,152 @@ export class ProductsPage implements OnInit {
 
   // Form Data
   productForm: ProductForm = {
-    name: '',
-    category: '',
-    price: null,
-    cost: null,
+    nombreProducto: '',
+    precioVenta: null,
+    costoProduccion: null,
     stock: null
   };
 
   editingProduct: Product | null = null;
 
-  constructor(private router: Router) {
-    addIcons({ 
-      arrowBack,
-      add,
-      create,
-      trash,
-      save,
-      close,
-      search,
-      cube,
-      alertCircle
-    });
+  constructor(
+    private router: Router,
+    private apiService: ApiService,
+    private authService: AuthService,
+    private toastController: ToastController
+  ) {
+    addIcons({arrowBack,bug,add,close,alertCircle,save,search,cube,create,trash});
   }
 
-  ngOnInit() {
-    // Simulate loading
+  async ngOnInit() {
+    await this.loadBusinessAndProducts();
+  }
+
+  // Temporary diagnostic method
+  async testBackend(): Promise<void> {
+    console.log('[PRODUCTS] 🧪 Manual backend test started...');
+    
+    try {
+      const baseUrl = this.apiService['baseUrl'];
+      console.log('[PRODUCTS] 🌐 Base URL:', baseUrl);
+      
+      // Test 1: Basic connectivity
+      console.log('[PRODUCTS] Test 1: Basic connectivity');
+      try {
+        const response = await fetch(baseUrl.replace('/api', ''));
+        console.log('[PRODUCTS] ✅ Backend is running:', response.status);
+        this.showToast(`Backend responding: ${response.status}`, 'success');
+      } catch (error) {
+        console.log('[PRODUCTS] ❌ Backend not accessible:', error);
+        this.showToast('Backend not accessible', 'danger');
+        return;
+      }
+      
+      // Test 2: Business endpoint (should work)
+      console.log('[PRODUCTS] Test 2: Business endpoint');
+      try {
+        const uid = this.authService.uid;
+        const businesses = await this.apiService.getBusinessByUserId(uid!);
+        console.log('[PRODUCTS] ✅ Business endpoint works:', businesses.length, 'businesses');
+        this.showToast(`Business API works: ${businesses.length} businesses`, 'success');
+      } catch (error) {
+        console.log('[PRODUCTS] ❌ Business endpoint failed:', error);
+        this.showToast('Business API failed', 'danger');
+      }
+      
+      // Test 3: Products endpoint
+      console.log('[PRODUCTS] Test 3: Products endpoint');
+      try {
+        const token = await this.apiService.getToken();
+        const productsResponse = await fetch(`${baseUrl}/products`, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        console.log('[PRODUCTS] Products endpoint status:', productsResponse.status);
+        
+        if (productsResponse.ok) {
+          const data = await productsResponse.json();
+          console.log('[PRODUCTS] ✅ Products endpoint works:', data);
+          this.showToast('Products API works!', 'success');
+        } else {
+          const errorText = await productsResponse.text();
+          console.log('[PRODUCTS] ❌ Products endpoint error:', errorText);
+          this.showToast(`Products API error: ${productsResponse.status}`, 'danger');
+        }
+      } catch (error) {
+        console.log('[PRODUCTS] ❌ Products endpoint failed:', error);
+        this.showToast('Products API failed', 'danger');
+      }
+      
+    } catch (error) {
+      console.error('[PRODUCTS] ❌ Test failed:', error);
+      this.showToast('Test failed', 'danger');
+    }
+  }
+
+  private async loadBusinessAndProducts(): Promise<void> {
     this.isLoading = true;
-    setTimeout(() => {
+    try {
+      // Get user's business first
+      const uid = this.authService.uid;
+      if (!uid) {
+        this.showToast('Error: Usuario no autenticado', 'danger');
+        this.router.navigate(['/login']);
+        return;
+      }
+
+      // Get user's business
+      const businesses = await this.apiService.getBusinessByUserId(uid);
+      if (businesses && businesses.length > 0) {
+        this.currentBusinessId = businesses[0]['idNegocio'] || businesses[0]['id'];
+        // Load products for this business
+        await this.loadProducts();
+      } else {
+        this.showToast('No se encontró negocio asociado. Por favor configura tu negocio primero.', 'warning');
+        this.router.navigate(['/tabs/settings']);
+      }
+    } catch (error) {
+      console.error('Error loading business and products:', error);
+      this.showToast('Error al cargar los datos', 'danger');
+    } finally {
       this.isLoading = false;
-    }, 1000);
+    }
+  }
+
+  private async loadProducts(): Promise<void> {
+    if (!this.currentBusinessId) {
+      console.log('[PRODUCTS] ❌ No business ID available for loading products');
+      return;
+    }
+
+    console.log('[PRODUCTS] 🔄 Loading products for business:', this.currentBusinessId);
+    
+    try {
+      // Test backend connectivity before trying to load products
+      console.log('[PRODUCTS] 🧪 Testing backend connectivity...');
+      console.log('[PRODUCTS] 🌐 API base URL:', this.apiService['baseUrl']);
+      
+      this.products = await this.apiService.getProductsByBusiness(this.currentBusinessId);
+      console.log('[PRODUCTS] ✅ Products loaded successfully:', this.products.length, 'items');
+    } catch (error) {
+      console.error('[PRODUCTS] ❌ Error loading products:', error);
+      this.showToast('Error al cargar productos: ' + (error as Error).message, 'danger');
+      this.products = [];
+    }
+  }
+
+  private async showToast(message: string, color: 'success' | 'danger' | 'warning' = 'success'): Promise<void> {
+    const toast = await this.toastController.create({
+      message,
+      duration: 3000,
+      color,
+      position: 'top'
+    });
+    await toast.present();
   }
 
   isDarkMode(): boolean {
@@ -126,8 +240,7 @@ export class ProductsPage implements OnInit {
       return this.products;
     }
     return this.products.filter(product =>
-      product.name.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-      product.category.toLowerCase().includes(this.searchTerm.toLowerCase())
+      product.nombreProducto.toLowerCase().includes(this.searchTerm.toLowerCase())
     );
   }
 
@@ -155,10 +268,9 @@ export class ProductsPage implements OnInit {
 
   resetForm(): void {
     this.productForm = {
-      name: '',
-      category: '',
-      price: null,
-      cost: null,
+      nombreProducto: '',
+      precioVenta: null,
+      costoProduccion: null,
       stock: null
     };
     this.editingProduct = null;
@@ -172,19 +284,15 @@ export class ProductsPage implements OnInit {
 
   // Form Validation
   isValidName(): boolean {
-    return !!(this.productForm.name && this.productForm.name.trim().length >= 2);
-  }
-
-  isValidCategory(): boolean {
-    return !!(this.productForm.category && this.productForm.category.trim().length >= 2);
+    return !!(this.productForm.nombreProducto && this.productForm.nombreProducto.trim().length >= 2);
   }
 
   isValidPrice(): boolean {
-    return !!(this.productForm.price && this.productForm.price > 0);
+    return !!(this.productForm.precioVenta && this.productForm.precioVenta > 0);
   }
 
   isValidCost(): boolean {
-    return !!(this.productForm.cost && this.productForm.cost >= 0);
+    return !!(this.productForm.costoProduccion !== null && this.productForm.costoProduccion >= 0);
   }
 
   isValidStock(): boolean {
@@ -193,7 +301,6 @@ export class ProductsPage implements OnInit {
 
   isFormValid(): boolean {
     return this.isValidName() && 
-           this.isValidCategory() && 
            this.isValidPrice() && 
            this.isValidCost() && 
            this.isValidStock();
@@ -206,31 +313,41 @@ export class ProductsPage implements OnInit {
       return;
     }
 
+    if (!this.currentBusinessId) {
+      this.formError = 'No se encontró ID del negocio';
+      return;
+    }
+
     this.isSaving = true;
     this.formError = '';
 
     try {
-      // Simulate API call
-      await this.simulateApiCall(1500);
-
-      const productData: Product = {
-        id: this.editingProduct ? this.editingProduct.id : this.getNextId(),
-        name: this.productForm.name!.trim(),
-        category: this.productForm.category!.trim(),
-        price: this.productForm.price!,
-        cost: this.productForm.cost!,
+      const productData = {
+        idNegocio: this.currentBusinessId,
+        nombreProducto: this.productForm.nombreProducto!.trim(),
+        precioVenta: this.productForm.precioVenta!,
+        costoProduccion: this.productForm.costoProduccion!,
         stock: this.productForm.stock!
       };
 
+      console.log('[PRODUCTS] 📦 Product data to send:', productData);
+      console.log('[PRODUCTS] 🔑 Current business ID:', this.currentBusinessId);
+      console.log('[PRODUCTS] 🌐 API base URL:', this.apiService['baseUrl']);
+
       if (this.editingProduct) {
-        // Update existing product
-        const index = this.products.findIndex(p => p.id === this.editingProduct!.id);
-        if (index !== -1) {
-          this.products[index] = productData;
-        }
+        // Update existing product (you may need to implement this in backend)
+        // For now, we'll just show a message
+        this.showToast('Funcionalidad de edición en desarrollo', 'warning');
       } else {
         // Add new product
-        this.products.push(productData);
+        console.log('[PRODUCTS] 🚀 Calling createProduct...');
+        const newProduct = await this.apiService.createProduct(productData);
+        console.log('[PRODUCTS] ✅ Product created:', newProduct);
+        
+        // Reload products to get the updated list
+        await this.loadProducts();
+        
+        this.showToast('Producto creado exitosamente', 'success');
       }
 
       this.showAddForm = false;
@@ -239,6 +356,7 @@ export class ProductsPage implements OnInit {
     } catch (error) {
       this.formError = 'Error al guardar el producto. Inténtalo de nuevo.';
       console.error('Error saving product:', error);
+      this.showToast('Error al guardar el producto', 'danger');
     } finally {
       this.isSaving = false;
     }
@@ -247,28 +365,22 @@ export class ProductsPage implements OnInit {
   editProduct(product: Product): void {
     this.editingProduct = product;
     this.productForm = {
-      name: product.name,
-      category: product.category,
-      price: product.price,
-      cost: product.cost,
+      nombreProducto: product.nombreProducto,
+      precioVenta: product.precioVenta,
+      costoProduccion: product.costoProduccion,
       stock: product.stock
     };
     this.showAddForm = true;
   }
 
   async deleteProduct(product: Product): Promise<void> {
-    if (confirm(`¿Estás seguro de que quieres eliminar "${product.name}"?`)) {
+    if (confirm(`¿Estás seguro de que quieres eliminar "${product.nombreProducto}"?`)) {
       try {
-        // Simulate API call
-        await this.simulateApiCall(1000);
-        
-        const index = this.products.findIndex(p => p.id === product.id);
-        if (index !== -1) {
-          this.products.splice(index, 1);
-        }
+        // Note: Delete functionality not implemented in backend yet
+        this.showToast('Funcionalidad de eliminación en desarrollo', 'warning');
       } catch (error) {
         console.error('Error deleting product:', error);
-        // Show error message
+        this.showToast('Error al eliminar el producto', 'danger');
       }
     }
   }
@@ -290,9 +402,9 @@ export class ProductsPage implements OnInit {
 
   // Calculations
   getProfitMargin(product: Product): string {
-    if (product.price <= 0) return '0.0';
-    const profit = product.price - product.cost;
-    const margin = (profit / product.price) * 100;
+    if (product.precioVenta <= 0) return '0.0';
+    const profit = product.precioVenta - product.costoProduccion;
+    const margin = (profit / product.precioVenta) * 100;
     return margin.toFixed(1);
   }
 
@@ -302,7 +414,7 @@ export class ProductsPage implements OnInit {
   }
 
   getTotalValue(): number {
-    return this.products.reduce((total, product) => total + (product.price * product.stock), 0);
+    return this.products.reduce((total, product) => total + (product.precioVenta * product.stock), 0);
   }
 
   getLowStockCount(): number {
@@ -310,31 +422,26 @@ export class ProductsPage implements OnInit {
   }
 
   // Utility methods
-  private getNextId(): number {
-    return Math.max(...this.products.map(p => p.id), 0) + 1;
-  }
-
-  trackByProductId(index: number, product: Product): number {
-    return product.id;
-  }
-
-  private async simulateApiCall(delay: number): Promise<void> {
-    return new Promise((resolve, reject) => {
-      setTimeout(() => {
-        // Simulate random failures for testing
-        if (Math.random() < 0.05) { // 5% chance of failure
-          reject(new Error('Error de conexión'));
-        } else {
-          resolve();
-        }
-      }, delay);
-    });
+  trackByProductId(index: number, product: Product): string {
+    return product.idProducto;
   }
 
   // Event handlers for form changes
   onFormChange(): void {
     if (this.formError) {
       this.formError = '';
+    }
+  }
+
+  // Method to decrease stock (for future use in sales)
+  async decreaseProductStock(productId: string, quantity: number): Promise<void> {
+    try {
+      await this.apiService.decreaseStock(productId, quantity);
+      await this.loadProducts(); // Reload to show updated stock
+      this.showToast(`Stock actualizado: -${quantity} unidades`, 'success');
+    } catch (error) {
+      console.error('Error decreasing stock:', error);
+      this.showToast('Error al actualizar el stock', 'danger');
     }
   }
 }

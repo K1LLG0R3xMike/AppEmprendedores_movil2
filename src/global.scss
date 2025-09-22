@@ -33,5 +33,76 @@
  */
 
 /* @import "@ionic/angular/css/palettes/dark.always.css"; */
-/* @import "@ionic/angular/css/palettes/dark.class.css"; */
-@import '@ionic/angular/css/palettes/dark.system.css';
+@import "@ionic/angular/css/palettes/dark.class.css";
+/* @import '@ionic/angular/css/palettes/dark.system.css'; */
+
+/*
+ * Global Dark Mode Styles
+ * -----------------------------------------------------
+ * These styles ensure the dark mode works across all components
+ */
+
+// Global background for the entire app
+ion-app {
+  background-color: var(--ion-background-color) !important;
+  color: var(--ion-text-color) !important;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+// Ensure all content areas use theme colors
+ion-content {
+  --background: var(--ion-background-color);
+  --color: var(--ion-text-color);
+}
+
+// Cards styling for dark mode
+ion-card {
+  --background: var(--ion-card-background);
+  --color: var(--ion-text-color);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+// Items styling for dark mode
+ion-item {
+  --background: var(--ion-item-background);
+  --color: var(--ion-text-color);
+  --border-color: var(--ion-color-step-150);
+}
+
+// Toolbar styling for dark mode
+ion-toolbar {
+  --background: var(--ion-toolbar-background);
+  --color: var(--ion-text-color);
+}
+
+// Headers styling for dark mode
+ion-header {
+  &::after {
+    background: none;
+  }
+}
+
+// Input styling for dark mode
+ion-input {
+  --color: var(--ion-text-color);
+  --placeholder-color: var(--ion-color-medium);
+}
+
+// Select styling for dark mode
+ion-select {
+  --color: var(--ion-text-color);
+  --placeholder-color: var(--ion-color-medium);
+}
+
+// Button styling adjustments for dark mode
+ion-button {
+  &.button-fill-clear {
+    --color: var(--ion-text-color);
+  }
+}
+
+// Text elements
+h1, h2, h3, h4, h5, h6, p, span, div {
+  color: var(--ion-text-color);
+  transition: color 0.3s ease;
+}

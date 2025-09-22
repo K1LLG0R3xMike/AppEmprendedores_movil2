@@ -5,14 +5,10 @@
 
 /* Header */
 .header {
-  background: var(--ion-color-light);
-  border-bottom: 1px solid var(--ion-color-light-shade);
+  background: var(--ion-card-background);
+  border-bottom: 1px solid var(--ion-color-step-150);
   padding: 24px;
-  
-  @media (prefers-color-scheme: dark) {
-    background: var(--ion-color-dark);
-    border-bottom-color: var(--ion-color-dark-shade);
-  }
+  transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
 .header-content {
@@ -29,22 +25,22 @@
   font-size: 24px;
   font-weight: bold;
   margin: 0;
-  color: var(--ion-color-dark);
-  
-  @media (prefers-color-scheme: dark) {
-    color: var(--ion-color-light);
-  }
+  color: var(--ion-text-color);
+  transition: color 0.3s ease;
 }
 
 .subtitle {
   font-size: 14px;
   margin: 4px 0 0 0;
   color: var(--ion-color-medium);
+  transition: color 0.3s ease;
 }
 
 /* Content */
 .content {
   padding: 24px;
+  background: var(--ion-background-color);
+  transition: background-color 0.3s ease;
 }
 
 /* Profile Card */
@@ -52,11 +48,9 @@
   margin-bottom: 20px;
   border-radius: 16px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  
-  @media (prefers-color-scheme: dark) {
-    background: var(--ion-color-dark);
-    border: 1px solid var(--ion-color-dark-shade);
-  }
+  background: var(--ion-card-background);
+  border: 1px solid var(--ion-color-step-150);
+  transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
 .profile-content {
@@ -87,11 +81,82 @@
     margin: 0 0 4px 0;
     font-size: 18px;
     font-weight: bold;
-    color: var(--ion-color-dark);
-    
-    @media (prefers-color-scheme: dark) {
-      color: var(--ion-color-light);
-    }
+    color: var(--ion-text-color);
+    transition: color 0.3s ease;
+  }
+  
+  p {
+    margin: 0;
+    font-size: 14px;
+    color: var(--ion-color-medium);
+  }
+}
+
+.profile-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-end;
+}
+
+/* Business Card */
+.business-card {
+  margin-bottom: 20px;
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  background: var(--ion-card-background);
+  border: 1px solid rgba(255, 149, 0, 0.2);
+  position: relative;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(255, 149, 0, 0.08) 0%, rgba(255, 149, 0, 0.03) 100%);
+    border-radius: inherit;
+    pointer-events: none;
+  }
+  
+  ion-card-content {
+    position: relative;
+    z-index: 1;
+  }
+}
+
+.business-content {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.business-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: rgba(var(--ion-color-warning-rgb), 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  ion-icon {
+    font-size: 36px;
+    color: var(--ion-color-warning);
+  }
+}
+
+.business-info {
+  flex: 1;
+  
+  h3 {
+    margin: 0 0 4px 0;
+    font-size: 18px;
+    font-weight: bold;
+    color: var(--ion-text-color);
+    transition: color 0.3s ease;
   }
   
   p {
@@ -106,11 +171,9 @@
   margin-bottom: 20px;
   border-radius: 16px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  
-  @media (prefers-color-scheme: dark) {
-    background: var(--ion-color-dark);
-    border: 1px solid var(--ion-color-dark-shade);
-  }
+  background: var(--ion-card-background);
+  border: 1px solid var(--ion-color-step-150);
+  transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
 .setting-header {
@@ -127,11 +190,8 @@
 .setting-title {
   font-size: 16px;
   font-weight: bold;
-  color: var(--ion-color-dark);
-  
-  @media (prefers-color-scheme: dark) {
-    color: var(--ion-color-light);
-  }
+  color: var(--ion-text-color);
+  transition: color 0.3s ease;
 }
 
 .setting-row {
@@ -155,12 +215,9 @@
 .setting-label {
   font-size: 14px;
   font-weight: 500;
-  color: var(--ion-color-dark-shade);
+  color: var(--ion-text-color);
   margin-bottom: 8px;
-  
-  @media (prefers-color-scheme: dark) {
-    color: var(--ion-color-light-shade);
-  }
+  transition: color 0.3s ease;
 }
 
 .setting-description {
@@ -170,15 +227,12 @@
 
 /* Language Select */
 .language-select {
-  --background: var(--ion-color-light-tint);
+  --background: var(--ion-color-step-50);
   --border-radius: 8px;
   --border-width: 1px;
-  --border-color: var(--ion-color-medium-tint);
-  
-  @media (prefers-color-scheme: dark) {
-    --background: var(--ion-color-dark-shade);
-    --border-color: var(--ion-color-dark-tint);
-  }
+  --border-color: var(--ion-color-step-200);
+  --color: var(--ion-text-color);
+  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
 }
 
 /* Notifications */
@@ -202,12 +256,9 @@
 .notification-label {
   font-size: 14px;
   font-weight: 500;
-  color: var(--ion-color-dark-shade);
+  color: var(--ion-text-color);
   margin-bottom: 2px;
-  
-  @media (prefers-color-scheme: dark) {
-    color: var(--ion-color-light-shade);
-  }
+  transition: color 0.3s ease;
 }
 
 .notification-description {
@@ -228,17 +279,13 @@
 .help-button {
   --border-radius: 8px;
   --border-width: 1px;
-  --border-color: var(--ion-color-medium-tint);
-  --color: var(--ion-color-dark-shade);
+  --border-color: var(--ion-color-step-200);
+  --color: var(--ion-text-color);
   --background: transparent;
   text-align: left;
   justify-content: flex-start;
   padding: 14px 16px;
-  
-  @media (prefers-color-scheme: dark) {
-    --border-color: var(--ion-color-dark-tint);
-    --color: var(--ion-color-light-shade);
-  }
+  transition: color 0.3s ease, border-color 0.3s ease;
 }
 
 /* App Info Card */
@@ -246,11 +293,9 @@
   margin-bottom: 20px;
   border-radius: 16px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  
-  @media (prefers-color-scheme: dark) {
-    background: var(--ion-color-dark);
-    border: 1px solid var(--ion-color-dark-shade);
-  }
+  background: var(--ion-card-background);
+  border: 1px solid var(--ion-color-step-150);
+  transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
 .app-info {
@@ -270,13 +315,8 @@
 
 /* Toggle Styling */
 ion-toggle {
-  --background: var(--ion-color-medium-tint);
+  --background: var(--ion-color-step-200);
   --background-checked: var(--ion-color-warning);
   --handle-background: white;
   --handle-background-checked: white;
-}
-
-/* Dark mode content */
-.dark {
-  --background: var(--ion-color-dark-tint);
 }

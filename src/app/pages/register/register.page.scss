@@ -4,33 +4,26 @@
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background: #f5f5f5; // Colors.grey[50] de Flutter
-  padding: 24px 24px 32px 24px; // Padding como en Flutter
-  
-  @media (prefers-color-scheme: dark) {
-    background: #424242; // Colors.grey[850] de Flutter
-  }
+  background: var(--ion-background-color);
+  padding: 24px 24px 32px 24px;
+  transition: background-color 0.3s ease;
 }
 
 .register-content {
   width: 100%;
-  max-width: 400px; // Limitar ancho como en Flutter
+  max-width: 400px;
 }
 
 .error-message {
-  background: #ffebee;
-  color: #c62828;
+  background: var(--ion-color-danger-tint, #ffebee);
+  color: var(--ion-color-danger);
   padding: 12px 16px;
   border-radius: 8px;
   margin-bottom: 16px;
   font-size: 14px;
   text-align: center;
-  font-weight: 500; // fontWeight: FontWeight.w500 de Flutter
-  
-  @media (prefers-color-scheme: dark) {
-    background: rgba(244, 67, 54, 0.1);
-    color: #ff6b6b;
-  }
+  font-weight: 500;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .app-icon {
@@ -39,43 +32,38 @@
   margin-bottom: 16px;
   
   ion-icon {
-    font-size: 32px; // size: 32 de Flutter
-    background: #ff9500; // kRegisterPrimaryColor
+    font-size: 32px;
+    background: #ff9500;
     color: white;
-    padding: 16px; // padding: const EdgeInsets.all(16)
-    border-radius: 50%; // shape: BoxShape.circle
+    padding: 16px;
+    border-radius: 50%;
   }
 }
 
 .title {
-  font-size: 24px; // Tamaño implícito del título en Flutter
+  font-size: 24px;
   font-weight: bold;
-  color: #333;
-  margin: 0 0 8px 0; // SizedBox(height: 8)
+  color: var(--ion-text-color);
+  margin: 0 0 8px 0;
   text-align: center;
-  
-  @media (prefers-color-scheme: dark) {
-    color: #ffffff;
-  }
+  transition: color 0.3s ease;
 }
 
 .subtitle {
-  font-size: 16px; // Tamaño implícito del subtítulo
-  color: #666;
-  margin: 0 0 32px 0; // SizedBox(height: 32)
+  font-size: 16px;
+  color: var(--ion-color-medium);
+  margin: 0 0 32px 0;
   text-align: center;
-  
-  @media (prefers-color-scheme: dark) {
-    color: #cccccc;
-  }
+  transition: color 0.3s ease;
 }
 
 .register-card {
-  background: white; // Colors.white en Flutter
-  border-radius: 16px; // BorderRadius.circular(16)
+  background: var(--ion-card-background);
+  border-radius: 16px;
   margin-bottom: 20px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); // elevation: 2 en Flutter
-  border: 1px solid #e0e0e0; // Colors.grey[300]
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border: 1px solid var(--ion-color-step-150);
+  transition: background-color 0.3s ease, border-color 0.3s ease;
   
   @media (prefers-color-scheme: dark) {
     background: #424242; // Colors.grey[800] en Flutter
@@ -89,39 +77,31 @@
 }
 
 .field-group {
-  margin-bottom: 16px; // SizedBox(height: 16) entre campos
+  margin-bottom: 16px;
 }
 
 .field-label {
   display: block;
   font-size: 14px;
-  font-weight: 400; // Normal weight como en Flutter
-  color: #333;
-  margin-bottom: 8px; // SizedBox(height: 8)
-  text-align: left; // Alignment.centerLeft
-  
-  @media (prefers-color-scheme: dark) {
-    color: #ffffff;
-  }
+  font-weight: 400;
+  color: var(--ion-text-color);
+  margin-bottom: 8px;
+  text-align: left;
+  transition: color 0.3s ease;
 }
 
 .input-container {
   position: relative;
   
   ion-input {
-    --background: #f5f5f5; // Colors.grey[100] de Flutter
-    --color: #333;
-    --border-radius: 8px; // BorderRadius.circular(8)
+    --background: var(--ion-color-step-50);
+    --color: var(--ion-text-color);
+    --border-radius: 8px;
     --padding-start: 16px;
     --padding-end: 48px;
-    border: 1px solid #e0e0e0; // Colors.grey[300]
+    border: 1px solid var(--ion-color-step-150);
     font-size: 16px;
-    
-    @media (prefers-color-scheme: dark) {
-      --background: #616161; // Colors.grey[700] de Flutter
-      --color: #ffffff;
-      border-color: #757575; // Colors.grey[600] de Flutter
-    }
+    transition: background-color 0.3s ease, border-color 0.3s ease;
   }
   
   .validation-icon {
@@ -129,7 +109,7 @@
     right: 16px;
     top: 50%;
     transform: translateY(-50%);
-    font-size: 20px; // size: 20 de Flutter
+    font-size: 20px;
   }
   
   .toggle-password {
@@ -137,28 +117,25 @@
     right: 8px;
     top: 50%;
     transform: translateY(-50%);
-    --color: #757575; // Colors.grey[600] de Flutter
-    
-    @media (prefers-color-scheme: dark) {
-      --color: #bdbdbd; // Colors.grey[400] de Flutter
-    }
+    --color: var(--ion-color-medium);
     
     ion-icon {
-      font-size: 20px; // size: 20 de Flutter
+      font-size: 20px;
     }
   }
 }
 
 .validation-text {
-  font-size: 12px; // Tamaño pequeño como en Flutter
-  margin-top: 4px; // Padding de 4px como en Flutter
+  font-size: 12px;
+  margin-top: 4px;
+  transition: color 0.3s ease;
   
   &.success {
-    color: #4caf50; // Colors.green
+    color: var(--ion-color-success);
   }
   
   &.error {
-    color: #f44336; // Colors.red
+    color: var(--ion-color-danger);
   }
 }
 
@@ -171,35 +148,32 @@
   --padding-top: 16px;
   --padding-bottom: 16px;
   font-size: 16px;
-  font-weight: 500; // Peso similar a Flutter
-  width: 100%; // SizedBox(width: double.infinity)
-  margin-bottom: 16px; // SizedBox(height: 16)
+  font-weight: 500;
+  width: 100%;
+  margin-bottom: 16px;
   
   &[disabled] {
-    --background: #cccccc;
-    --color: #666666;
-    
-    @media (prefers-color-scheme: dark) {
-      --background: #555555;
-      --color: #888888;
-    }
+    --background: var(--ion-color-medium);
+    --color: var(--ion-color-medium-contrast);
   }
 }
 
 .loading-spinner {
   ion-spinner {
-    width: 22px; // width: 22 de Flutter
-    height: 22px; // height: 22 de Flutter
+    width: 22px;
+    height: 22px;
     --color: white;
   }
 }
 
 .login-link {
   text-align: center;
+  color: var(--ion-text-color);
+  transition: color 0.3s ease;
   
   ion-button {
-    --color: #ff9500; // kRegisterPrimaryColor
-    font-weight: 500; // fontWeight: FontWeight.w500
+    --color: #ff9500;
+    font-weight: 500;
     
     &:hover {
       opacity: 0.8;
@@ -214,11 +188,11 @@
   }
   
   .register-card ion-card-content {
-    padding: 20px; // Mantener padding original de Flutter
+    padding: 20px;
   }
 }
 
-// Animations - mínimas como Flutter
+// Animations
 .register-card {
   animation: fadeIn 0.3s ease-out;
 }

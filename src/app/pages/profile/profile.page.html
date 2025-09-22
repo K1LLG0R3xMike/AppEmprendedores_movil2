@@ -28,36 +28,13 @@
       </div>
     </div>
 
-    <!-- 🔍 DEBUG SECTION - Remove in production -->
-    <ion-card class="debug-card" style="margin: 10px; border: 2px dashed #3880ff; background-color: #f0f8ff;">
-      <ion-card-content>
-        <h4 style="color: #3880ff; margin: 0 0 10px 0;">🔍 Debug Controls</h4>
-        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-          <ion-button size="small" fill="outline" (click)="debugCurrentState()">
-            📊 Ver Estado
-          </ion-button>
-          <ion-button size="small" fill="outline" (click)="forceReload()">
-            🔄 Forzar Recarga
-          </ion-button>
-          <ion-button size="small" fill="outline" (click)="fetchUserProfile()">
-            📡 Recargar Perfil
-          </ion-button>
-        </div>
-        <div style="margin-top: 10px; font-size: 12px; color: #666;">
-          <p style="margin: 2px 0;">Estado: {{ isLoading ? 'Cargando...' : errorMsg ? 'Error' : 'Cargado' }}</p>
-          <p style="margin: 2px 0;">Autenticado: {{ authService.isAuthenticated ? 'Sí' : 'No' }}</p>
-          <p style="margin: 2px 0;">UID: {{ authService.uid || 'No disponible' }}</p>
-        </div>
-      </ion-card-content>
-    </ion-card>
-
     <div class="profile-content">
       <!-- Profile Picture Card -->
       <ion-card class="profile-picture-card">
         <ion-card-content>
           <div class="avatar-container">
             <div class="avatar-wrapper">
-              <div class="avatar" [class.dark]="isDarkMode()">
+              <div class="avatar">
                 {{ getInitials() }}
               </div>
               <ion-button class="camera-button" fill="clear" (click)="changeProfilePicture()">
@@ -68,6 +45,14 @@
           <div class="profile-info">
             <h2>{{ profileData.name || 'Usuario' }}</h2>
             <p>{{ profileData.business || 'Sin negocio' }}</p>
+            <ion-button 
+              *ngIf="profileData.business === 'Sin negocio'" 
+              fill="clear" 
+              size="small" 
+              (click)="refreshBusinessData()">
+              <ion-icon name="refresh" slot="start"></ion-icon>
+              Buscar negocio
+            </ion-button>
           </div>
         </ion-card-content>
       </ion-card>
@@ -127,21 +112,28 @@
             <div class="field-group">
               <ion-label class="field-label">Negocio</ion-label>
               <ion-input
-                [readonly]="!isEditing"
+                readonly="true"
                 [(ngModel)]="profileData.business"
-                [class.editing]="isEditing"
-                placeholder="Ingresa el nombre de tu negocio">
+                placeholder="Sin negocio registrado">
               </ion-input>
             </div>
 
             <!-- Action Buttons (Edit Mode) -->
             <div *ngIf="isEditing" class="action-buttons">
-              <ion-button expand="block" (click)="saveChanges()" [disabled]="isSaving">
+              <ion-button 
+                expand="block" 
+                class="save-button"
+                (click)="saveChanges()" 
+                [disabled]="isSaving">
                 <ion-spinner *ngIf="isSaving" name="crescent" slot="start"></ion-spinner>
                 <ion-icon *ngIf="!isSaving" name="save" slot="start"></ion-icon>
                 {{ isSaving ? 'Guardando...' : 'Guardar Cambios' }}
               </ion-button>
-              <ion-button expand="block" fill="outline" (click)="cancelEditing()">
+              <ion-button 
+                expand="block" 
+                fill="outline" 
+                class="cancel-button"
+                (click)="cancelEditing()">
                 <ion-icon name="close" slot="start"></ion-icon>
                 Cancelar
               </ion-button>
@@ -219,6 +211,7 @@
             <!-- Update Password Button -->
             <ion-button 
               expand="block" 
+              class="update-password-button"
               (click)="updatePassword()"
               [disabled]="!isPasswordFormValid() || isUpdatingPassword">
               <ion-spinner *ngIf="isUpdatingPassword" name="crescent" slot="start"></ion-spinner>
@@ -235,6 +228,7 @@
           <ion-button 
             expand="block" 
             color="danger" 
+            class="logout-button"
             (click)="logout()"
             [disabled]="isLoggingOut">
             <ion-spinner *ngIf="isLoggingOut" name="crescent" slot="start"></ion-spinner>

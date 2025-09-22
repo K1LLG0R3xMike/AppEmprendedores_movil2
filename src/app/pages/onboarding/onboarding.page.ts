@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { IonContent, IonCard, IonCardContent, IonIcon, IonButton, IonButtons,IonHeader,IonToolbar,IonTitle,IonInput,IonModal,IonDatetime} from '@ionic/angular/standalone';
+import { IonContent, IonCard, IonCardContent, IonIcon, IonButton, IonInput, IonSelect, IonSelectOption } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import { chevronBack, chevronForward, checkmark, checkmarkCircle, alertCircle, calendarOutline, close, trendingUp, analytics, pieChartOutline, person, calendar, call } from 'ionicons/icons';
 import { ApiService } from '../../services/api-service';
@@ -20,20 +20,25 @@ interface UserData {
   phone: string;
 }
 
+interface BusinessData {
+  nombreNegocio: string;
+  descripcion: string;
+  sector: string;
+  capitalInicial: number | null;
+}
+
 @Component({
   selector: 'app-onboarding',
   templateUrl: './onboarding.page.html',
   styleUrls: ['./onboarding.page.scss'],
   standalone: true,
-  imports: [IonContent, IonCard, IonCardContent, IonIcon, IonButton,IonButtons,IonHeader,IonToolbar,IonTitle,IonInput,IonModal,IonDatetime,CommonModule, FormsModule]
+  imports: [IonContent, IonCard, IonCardContent, IonIcon, IonButton, IonInput, IonSelect, IonSelectOption, CommonModule, FormsModule]
 })
 export class OnboardingPage implements OnInit {
 
   // State
   currentStep: number = 0;
-  totalSteps: number = 5; // Cambiado de 6 a 5 para coincidir con Flutter
-  showDatePicker: boolean = false;
-  selectedDate: string = '';
+  totalSteps: number = 6; // Aumentado a 6 para incluir el paso de datos del negocio
 
   // User Data
   userData: UserData = {
@@ -42,14 +47,40 @@ export class OnboardingPage implements OnInit {
     phone: ''
   };
 
+  // Business Data
+  businessData: BusinessData = {
+    nombreNegocio: '',
+    descripcion: '',
+    sector: '',
+    capitalInicial: null
+  };
+
   // Validation Errors
   nameError: string = '';
   birthdayError: string = '';
   phoneError: string = '';
+  businessNameError: string = '';
+  businessDescriptionError: string = '';
+  businessSectorError: string = '';
+  businessCapitalError: string = '';
 
-  // Date constraints
-  maxDate: string = new Date().toISOString();
-  minDate: string = new Date(1900, 0, 1).toISOString();
+  // Business Sectors
+  businessSectors: string[] = [
+    'Tecnología',
+    'Retail/Comercio',
+    'Alimentación',
+    'Salud y Bienestar',
+    'Educación',
+    'Servicios Financieros',
+    'Construcción',
+    'Turismo y Hospitalidad',
+    'Transporte',
+    'Entretenimiento',
+    'Manufactura',
+    'Agricultura',
+    'Consultoría',
+    'Otros'
+  ];
 
   // Onboarding Features
   onboardingFeatures: OnboardingFeature[] = [
@@ -92,11 +123,7 @@ export class OnboardingPage implements OnInit {
   }
 
   ngOnInit() {
-    // Set default selected date to a reasonable birth year (hace 25 años)
-    const defaultYear = new Date().getFullYear() - 25;
-    this.selectedDate = new Date(defaultYear, 0, 1).toISOString();
     console.log('🎬 [ONBOARDING] Componente inicializado');
-    console.log('📅 [ONBOARDING] Fecha predeterminada:', this.selectedDate);
   }
 
   isDarkMode(): boolean {
@@ -109,7 +136,7 @@ export class OnboardingPage implements OnInit {
       if (this.currentStep < this.totalSteps - 1) {
         this.currentStep++;
       } else {
-        // En el último paso (paso 4, que es el índice del último feature), completar
+        // En el último paso (paso 5, que es el índice del último feature), completar
         this.completeOnboarding();
       }
     }
@@ -136,8 +163,10 @@ export class OnboardingPage implements OnInit {
       case 1:
         return this.validatePhone();
       case 2:
+        return this.validateBusinessData();
       case 3:
       case 4:
+      case 5:
         return true; // Feature introduction steps don't need validation
       default:
         return true;
@@ -171,10 +200,40 @@ export class OnboardingPage implements OnInit {
     return true;
   }
 
+  validateBusinessData(): boolean {
+    let isValid = true;
+
+    if (!this.businessData.nombreNegocio || this.businessData.nombreNegocio.trim().length === 0) {
+      this.businessNameError = 'Ingresa el nombre de tu negocio';
+      isValid = false;
+    }
+
+    if (!this.businessData.descripcion || this.businessData.descripcion.trim().length === 0) {
+      this.businessDescriptionError = 'Describe tu negocio';
+      isValid = false;
+    }
+
+    if (!this.businessData.sector || this.businessData.sector.trim().length === 0) {
+      this.businessSectorError = 'Selecciona el sector de tu negocio';
+      isValid = false;
+    }
+
+    if (!this.businessData.capitalInicial || this.businessData.capitalInicial <= 0) {
+      this.businessCapitalError = 'Ingresa el capital inicial';
+      isValid = false;
+    }
+
+    return isValid;
+  }
+
   clearErrors(): void {
     this.nameError = '';
     this.birthdayError = '';
     this.phoneError = '';
+    this.businessNameError = '';
+    this.businessDescriptionError = '';
+    this.businessSectorError = '';
+    this.businessCapitalError = '';
   }
 
   clearNameError(): void {
@@ -189,33 +248,58 @@ export class OnboardingPage implements OnInit {
     this.phoneError = '';
   }
 
-  // Date Picker Methods
-  openDatePicker(): void {
-    console.log('📅 [DATE_PICKER] Abriendo selector de fecha...');
-    console.log('📅 [DATE_PICKER] Estado actual showDatePicker:', this.showDatePicker);
-    console.log('📅 [DATE_PICKER] selectedDate actual:', this.selectedDate);
-    this.showDatePicker = true;
-    console.log('📅 [DATE_PICKER] Estado después showDatePicker:', this.showDatePicker);
+  clearBusinessNameError(): void {
+    this.businessNameError = '';
   }
 
-  closeDatePicker(): void {
-    console.log('📅 [DATE_PICKER] Cerrando selector de fecha...');
-    this.showDatePicker = false;
+  clearBusinessDescriptionError(): void {
+    this.businessDescriptionError = '';
   }
 
-  onDateChange(event: any): void {
-    console.log('📅 [DATE_PICKER] Fecha cambiada:', event.detail.value);
-    this.selectedDate = event.detail.value;
+  clearBusinessSectorError(): void {
+    this.businessSectorError = '';
   }
 
-  confirmDate(): void {
-    console.log('📅 [DATE_PICKER] Confirmando fecha:', this.selectedDate);
-    if (this.selectedDate) {
-      this.userData.birthday = new Date(this.selectedDate);
+  clearBusinessCapitalError(): void {
+    this.businessCapitalError = '';
+  }
+
+  // Date Picker Methods - Native HTML date input
+  onNativeDateChange(event: any): void {
+    const dateValue = event.target.value; // formato YYYY-MM-DD
+    console.log('📅 [DATE_PICKER] Fecha seleccionada (nativa):', dateValue);
+    
+    if (dateValue) {
+      this.userData.birthday = new Date(dateValue);
       this.clearBirthdayError();
       console.log('📅 [DATE_PICKER] Fecha guardada:', this.userData.birthday);
     }
-    this.closeDatePicker();
+  }
+
+  getDateInputValue(): string {
+    if (!this.userData.birthday) {
+      return '';
+    }
+    // Convertir Date a formato YYYY-MM-DD para input type="date"
+    const date = this.userData.birthday;
+    const year = date.getFullYear();
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const day = date.getDate().toString().padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
+  getMaxDateString(): string {
+    // Hoy es la fecha máxima
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = (today.getMonth() + 1).toString().padStart(2, '0');
+    const day = today.getDate().toString().padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
+  getMinDateString(): string {
+    // 1900 es la fecha mínima
+    return '1900-01-01';
   }
 
   getFormattedDate(): string {
@@ -233,7 +317,7 @@ export class OnboardingPage implements OnInit {
 
   // Feature Methods
   getCurrentFeature(): OnboardingFeature | null {
-    const featureIndex = this.currentStep - 2;
+    const featureIndex = this.currentStep - 3; // Ahora las features empiezan en step 3
     if (featureIndex >= 0 && featureIndex < this.onboardingFeatures.length) {
       return this.onboardingFeatures[featureIndex];
     }
@@ -268,11 +352,31 @@ export class OnboardingPage implements OnInit {
       await this.apiService.createUser(backendUserData);
       console.log('✅ [ONBOARDING] Usuario creado en backend exitosamente');
 
+      // Preparar datos del negocio para el backend
+      const backendBusinessData = {
+        nombreNegocio: this.businessData.nombreNegocio.trim(),
+        descripcion: this.businessData.descripcion.trim(),
+        sector: this.businessData.sector.trim(),
+        capitalInicial: this.businessData.capitalInicial || 0
+      };
+
+      console.log('📤 [ONBOARDING] Datos del negocio preparados para backend:', backendBusinessData);
+
+      // Enviar datos del negocio al backend
+      await this.apiService.createBusiness(backendBusinessData);
+      console.log('✅ [ONBOARDING] Negocio creado en backend exitosamente');
+
       // Guardar datos en localStorage para uso local (como backup)
       const localStorageData = {
         name: this.userData.name.trim(),
         birthday: this.userData.birthday?.toISOString(),
         phone: this.userData.phone.trim(),
+        business: {
+          nombreNegocio: this.businessData.nombreNegocio.trim(),
+          descripcion: this.businessData.descripcion.trim(),
+          sector: this.businessData.sector.trim(),
+          capitalInicial: this.businessData.capitalInicial || 0
+        },
         completedAt: new Date().toISOString()
       };
 
@@ -295,6 +399,12 @@ export class OnboardingPage implements OnInit {
         name: this.userData.name.trim(),
         birthday: this.userData.birthday?.toISOString(),
         phone: this.userData.phone.trim(),
+        business: {
+          nombreNegocio: this.businessData.nombreNegocio.trim(),
+          descripcion: this.businessData.descripcion.trim(),
+          sector: this.businessData.sector.trim(),
+          capitalInicial: this.businessData.capitalInicial || 0
+        },
         completedAt: new Date().toISOString(),
         syncPending: true // Marcar para sincronizar después
       };
@@ -320,6 +430,24 @@ export class OnboardingPage implements OnInit {
   onPhoneInput(): void {
     if (this.phoneError) {
       this.clearPhoneError();
+    }
+  }
+
+  onBusinessNameInput(): void {
+    if (this.businessNameError) {
+      this.clearBusinessNameError();
+    }
+  }
+
+  onBusinessDescriptionInput(): void {
+    if (this.businessDescriptionError) {
+      this.clearBusinessDescriptionError();
+    }
+  }
+
+  onBusinessCapitalInput(): void {
+    if (this.businessCapitalError) {
+      this.clearBusinessCapitalError();
     }
   }
 }

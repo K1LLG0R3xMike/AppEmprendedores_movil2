@@ -1,4 +1,4 @@
-<ion-content [fullscreen]="true" [class.dark]="isDarkMode()">
+<ion-content [fullscreen]="true">
   <div class="settings">
     <!-- Header -->
     <div class="header">
@@ -20,11 +20,32 @@
               <ion-icon name="person" color="warning"></ion-icon>
             </div>
             <div class="profile-info">
-              <h3>Nombre de Usuario</h3>
-              <p>usuario@email.com</p>
+              <h3>{{ userData.name }}</h3>
+              <p>{{ userData.email }}</p>
             </div>
-            <ion-button fill="outline" color="warning" (click)="goToProfile()">
-              Ver perfil
+            <div class="profile-actions">
+              <ion-button fill="outline" color="warning" (click)="goToProfile()">
+                Ver perfil
+              </ion-button>
+            </div>
+          </div>
+        </ion-card-content>
+      </ion-card>
+
+      <!-- Business Card -->
+      <ion-card class="business-card">
+        <ion-card-content>
+          <div class="business-content">
+            <div class="business-icon">
+              <ion-icon name="business" color="warning"></ion-icon>
+            </div>
+            <div class="business-info">
+              <h3>Mi Negocio</h3>
+              <p>Gestiona la información de tu negocio</p>
+            </div>
+            <ion-button fill="outline" color="warning" (click)="goToBusiness()">
+              <ion-icon name="arrow-forward" slot="end"></ion-icon>
+              Administrar
             </ion-button>
           </div>
         </ion-card-content>

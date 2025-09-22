@@ -4,11 +4,14 @@
   flex-direction: column;
   align-items: center;
   text-align: center;
+  background-color: var(--ion-background-color);
+  min-height: 100vh;
+  transition: background-color 0.3s ease;
 }
 
 .error-msg {
   margin-bottom: 12px;
-  color: red;
+  color: var(--ion-color-danger);
   font-weight: 500;
 }
 
@@ -27,13 +30,15 @@
 .title {
   font-size: 28px;
   font-weight: bold;
-  color: var(--ion-text-color, #1e1e1e);
+  color: var(--ion-text-color);
+  transition: color 0.3s ease;
 }
 
 .subtitle {
   font-size: 14px;
   color: var(--ion-color-medium);
   margin-bottom: 32px;
+  transition: color 0.3s ease;
 }
 
 .login-card {
@@ -41,23 +46,29 @@
   max-width: 400px;
   text-align: left;
   border-radius: 12px;
-  border: 1px solid var(--ion-color-medium);
+  background-color: var(--ion-card-background);
+  border: 1px solid var(--ion-color-step-150);
+  transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
 .input-label {
   display: block;
   margin: 12px 0 6px;
   font-size: 14px;
-  color: var(--ion-color-medium-shade);
+  color: var(--ion-text-color);
+  transition: color 0.3s ease;
 }
 
 ion-input {
   margin-bottom: 16px;
   --padding-start: 12px;
   --padding-end: 12px;
-  --background: var(--ion-color-light);
+  --background: var(--ion-color-step-50);
+  --color: var(--ion-text-color);
+  --placeholder-color: var(--ion-color-medium);
   border-radius: 8px;
-  border: 1px solid var(--ion-color-medium);
+  border: 1px solid var(--ion-color-step-150);
+  transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
 .login-btn {
@@ -73,6 +84,8 @@ ion-input {
   margin-top: 16px;
   font-size: 14px;
   text-align: center;
+  color: var(--ion-text-color);
+  transition: color 0.3s ease;
 
   a {
     color: #ff8c42;

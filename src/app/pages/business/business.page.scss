@@ -1,24 +1,28 @@
 .business {
   padding: 0;
   min-height: 100vh;
+  background: var(--ion-background-color);
+  transition: background-color 0.3s ease;
 }
 
 /* Header */
 .header {
-  background: var(--ion-color-light);
-  border-bottom: 1px solid var(--ion-color-light-shade);
+  background: var(--ion-card-background);
+  border-bottom: 1px solid var(--ion-color-step-150);
   padding: 24px;
-  
-  @media (prefers-color-scheme: dark) {
-    background: var(--ion-color-dark);
-    border-bottom-color: var(--ion-color-dark-shade);
-  }
+  transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
 .header-content {
   display: flex;
   justify-content: space-between;
   align-items: center;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
 .header-text {
@@ -29,22 +33,22 @@
   font-size: 28px;
   font-weight: bold;
   margin: 0;
-  color: var(--ion-color-dark);
-  
-  @media (prefers-color-scheme: dark) {
-    color: var(--ion-color-light);
-  }
+  color: var(--ion-text-color);
+  transition: color 0.3s ease;
 }
 
 .subtitle {
   font-size: 16px;
   margin: 4px 0 0 0;
   color: var(--ion-color-medium);
+  transition: color 0.3s ease;
 }
 
 /* Content */
 .content {
   padding: 24px;
+  background: var(--ion-background-color);
+  transition: background-color 0.3s ease;
 }
 
 /* Business Card */
@@ -52,11 +56,9 @@
   margin-bottom: 24px;
   border-radius: 16px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  
-  @media (prefers-color-scheme: dark) {
-    background: var(--ion-color-dark);
-    border: 1px solid var(--ion-color-dark-shade);
-  }
+  background: var(--ion-card-background);
+  border: 1px solid var(--ion-color-step-150);
+  transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
 .card-header {
@@ -70,11 +72,8 @@
   font-size: 20px;
   font-weight: bold;
   margin: 0;
-  color: var(--ion-color-dark);
-  
-  @media (prefers-color-scheme: dark) {
-    color: var(--ion-color-light);
-  }
+  color: var(--ion-text-color);
+  transition: color 0.3s ease;
 }
 
 /* Form Fields */
@@ -92,40 +91,29 @@
 
 .field-label {
   font-weight: 600;
-  color: var(--ion-color-dark);
+  color: var(--ion-text-color);
   font-size: 14px;
-  
-  @media (prefers-color-scheme: dark) {
-    color: var(--ion-color-light);
-  }
+  transition: color 0.3s ease;
 }
 
 /* Custom Input Styling */
 .custom-input,
 .custom-select,
 .custom-datetime {
-  --background: var(--ion-color-light);
-  --color: var(--ion-color-dark);
+  --background: var(--ion-color-step-50);
+  --color: var(--ion-text-color);
   --border-radius: 8px;
   --border-width: 1px;
-  --border-color: var(--ion-color-medium-tint);
+  --border-color: var(--ion-color-step-150);
   --padding-start: 16px;
   --padding-end: 16px;
   --min-height: 48px;
-  
-  @media (prefers-color-scheme: dark) {
-    --background: var(--ion-color-dark-tint);
-    --color: var(--ion-color-light);
-    --border-color: var(--ion-color-dark-shade);
-  }
+  transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
 .custom-input[readonly] {
-  --background: var(--ion-color-light-tint);
-  
-  @media (prefers-color-scheme: dark) {
-    --background: var(--ion-color-dark);
-  }
+  --background: var(--ion-color-step-100);
+  opacity: 0.8;
 }
 
 /* Action Buttons */
@@ -148,15 +136,48 @@
   gap: 12px;
 }
 
+/* Empty State */
+.no-business-state {
+  margin-bottom: 24px;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  
+  ion-icon {
+    margin-bottom: 16px;
+  }
+  
+  h3 {
+    margin: 0 0 8px 0;
+    font-size: 20px;
+    font-weight: bold;
+    color: var(--ion-text-color);
+  }
+  
+  p {
+    margin: 0 0 24px 0;
+    color: var(--ion-color-medium);
+    line-height: 1.5;
+  }
+  
+  ion-button {
+    margin-bottom: 12px;
+    
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+}
+
 .stat-card {
   flex: 1;
   border-radius: 16px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  
-  @media (prefers-color-scheme: dark) {
-    background: var(--ion-color-dark);
-    border: 1px solid var(--ion-color-dark-shade);
-  }
+  background: var(--ion-card-background);
+  border: 1px solid var(--ion-color-step-150);
+  transition: background-color 0.3s ease, border-color 0.3s ease;
   
   ion-card-content {
     text-align: center;
@@ -167,20 +188,42 @@
 .stat-value {
   font-size: 24px;
   font-weight: bold;
-  color: var(--ion-color-dark);
+  color: var(--ion-text-color);
   margin-bottom: 4px;
-  
-  @media (prefers-color-scheme: dark) {
-    color: var(--ion-color-light);
-  }
+  transition: color 0.3s ease;
 }
 
 .stat-label {
   font-size: 14px;
   color: var(--ion-color-medium);
+  transition: color 0.3s ease;
 }
 
-/* Dark mode content */
-.dark {
-  --background: var(--ion-color-dark-tint);
+/* Ensure all text elements use theme variables */
+h1, h2, h3, h4, h5, h6 {
+  color: var(--ion-text-color);
+  transition: color 0.3s ease;
+}
+
+p, span, div {
+  color: var(--ion-text-color);
+  transition: color 0.3s ease;
+}
+
+/* Button styling with theme support */
+ion-button {
+  &.business-primary {
+    --background: #ff9500;
+    --color: white;
+    --border-radius: 8px;
+    font-weight: 600;
+  }
+  
+  &.business-secondary {
+    --background: transparent;
+    --color: var(--ion-text-color);
+    --border-color: var(--ion-color-step-300);
+    border: 1px solid var(--ion-color-step-300);
+    transition: color 0.3s ease, border-color 0.3s ease;
+  }
 }

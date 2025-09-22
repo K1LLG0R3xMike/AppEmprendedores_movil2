@@ -7,10 +7,12 @@
       </ion-button>
       <h1>Productos</h1>
     </div>
-    <ion-button (click)="toggleAddForm()" [disabled]="isLoading">
-      <ion-icon name="add" slot="start"></ion-icon>
-      Agregar
-    </ion-button>
+    <div class="header-right">
+      <ion-button (click)="toggleAddForm()" [disabled]="isLoading">
+        <ion-icon name="add" slot="start"></ion-icon>
+        Agregar
+      </ion-button>
+    </div>
   </div>
 
   <div class="products-content">
@@ -35,22 +37,14 @@
         </div>
 
         <div class="form-fields">
-          <!-- First Row: Name and Category -->
+          <!-- First Row: Name -->
           <div class="form-row">
             <div class="form-field">
-              <ion-label class="field-label">Nombre</ion-label>
+              <ion-label class="field-label">Nombre del Producto</ion-label>
               <ion-input
-                [(ngModel)]="productForm.name"
+                [(ngModel)]="productForm.nombreProducto"
                 placeholder="Nombre del producto"
                 [class.invalid]="!isValidName()">
-              </ion-input>
-            </div>
-            <div class="form-field">
-              <ion-label class="field-label">Categoría</ion-label>
-              <ion-input
-                [(ngModel)]="productForm.category"
-                placeholder="Categoría del producto"
-                [class.invalid]="!isValidCategory()">
               </ion-input>
             </div>
           </div>
@@ -58,18 +52,18 @@
           <!-- Second Row: Price, Cost, and Stock -->
           <div class="form-row">
             <div class="form-field">
-              <ion-label class="field-label">Precio</ion-label>
+              <ion-label class="field-label">Precio de Venta</ion-label>
               <ion-input
-                [(ngModel)]="productForm.price"
+                [(ngModel)]="productForm.precioVenta"
                 type="number"
                 placeholder="0.00"
                 [class.invalid]="!isValidPrice()">
               </ion-input>
             </div>
             <div class="form-field">
-              <ion-label class="field-label">Costo</ion-label>
+              <ion-label class="field-label">Costo de Producción</ion-label>
               <ion-input
-                [(ngModel)]="productForm.cost"
+                [(ngModel)]="productForm.costoProduccion"
                 type="number"
                 placeholder="0.00"
                 [class.invalid]="!isValidCost()">
@@ -149,8 +143,8 @@
                 <ion-icon name="cube"></ion-icon>
               </div>
               <div class="product-details">
-                <h4>{{ product.name }}</h4>
-                <p>{{ product.category }}</p>
+                <h4>{{ product.nombreProducto }}</h4>
+                <p>ID: {{ product.idProducto }}</p>
               </div>
             </div>
             <div class="product-actions">
@@ -166,11 +160,11 @@
           <!-- Product Metrics -->
           <div class="product-metrics">
             <div class="metric">
-              <span class="value">${{ product.price | number:'1.2-2' }}</span>
-              <span class="label">Precio</span>
+              <span class="value">${{ product.precioVenta | number:'1.2-2' }}</span>
+              <span class="label">Precio Venta</span>
             </div>
             <div class="metric">
-              <span class="value">${{ product.cost | number:'1.2-2' }}</span>
+              <span class="value">${{ product.costoProduccion | number:'1.2-2' }}</span>
               <span class="label">Costo</span>
             </div>
             <div class="metric">
