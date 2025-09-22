@@ -1,0 +1,111 @@
+<ion-content [fullscreen]="true">
+  <div class="ia-panel">
+    <!-- Header -->
+    <div class="header">
+      <div class="header-content">
+        <div class="header-text">
+          <h1 class="title">Recomendaciones IA</h1>
+          <p class="subtitle">Insights y predicciones inteligentes</p>
+        </div>
+        <ion-button fill="outline" size="small">
+          <ion-icon slot="start" name="refresh"></ion-icon>
+          Actualizar
+        </ion-button>
+      </div>
+    </div>
+
+    <div class="content">
+      <!-- AI Status Card -->
+      <ion-card class="status-card">
+        <ion-card-content>
+          <div class="status-content">
+            <div class="status-icon">
+              <ion-icon name="hardware-chip" color="primary"></ion-icon>
+            </div>
+            <div class="status-info">
+              <h3>IA Analizando tu Negocio</h3>
+              <p>Última actualización: hace 2 horas</p>
+            </div>
+            <div class="status-badge active">
+              <span>Activo</span>
+            </div>
+          </div>
+        </ion-card-content>
+      </ion-card>
+
+      <!-- Projections Card -->
+      <ion-card class="projections-card">
+        <ion-card-content>
+          <div class="projections-row">
+            <div class="projection-item revenue">
+              <ion-icon name="trending-up" color="success"></ion-icon>
+              <div class="projection-value">$15,200</div>
+              <div class="projection-label">Ingresos proyectados</div>
+              <div class="projection-change">+22% vs mes anterior</div>
+            </div>
+
+            <div class="projection-item profit">
+              <ion-icon name="bar-chart" color="primary"></ion-icon>
+              <div class="projection-value">$4,800</div>
+              <div class="projection-label">Ganancia proyectada</div>
+              <div class="projection-change">Margen del 31.6%</div>
+            </div>
+          </div>
+        </ion-card-content>
+      </ion-card>
+
+      <!-- Critical Alert -->
+      <ion-card class="alert-card critical">
+        <ion-card-content>
+          <div class="alert-content">
+            <ion-icon name="warning" color="danger"></ion-icon>
+            <div class="alert-info">
+              <h3>Stock crítico detectado</h3>
+              <p>3 productos con menos de 10 unidades en inventario</p>
+            </div>
+          </div>
+        </ion-card-content>
+      </ion-card>
+
+      <!-- Recommendations List -->
+      <div class="recommendations-section">
+        <div *ngFor="let rec of recommendations" class="recommendation-card">
+          <ion-card>
+            <ion-card-content>
+              <div class="rec-header">
+                <ion-icon name="bulb" color="warning"></ion-icon>
+                <h3 class="rec-title">{{rec.title}}</h3>
+                <div class="priority-indicator">
+                  <div 
+                    class="priority-dot" 
+                    [style.background-color]="getPriorityColor(rec.priority)">
+                  </div>
+                  <span class="priority-label">{{getPriorityLabel(rec.priority)}}</span>
+                </div>
+              </div>
+
+              <p class="rec-description">{{rec.description}}</p>
+              <p class="rec-impact">Impacto: {{rec.impact}}</p>
+
+              <div class="rec-actions">
+                <ion-button size="small" color="warning" (click)="applyRecommendation(rec.id)">
+                  Aplicar
+                </ion-button>
+                <ion-button size="small" fill="outline" (click)="viewDetails(rec.id)">
+                  Más detalles
+                </ion-button>
+              </div>
+            </ion-card-content>
+          </ion-card>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Floating Action Button for Chat -->
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+    <ion-fab-button color="warning" (click)="openChat()">
+      <ion-icon name="chatbubble-outline"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+</ion-content>

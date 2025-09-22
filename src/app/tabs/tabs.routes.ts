@@ -37,6 +37,11 @@ export const routes: Routes = [
           import('../pages/business/business.page').then((m) => m.BusinessPage),
       },
       {
+        path: 'ia-panel',
+        loadComponent: () =>
+          import('../pages/ia-panel/ia-panel.page').then((m) => m.IaPanelPage),
+      },
+      {
         path: 'profile',
         loadComponent: () =>
           import('../pages/profile/profile.page').then((m) => m.ProfilePage),

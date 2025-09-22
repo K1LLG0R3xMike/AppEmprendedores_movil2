@@ -3,6 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 import { AiService, ChatMsg } from 'src/app/services/ai.service';
+import { addIcons } from 'ionicons';
+import { sparkles, person, send, stop, refresh } from 'ionicons/icons';
 
 @Component({
   selector: 'app-chat',
@@ -21,7 +23,9 @@ export class ChatPage implements OnDestroy {
   loading = false;
   private abortCtrl?: AbortController;
 
-  constructor(private ai: AiService) {}
+  constructor(private ai: AiService) {
+    addIcons({ sparkles, person, send, stop, refresh });
+  }
 
   async send() {
     const value = this.text.trim();
@@ -32,13 +36,23 @@ export class ChatPage implements OnDestroy {
     this.messages.push({ role: 'assistant', content: '' });
     const idx = this.messages.length - 1;
 
+    // Scroll to bottom after adding messages
+    setTimeout(() => this.scrollToBottom(), 100);
+
     this.loading = true;
     this.abortCtrl = new AbortController();
 
     try {
       await this.ai.streamChat(this.messages, {
-        onToken: (t) => (this.messages[idx].content += t),
-        onDone: () => (this.loading = false),
+        onToken: (t) => {
+          this.messages[idx].content += t;
+          // Auto-scroll while typing
+          this.scrollToBottom();
+        },
+        onDone: () => {
+          this.loading = false;
+          this.scrollToBottom();
+        },
         onError: () => (this.loading = false),
         signal: this.abortCtrl.signal,
       });
@@ -54,6 +68,22 @@ export class ChatPage implements OnDestroy {
 
   reset() {
     this.messages = [];
+  }
+
+  getCurrentTime(): string {
+    return new Date().toLocaleTimeString('es-ES', { 
+      hour: '2-digit', 
+      minute: '2-digit' 
+    });
+  }
+
+  private scrollToBottom(): void {
+    setTimeout(() => {
+      const messagesContainer = document.querySelector('.messages-container');
+      if (messagesContainer) {
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+      }
+    }, 50);
   }
 
   ngOnDestroy(): void {

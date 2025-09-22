@@ -1,0 +1,324 @@
+.ia-panel {
+  padding: 0;
+  min-height: 100vh;
+  background: var(--ion-background-color);
+  transition: background-color 0.3s ease;
+  position: relative;
+}
+
+/* Ensure ion-content can scroll properly */
+ion-content {
+  --overflow: auto;
+}
+
+/* Header */
+.header {
+  background: var(--ion-card-background);
+  border-bottom: 1px solid var(--ion-color-step-150);
+  padding: 24px;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.header-text {
+  flex: 1;
+}
+
+.title {
+  font-size: 24px;
+  font-weight: bold;
+  margin: 0;
+  color: var(--ion-text-color);
+  transition: color 0.3s ease;
+}
+
+.subtitle {
+  font-size: 14px;
+  margin: 4px 0 0 0;
+  color: var(--ion-color-medium);
+  transition: color 0.3s ease;
+}
+
+/* Content */
+.content {
+  padding: 16px;
+  padding-bottom: 100px; // Space for FAB
+  background: var(--ion-background-color);
+  transition: background-color 0.3s ease;
+}
+
+/* Status Card */
+.status-card {
+  margin-bottom: 16px;
+  border-radius: 12px;
+  background: rgba(var(--ion-color-primary-rgb), 0.1);
+  border: 1px solid var(--ion-color-step-150);
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.status-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.status-icon {
+  ion-icon {
+    font-size: 32px;
+    color: var(--ion-color-primary);
+  }
+}
+
+.status-info {
+  flex: 1;
+  
+  h3 {
+    margin: 0 0 4px 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--ion-text-color);
+    transition: color 0.3s ease;
+  }
+  
+  p {
+    margin: 0;
+    font-size: 14px;
+    color: var(--ion-color-medium);
+    transition: color 0.3s ease;
+  }
+}
+
+.status-badge {
+  padding: 4px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  
+  &.active {
+    background: var(--ion-color-success);
+    color: white;
+  }
+}
+
+/* Projections Card */
+.projections-card {
+  margin-bottom: 16px;
+  border-radius: 12px;
+  background: var(--ion-card-background);
+  border: 1px solid var(--ion-color-step-150);
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.projections-row {
+  display: flex;
+  gap: 12px;
+}
+
+.projection-item {
+  flex: 1;
+  text-align: center;
+  padding: 16px;
+  border-radius: 8px;
+  
+  &.revenue {
+    background: rgba(var(--ion-color-success-rgb), 0.1);
+  }
+  
+  &.profit {
+    background: rgba(var(--ion-color-primary-rgb), 0.1);
+  }
+  
+  ion-icon {
+    font-size: 28px;
+    margin-bottom: 8px;
+    color: var(--ion-color-primary);
+  }
+}
+
+.projection-value {
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 4px;
+  color: var(--ion-text-color);
+  transition: color 0.3s ease;
+}
+
+.projection-label {
+  font-size: 12px;
+  margin-bottom: 2px;
+  color: var(--ion-color-medium);
+  transition: color 0.3s ease;
+}
+
+.projection-change {
+  font-size: 11px;
+  color: var(--ion-color-medium-shade);
+  transition: color 0.3s ease;
+}
+
+/* Alert Card */
+.alert-card {
+  margin-bottom: 16px;
+  border-radius: 12px;
+  border: 1px solid var(--ion-color-step-150);
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+  
+  &.critical {
+    background: rgba(var(--ion-color-danger-rgb), 0.1);
+  }
+}
+
+.alert-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  
+  ion-icon {
+    font-size: 24px;
+    color: var(--ion-color-danger);
+  }
+}
+
+.alert-info {
+  flex: 1;
+  
+  h3 {
+    margin: 0 0 4px 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--ion-color-danger);
+  }
+  
+  p {
+    margin: 0;
+    font-size: 14px;
+    color: var(--ion-color-danger-shade);
+  }
+}
+
+/* Recommendations */
+.recommendations-section {
+  .recommendation-card {
+    margin-bottom: 12px;
+    
+    ion-card {
+      margin: 0;
+      border-radius: 12px;
+      background: var(--ion-card-background);
+      border: 1px solid var(--ion-color-step-150);
+      transition: background-color 0.3s ease, border-color 0.3s ease;
+    }
+  }
+}
+
+.rec-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  
+  ion-icon {
+    font-size: 20px;
+  }
+}
+
+.rec-title {
+  flex: 1;
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ion-text-color);
+  transition: color 0.3s ease;
+}
+
+.priority-indicator {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.priority-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.priority-label {
+  font-size: 12px;
+  color: var(--ion-color-medium);
+  transition: color 0.3s ease;
+}
+
+.rec-description {
+  margin: 0 0 8px 0;
+  font-size: 14px;
+  line-height: 1.4;
+  color: var(--ion-color-medium);
+  transition: color 0.3s ease;
+}
+
+.rec-impact {
+  margin: 0 0 16px 0;
+  font-size: 12px;
+  color: var(--ion-color-medium-shade);
+  transition: color 0.3s ease;
+}
+
+.rec-actions {
+  display: flex;
+  gap: 8px;
+  
+  ion-button {
+    --border-radius: 6px;
+    height: 32px;
+    
+    &.ia-primary {
+      --background: #ff9500;
+      --color: white;
+    }
+    
+    &.ia-secondary {
+      --background: transparent;
+      --color: var(--ion-text-color);
+      --border-color: var(--ion-color-step-300);
+      border: 1px solid var(--ion-color-step-300);
+      transition: color 0.3s ease, border-color 0.3s ease;
+    }
+  }
+}
+
+/* Ensure all text elements use theme variables */
+h1, h2, h3, h4, h5, h6 {
+  color: var(--ion-text-color);
+  transition: color 0.3s ease;
+}
+
+p, span, div {
+  color: var(--ion-text-color);
+  transition: color 0.3s ease;
+}
+
+/* Floating Action Button */
+ion-fab {
+  position: fixed;
+  bottom: 100px; // Above bottom navigation
+  right: 16px;
+  z-index: 1000;
+  
+  ion-fab-button {
+    --box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+    --background: #ff9500;
+    --color: white;
+    width: 56px;
+    height: 56px;
+    
+    ion-icon {
+      font-size: 24px;
+    }
+  }
+}
