@@ -2,29 +2,9 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { 
-  IonContent, 
-  IonCard, 
-  IonCardContent, 
-  IonIcon, 
-  IonButton, 
-  IonLabel,
-  IonInput,
-  IonSpinner,
-  IonSearchbar,
-  ToastController
-} from '@ionic/angular/standalone';
+import {  IonContent,  IonCard,  IonCardContent, IonIcon, IonButton, IonLabel,IonInput,IonSpinner,IonSearchbar,ToastController} from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import { 
-  arrowBack,
-  add,
-  create,
-  trash,
-  save,
-  close,
-  search,
-  cube,
-  alertCircle, bug } from 'ionicons/icons';
+import { arrowBack,add,create, trash, save,close, search, cube, alertCircle, bug, removeCircle, checkmarkCircle} from 'ionicons/icons';
 import { ApiService } from '../../services/api-service';
 import { AuthService } from '../../services/auth';
 
@@ -54,18 +34,7 @@ interface StockStatus {
   templateUrl: './products.page.html',
   styleUrls: ['./products.page.scss'],
   standalone: true,
-  imports: [
-    IonContent, 
-    IonCard, 
-    IonCardContent, 
-    IonIcon, 
-    IonButton, 
-    IonLabel,
-    IonInput,
-    IonSpinner,
-    IonSearchbar,
-    CommonModule, 
-    FormsModule
+  imports: [IonContent, IonCard, IonCardContent, IonIcon,  IonButton, IonLabel, IonInput, IonSpinner, IonSearchbar, CommonModule, FormsModule
   ]
 })
 export class ProductsPage implements OnInit {
@@ -96,7 +65,7 @@ export class ProductsPage implements OnInit {
     private authService: AuthService,
     private toastController: ToastController
   ) {
-    addIcons({arrowBack,bug,add,close,alertCircle,save,search,cube,create,trash});
+    addIcons({arrowBack,bug,add,close,alertCircle,save,search,cube,create,trash,removeCircle,checkmarkCircle});
   }
 
   async ngOnInit() {
@@ -335,9 +304,41 @@ export class ProductsPage implements OnInit {
       console.log('[PRODUCTS] 🌐 API base URL:', this.apiService['baseUrl']);
 
       if (this.editingProduct) {
-        // Update existing product (you may need to implement this in backend)
-        // For now, we'll just show a message
-        this.showToast('Funcionalidad de edición en desarrollo', 'warning');
+        // Update existing product
+        console.log('[PRODUCTS] 🔄 Updating product:', this.editingProduct.idProducto);
+        console.log('[PRODUCTS] 📋 Product full object:', this.editingProduct);
+        
+        // Verificar que el producto existe en la lista actual
+        const existingProduct = this.products.find(p => p.idProducto === this.editingProduct?.idProducto);
+        if (!existingProduct) {
+          this.formError = 'El producto ya no existe. Por favor, recarga la página.';
+          await this.loadProducts(); // Reload products
+          return;
+        }
+        
+        console.log('[PRODUCTS] 📤 Sending update data:', {
+          nombreProducto: productData.nombreProducto,
+          precioVenta: productData.precioVenta,
+          costoProduccion: productData.costoProduccion,
+          stock: productData.stock
+        });
+        
+        const updatedProduct = await this.apiService.updateProduct(
+          this.editingProduct.idProducto, 
+          {
+            nombreProducto: productData.nombreProducto,
+            precioVenta: productData.precioVenta,
+            costoProduccion: productData.costoProduccion,
+            stock: productData.stock
+          },
+          this.currentBusinessId  // Añadir el ID del negocio
+        );
+        console.log('[PRODUCTS] ✅ Product updated:', updatedProduct);
+        
+        // Reload products to get the updated list
+        await this.loadProducts();
+        
+        this.showToast('Producto actualizado exitosamente', 'success');
       } else {
         // Add new product
         console.log('[PRODUCTS] 🚀 Calling createProduct...');
@@ -354,9 +355,28 @@ export class ProductsPage implements OnInit {
       this.resetForm();
 
     } catch (error) {
-      this.formError = 'Error al guardar el producto. Inténtalo de nuevo.';
       console.error('Error saving product:', error);
-      this.showToast('Error al guardar el producto', 'danger');
+      
+      // Handle specific errors
+      if (error instanceof Error) {
+        if (error.message.includes('404')) {
+          this.formError = 'El producto no fue encontrado en el servidor. Puede haber sido eliminado.';
+          // Reload products to refresh the list
+          await this.loadProducts();
+        } else if (error.message.includes('400')) {
+          this.formError = 'Datos del producto inválidos. Verifica los campos.';
+        } else if (error.message.includes('401')) {
+          this.formError = 'Sesión expirada. Por favor, inicia sesión nuevamente.';
+        } else if (error.message.includes('500')) {
+          this.formError = 'Error interno del servidor. Inténtalo más tarde.';
+        } else {
+          this.formError = 'Error al guardar el producto. Inténtalo de nuevo.';
+        }
+      } else {
+        this.formError = 'Error al guardar el producto. Inténtalo de nuevo.';
+      }
+      
+      this.showToast(this.formError, 'danger');
     } finally {
       this.isSaving = false;
     }
@@ -376,8 +396,14 @@ export class ProductsPage implements OnInit {
   async deleteProduct(product: Product): Promise<void> {
     if (confirm(`¿Estás seguro de que quieres eliminar "${product.nombreProducto}"?`)) {
       try {
-        // Note: Delete functionality not implemented in backend yet
-        this.showToast('Funcionalidad de eliminación en desarrollo', 'warning');
+        console.log('[PRODUCTS] 🗑️ Deleting product:', product.idProducto);
+        await this.apiService.deleteProduct(product.idProducto);
+        console.log('[PRODUCTS] ✅ Product deleted successfully');
+        
+        // Reload products to get the updated list
+        await this.loadProducts();
+        
+        this.showToast('Producto eliminado exitosamente', 'success');
       } catch (error) {
         console.error('Error deleting product:', error);
         this.showToast('Error al eliminar el producto', 'danger');

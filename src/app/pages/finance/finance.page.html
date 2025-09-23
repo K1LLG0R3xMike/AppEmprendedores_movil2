@@ -1,0 +1,349 @@
+<!-- Modern Finance Page - Exact React Copy -->
+<div class="finance-page">
+  <!-- Header -->
+  <div class="header">
+    <div class="header-content">
+      <div class="header-text">
+        <h1 class="title">Transacciones</h1>
+        <p class="subtitle">Historial de ingresos y gastos</p>
+      </div>
+      <button class="add-button" (click)="showAddForm = true">
+        <svg class="icon-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="m12 5-7 7 7 7"/>
+          <path d="M19 12H5"/>
+        </svg>
+        Agregar Transacción
+      </button>
+      <button class="add-button-secondary" (click)="showAddGastoFijoForm = true">
+        <svg class="icon-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+          <path d="M2 17l10 5 10-5"/>
+          <path d="M2 12l10 5 10-5"/>
+        </svg>
+        Gasto Fijo
+      </button>
+    </div>
+  </div>
+
+  <div class="content">
+    <!-- Summary Cards -->
+    <div class="summary-grid">
+      <div class="summary-card">
+        <div class="card-content">
+          <div class="card-header">
+            <span class="card-label">Ingresos</span>
+          </div>
+          <p class="card-amount income-color">${{ totalIncome.toFixed(2) }}</p>
+        </div>
+      </div>
+
+      <div class="summary-card">
+        <div class="card-content">
+          <div class="card-header">
+            <span class="card-label">Gastos</span>
+          </div>
+          <p class="card-amount expense-color">${{ totalExpenses.toFixed(2) }}</p>
+        </div>
+      </div>
+
+      <div class="summary-card">
+        <div class="card-content">
+          <div class="card-header">
+            <span class="card-label">Balance</span>
+          </div>
+          <p class="card-amount" [ngClass]="getBalance() >= 0 ? 'income-color' : 'expense-color'">
+            ${{ getBalance().toFixed(2) }}
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filters Card -->
+    <div class="filters-card">
+      <div class="filters-content">
+        <!-- Search -->
+        <div class="search-container">
+          <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"/>
+            <path d="m21 21-4.35-4.35"/>
+          </svg>
+          <input 
+            type="text" 
+            placeholder="Buscar transacciones..." 
+            class="search-input"
+            [(ngModel)]="searchTerm"
+          />
+        </div>
+
+        <!-- Filter Buttons -->
+        <div class="filter-buttons">
+          <button 
+            class="filter-btn" 
+            [ngClass]="{'active': filterType === 'all', 'default': filterType === 'all'}"
+            (click)="setFilterType('all')"
+          >
+            Todas
+          </button>
+          <button 
+            class="filter-btn income-btn" 
+            [ngClass]="{'active': filterType === 'income', 'income': filterType === 'income'}"
+            (click)="setFilterType('income')"
+          >
+            Ingresos
+          </button>
+          <button 
+            class="filter-btn expense-btn" 
+            [ngClass]="{'active': filterType === 'expense', 'expense': filterType === 'expense'}"
+            (click)="setFilterType('expense')"
+          >
+            Gastos
+          </button>
+          <button 
+            class="filter-btn pending-btn" 
+            [ngClass]="{'active': filterType === 'pending', 'pending': filterType === 'pending'}"
+            (click)="setFilterType('pending')"
+          >
+            Gastos Pendientes
+          </button>
+          <button 
+            class="filter-btn completed-btn" 
+            [ngClass]="{'active': filterType === 'completed', 'completed': filterType === 'completed'}"
+            (click)="setFilterType('completed')"
+          >
+            Gastos Pagados
+          </button>
+        </div>
+
+        <!-- Category Filter -->
+        <select class="category-select" [(ngModel)]="filterCategory">
+          <option value="all">Todas las categorías</option>
+          <option value="Ventas">Ventas</option>
+          <option value="Inventario">Inventario</option>
+          <option value="Gastos operativos">Gastos operativos</option>
+          <option value="Marketing">Marketing</option>
+          <option value="Servicios">Servicios</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Add Transaction Form -->
+    <div class="add-form-card" *ngIf="showAddForm">
+      <div class="form-header">
+        <h3>Nueva Transacción</h3>
+      </div>
+      <div class="form-content">
+        <div class="form-grid-2">
+          <select class="form-select" [(ngModel)]="newTransaction.type">
+            <option value="" disabled>Tipo</option>
+            <option value="income">Ingreso</option>
+            <option value="expense">Gasto</option>
+          </select>
+          
+          <select class="form-select" [(ngModel)]="newTransaction.category">
+            <option value="" disabled>Categoría</option>
+            <option value="Ventas">Ventas</option>
+            <option value="Inventario">Inventario</option>
+            <option value="Gastos operativos">Gastos operativos</option>
+            <option value="Marketing">Marketing</option>
+            <option value="Servicios">Servicios</option>
+          </select>
+        </div>
+
+        <input 
+          type="text" 
+          placeholder="Descripción" 
+          class="form-input"
+          [(ngModel)]="newTransaction.description"
+        />
+
+        <div class="form-grid-2">
+          <input 
+            type="number" 
+            placeholder="Monto" 
+            class="form-input"
+            [(ngModel)]="newTransaction.amount"
+          />
+          
+          <select class="form-select" [(ngModel)]="newTransaction.method">
+            <option value="" disabled>Método de pago</option>
+            <option value="Efectivo">Efectivo</option>
+            <option value="Tarjeta de crédito">Tarjeta de crédito</option>
+            <option value="Tarjeta de débito">Tarjeta de débito</option>
+            <option value="Transferencia">Transferencia</option>
+          </select>
+        </div>
+
+        <div class="form-actions">
+          <button class="save-btn" (click)="addTransaction()" [disabled]="isLoading">
+            <span *ngIf="!isLoading">Guardar Transacción</span>
+            <span *ngIf="isLoading">Guardando...</span>
+          </button>
+          <button class="cancel-btn" (click)="cancelAdd()" [disabled]="isLoading">Cancelar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Add Gasto Fijo Form -->
+    <div class="add-form-card" *ngIf="showAddGastoFijoForm">
+      <div class="form-header">
+        <h3>Nuevo Gasto Fijo</h3>
+      </div>
+      <div class="form-content">
+        <div class="form-grid-2">
+          <input 
+            type="text" 
+            placeholder="Nombre del gasto" 
+            class="form-input"
+            [(ngModel)]="newGastoFijo.nombreGasto"
+          />
+          
+          <input 
+            type="number" 
+            placeholder="Costo" 
+            class="form-input"
+            [(ngModel)]="newGastoFijo.costoGasto"
+          />
+        </div>
+
+        <input 
+          type="text" 
+          placeholder="Descripción" 
+          class="form-input"
+          [(ngModel)]="newGastoFijo.descripcion"
+        />
+
+        <select class="form-select" [(ngModel)]="newGastoFijo.recurrencia">
+          <option value="" disabled>Recurrencia</option>
+          <option value="semanal">Semanal</option>
+          <option value="mensual">Mensual</option>
+          <option value="trimestral">Trimestral</option>
+          <option value="anual">Anual</option>
+        </select>
+
+        <div class="form-actions">
+          <button class="save-btn" (click)="addGastoFijo()" [disabled]="isLoading">
+            <span *ngIf="!isLoading">Crear Gasto Fijo</span>
+            <span *ngIf="isLoading">Creando...</span>
+          </button>
+          <button class="cancel-btn" (click)="cancelAddGastoFijo()" [disabled]="isLoading">Cancelar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Transactions List -->
+    <div class="transactions-container">
+      <!-- Regular Transactions -->
+      <div class="transaction-card" *ngFor="let transaction of getFilteredTransactions()">
+        <div class="transaction-content">
+          <div class="transaction-left">
+            <div class="transaction-icon" [ngClass]="transaction.type === 'income' ? 'income-bg' : 'expense-bg'">
+              <svg *ngIf="getTransactionIcon(transaction) === 'storefront'" class="transaction-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7"/>
+                <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
+                <path d="M15 22v-4a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2v4"/>
+              </svg>
+              <svg *ngIf="getTransactionIcon(transaction) === 'cube'" class="transaction-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 16V8a2 2 0 0 0-1-1.73L12 2 4 6.27A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73L12 22l8-4.27A2 2 0 0 0 21 16z"/>
+              </svg>
+              <svg *ngIf="getTransactionIcon(transaction) === 'business'" class="transaction-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 21h18"/>
+                <path d="M5 21V7l8-4v18"/>
+                <path d="M19 21V11l-6-4"/>
+              </svg>
+              <svg *ngIf="getTransactionIcon(transaction) === 'trending-up'" class="transaction-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="22,7 13.5,15.5 8.5,10.5 2,17"/>
+                <polyline points="16,7 22,7 22,13"/>
+              </svg>
+              <svg *ngIf="getTransactionIcon(transaction) === 'trending-down'" class="transaction-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="22,17 13.5,8.5 8.5,13.5 2,7"/>
+                <polyline points="16,17 22,17 22,11"/>
+              </svg>
+              <svg *ngIf="getTransactionIcon(transaction) === 'megaphone'" class="transaction-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="m3 11 18-5v12L3 14v-3z"/>
+                <path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/>
+              </svg>
+              <svg *ngIf="getTransactionIcon(transaction) === 'construct'" class="transaction-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+              </svg>
+            </div>
+            <div class="transaction-details">
+              <div class="transaction-header">
+                <h3 class="transaction-title">{{ transaction.description }}</h3>
+                <div class="status-dot" [ngClass]="getStatusClass(transaction.status)"></div>
+              </div>
+              <div class="transaction-meta">
+                <span class="category-badge">{{ transaction.category }}</span>
+                <span class="method-text">{{ transaction.method }}</span>
+              </div>
+              <p class="transaction-date">{{ formatDate(transaction.date) }}</p>
+            </div>
+          </div>
+
+          <div class="transaction-right">
+            <p class="transaction-amount" [ngClass]="transaction.type === 'income' ? 'income-color' : 'expense-color'">
+              {{ transaction.type === 'income' ? '+' : '-' }}${{ transaction.amount.toFixed(2) }}
+            </p>
+            <span class="status-badge" [ngClass]="getStatusBadgeClass(transaction.status)">
+              {{ getStatusLabel(transaction.status) }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Gastos Fijos -->
+      <div class="transaction-card gasto-fijo-card" *ngFor="let gasto of getFilteredGastosFijos()">
+        <div class="transaction-content">
+          <div class="transaction-left">
+            <div class="transaction-icon expense-bg">
+              <svg class="transaction-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                <path d="M2 17l10 5 10-5"/>
+                <path d="M2 12l10 5 10-5"/>
+              </svg>
+            </div>
+            <div class="transaction-details">
+              <div class="transaction-header">
+                <h3 class="transaction-title">{{ gasto.nombreGasto }}</h3>
+                <div class="status-dot" [ngClass]="gasto.pagado ? 'status-completed' : 'status-pending'"></div>
+                <span class="gasto-fijo-badge">GASTO FIJO</span>
+              </div>
+              <div class="transaction-meta">
+                <span class="category-badge">{{ gasto.recurrencia }}</span>
+                <span class="method-text">{{ gasto.descripcion }}</span>
+              </div>
+              <p class="transaction-date">{{ formatDate(gasto.createdAt) }}</p>
+            </div>
+          </div>
+
+          <div class="transaction-right">
+            <p class="transaction-amount expense-color">
+              -${{ gasto.costoGasto.toFixed(2) }}
+            </p>
+            <div class="gasto-actions">
+              <span class="status-badge" [ngClass]="gasto.pagado ? 'badge-completed' : 'badge-pending'">
+                {{ gasto.pagado ? 'Pagado' : 'Pendiente' }}
+              </span>
+              <button 
+                *ngIf="!gasto.pagado" 
+                class="pay-btn" 
+                (click)="markAsPaid(gasto.idGasto)"
+                [disabled]="isLoading"
+              >
+                Marcar como Pagado
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Empty State -->
+      <div class="empty-state" *ngIf="getFilteredTransactions().length === 0 && getFilteredGastosFijos().length === 0">
+        <div class="empty-content">
+          <div class="empty-icon">📊</div>
+          <h3 class="empty-title">No se encontraron transacciones</h3>
+          <p class="empty-subtitle">Intenta ajustar los filtros o agregar una nueva transacción</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

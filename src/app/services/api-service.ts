@@ -580,23 +580,61 @@ export class ApiService {
   }
 
   // Actualizar producto
-  async updateProduct(productId: string, productData: any): Promise<any> {
+  async updateProduct(productId: string, productData: any, businessId?: string): Promise<any> {
     const token = await this.getToken();
     if (!token) throw new Error('Usuario no autenticado.');
 
-    const url = `${this.baseUrl}/products/${productId}`;
+    const url = `${this.baseUrl}/product/${productId}`;
+    console.log('[API] 🔄 UPDATE PRODUCT URL:', url);
+    console.log('[API] 📋 Product ID:', productId);
+    console.log('[API] 🏢 Business ID:', businessId);
+    console.log('[API] 📤 Original Product Data:', productData);
+    
+    // Crear el objeto de datos igual que en Postman
+    const dataToSend = {
+      idNegocio: businessId,
+      nombreProducto: productData.nombreProducto,
+      precioVenta: productData.precioVenta,
+      costoProduccion: productData.costoProduccion,
+      stock: productData.stock
+    };
+    
+    console.log('[API] 📤 Final Data to Send (Postman format):', dataToSend);
+    
     const headers = new HttpHeaders({
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${token}`
     });
 
     try {
-      const response = await this.http.put<any>(url, productData, { headers })
-        .pipe(timeout(this.requestTimeout))
+      const response = await this.http.put<any>(url, dataToSend, { headers })
+        .pipe(
+          timeout(this.requestTimeout),
+          catchError(this.handleError.bind(this))
+        )
         .toPromise();
       
+      console.log('[API] ✅ UPDATE PRODUCT RESPONSE:', response);
       return response;
-    } catch (error) {
+    } catch (error: any) {
+      console.error('[API] ❌ UPDATE PRODUCT ERROR:', error);
+      console.error('[API] ❌ Error status:', error.status);
+      console.error('[API] ❌ Error message:', error.message);
+      console.error('[API] ❌ Full error object:', error);
+      
+      if (error.status === 404) {
+        console.error('[API] 🚨 404 ANALYSIS:');
+        console.error('- URL being called:', url);
+        console.error('- Expected backend route: PUT /api/product/:idProducto');
+        console.error('- Router registration: app.use(\'/api/product\', productRoutes)');
+        console.error('- Router method: router.put(\'/:idProducto\', verifyFirebaseToken, updateProduct)');
+        console.error('- Possible causes:');
+        console.error('  1. verifyFirebaseToken middleware is rejecting the token');
+        console.error('  2. updateProduct function is not found');
+        console.error('  3. Product does not exist in Firestore');
+        console.error('  4. Route is not properly registered');
+      }
+      
       throw this.handleHttpError(error);
     }
   }
@@ -606,7 +644,7 @@ export class ApiService {
     const token = await this.getToken();
     if (!token) throw new Error('Usuario no autenticado.');
 
-    const url = `${this.baseUrl}/products/${productId}`;
+    const url = `${this.baseUrl}/product/${productId}`;
     const headers = new HttpHeaders({
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${token}`
@@ -614,11 +652,161 @@ export class ApiService {
 
     try {
       const response = await this.http.delete<any>(url, { headers })
-        .pipe(timeout(this.requestTimeout))
+        .pipe(
+          timeout(this.requestTimeout),
+          catchError(this.handleError.bind(this))
+        )
         .toPromise();
-      
+
       return response;
     } catch (error) {
+      throw this.handleHttpError(error);
+    }
+  }
+
+  // 🔹 Crear transacción financiera
+  async createTransaction(transactionData: {
+    idNegocio: string;
+    tipo: 'income' | 'expense';
+    monto: number;
+    descripcion: string;
+  }): Promise<any> {
+    const token = await this.getToken();
+    if (!token) {
+      throw new Error('Usuario no autenticado.');
+    }
+
+    const url = `${this.baseUrl}/transaction/`;
+    console.log('[API] 💰 CREATE TRANSACTION URL:', url);
+    console.log('[API] 📤 Transaction Data:', transactionData);
+    
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    });
+
+    try {
+      const response = await this.http.post<any>(url, transactionData, { headers })
+        .pipe(
+          timeout(this.requestTimeout),
+          catchError(this.handleError.bind(this))
+        )
+        .toPromise();
+
+      console.log('[API] ✅ Transaction created successfully:', response);
+      return response;
+    } catch (error: any) {
+      console.error('[API] ❌ Error creating transaction:', error);
+      throw this.handleHttpError(error);
+    }
+  }
+
+  // 🔹 Crear gasto fijo
+  async createGastoFijo(gastoData: {
+    idNegocio: string;
+    nombreGasto: string;
+    costoGasto: number;
+    descripcion: string;
+    recurrencia: string;
+    fechasEjecucion: string[];
+    pagado?: boolean;
+  }): Promise<any> {
+    const token = await this.getToken();
+    if (!token) {
+      throw new Error('Usuario no autenticado.');
+    }
+
+    const url = `${this.baseUrl}/gasto-fijo/`;
+    console.log('[API] 💳 CREATE GASTO FIJO URL:', url);
+    console.log('[API] 📤 Gasto Fijo Data:', gastoData);
+    
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    });
+
+    try {
+      const response = await this.http.post<any>(url, gastoData, { headers })
+        .pipe(
+          timeout(this.requestTimeout),
+          catchError(this.handleError.bind(this))
+        )
+        .toPromise();
+
+      console.log('[API] ✅ Gasto fijo created successfully:', response);
+      return response;
+    } catch (error: any) {
+      console.error('[API] ❌ Error creating gasto fijo:', error);
+      throw this.handleHttpError(error);
+    }
+  }
+
+  // 🔹 Marcar gasto fijo como pagado
+  async markGastoFijoAsPaid(idGasto: string): Promise<any> {
+    const token = await this.getToken();
+    if (!token) {
+      throw new Error('Usuario no autenticado.');
+    }
+
+    const url = `${this.baseUrl}/gasto-fijo/${idGasto}/mark-as-paid`;
+    console.log('[API] ✅ MARK GASTO FIJO AS PAID URL:', url);
+    
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    });
+
+    try {
+      const response = await this.http.patch<any>(url, {}, { headers })
+        .pipe(
+          timeout(this.requestTimeout),
+          catchError(this.handleError.bind(this))
+        )
+        .toPromise();
+
+      console.log('[API] ✅ Gasto fijo marked as paid successfully:', response);
+      return response;
+    } catch (error: any) {
+      console.error('[API] ❌ Error marking gasto fijo as paid:', error);
+      throw this.handleHttpError(error);
+    }
+  }
+
+  // 🔹 Obtener gastos fijos por negocio
+  async getGastosFijosByBusiness(idNegocio: string): Promise<any[]> {
+    if (!idNegocio || idNegocio.trim() === '') {
+      throw new Error('El ID del negocio no puede estar vacío.');
+    }
+
+    const token = await this.getToken();
+    if (!token) {
+      throw new Error('Usuario no autenticado.');
+    }
+
+    const url = `${this.baseUrl}/gasto-fijo/business/${idNegocio}`;
+    console.log('[API] 📋 GET GASTOS FIJOS URL:', url);
+    
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    });
+
+    try {
+      const response = await this.http.get<{ message: string, data: any[] }>(url, { headers })
+        .pipe(
+          timeout(this.requestTimeout),
+          catchError(this.handleError.bind(this))
+        )
+        .toPromise();
+
+      console.log('[API] ✅ Gastos fijos retrieved successfully:', response);
+      return response?.data || [];
+    } catch (error: any) {
+      if (error.status === 404) {
+        console.log('[API] ℹ️ No gastos fijos found for business:', idNegocio);
+        return [];
+      }
+      console.error('[API] ❌ Error getting gastos fijos:', error);
       throw this.handleHttpError(error);
     }
   }

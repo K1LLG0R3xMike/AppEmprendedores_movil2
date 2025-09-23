@@ -1,0 +1,727 @@
+/* ========================================
+   MODERN FINANCE PAGE - IONIC COLORS
+   ======================================== */
+
+/* ===== BASE STYLES ===== */
+.finance-page {
+  min-height: 100vh;
+  padding-bottom: 80px; /* Space for tabs */
+  background: linear-gradient(
+    to bottom,
+    var(--ion-background-color) 0%,
+    var(--ion-color-step-50) 100%
+  );
+  transition: all 0.3s ease;
+}
+
+/* ===== HEADER ===== */
+.header {
+  padding: 24px;
+  background: var(--ion-card-background);
+  border-bottom: 1px solid var(--ion-color-step-150);
+  transition: all 0.3s ease;
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.header-text {
+  flex: 1;
+}
+
+.title {
+  font-size: 24px;
+  font-weight: bold;
+  margin: 0;
+  color: var(--ion-text-color);
+}
+
+.subtitle {
+  font-size: 14px;
+  margin: 4px 0 0 0;
+  color: var(--ion-color-medium);
+}
+
+.add-button {
+  background: var(--ion-color-warning);
+  color: var(--ion-color-warning-contrast);
+  border: none;
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-right: 8px;
+
+  &:hover {
+    background: var(--ion-color-warning-shade);
+    transform: translateY(-1px);
+  }
+}
+
+.add-button-secondary {
+  background: var(--ion-color-primary);
+  color: var(--ion-color-primary-contrast);
+  border: none;
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: var(--ion-color-primary-shade);
+    transform: translateY(-1px);
+  }
+}
+
+.icon-plus {
+  width: 16px;
+  height: 16px;
+}
+
+/* ===== CONTENT ===== */
+.content {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* ===== SUMMARY CARDS ===== */
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.summary-card {
+  background: var(--ion-card-background);
+  border: 1px solid var(--ion-color-step-150);
+  border-radius: 12px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  }
+}
+
+.card-content {
+  padding: 16px;
+  text-align: center;
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 8px;
+  gap: 4px;
+}
+
+.card-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ion-color-medium);
+}
+
+.card-amount {
+  font-size: 20px;
+  font-weight: bold;
+  margin: 0;
+}
+
+.income-color {
+  color: var(--ion-color-success);
+}
+
+.expense-color {
+  color: var(--ion-color-danger);
+}
+
+/* ===== FILTERS CARD ===== */
+.filters-card {
+  background: var(--ion-card-background);
+  border: 1px solid var(--ion-color-step-150);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.filters-content {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Search */
+.search-container {
+  position: relative;
+}
+
+.search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 16px;
+  height: 16px;
+  color: var(--ion-color-medium);
+}
+
+.search-input {
+  width: 100%;
+  padding: 12px 12px 12px 40px;
+  border: 1px solid var(--ion-color-step-300);
+  border-radius: 8px;
+  background: var(--ion-color-step-100);
+  color: var(--ion-text-color);
+  font-size: 14px;
+  transition: all 0.2s ease;
+  
+  &::placeholder {
+    color: var(--ion-color-medium);
+  }
+  
+  &:focus {
+    outline: none;
+    border-color: var(--ion-color-primary);
+    background: var(--ion-card-background);
+    box-shadow: 0 0 0 2px rgba(var(--ion-color-primary-rgb), 0.2);
+  }
+}
+
+/* Filter Buttons */
+.filter-buttons {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.filter-btn {
+  padding: 8px 16px;
+  border-radius: 6px;
+  border: 1px solid var(--ion-color-step-300);
+  background: var(--ion-card-background);
+  color: var(--ion-text-color);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+
+  &:hover {
+    background: var(--ion-color-step-100);
+    transform: translateY(-1px);
+  }
+
+  &.active.default {
+    background: var(--ion-color-warning);
+    color: var(--ion-color-warning-contrast);
+    border-color: var(--ion-color-warning);
+  }
+
+  &.active.income {
+    background: var(--ion-color-success);
+    color: var(--ion-color-success-contrast);
+    border-color: var(--ion-color-success);
+  }
+
+  &.active.expense {
+    background: var(--ion-color-danger);
+    color: var(--ion-color-danger-contrast);
+    border-color: var(--ion-color-danger);
+  }
+
+  &.active.pending {
+    background: var(--ion-color-warning);
+    color: var(--ion-color-warning-contrast);
+    border-color: var(--ion-color-warning);
+  }
+
+  &.active.completed {
+    background: var(--ion-color-success);
+    color: var(--ion-color-success-contrast);
+    border-color: var(--ion-color-success);
+  }
+}
+
+.filter-icon {
+  width: 16px;
+  height: 16px;
+}
+
+/* Category Select */
+.category-select {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid var(--ion-color-step-300);
+  border-radius: 8px;
+  background: var(--ion-color-step-100);
+  color: var(--ion-text-color);
+  font-size: 14px;
+  transition: all 0.2s ease;
+  
+  &:focus {
+    outline: none;
+    border-color: var(--ion-color-primary);
+    background: var(--ion-card-background);
+    box-shadow: 0 0 0 2px rgba(var(--ion-color-primary-rgb), 0.2);
+  }
+}
+
+/* ===== ADD FORM ===== */
+.add-form-card {
+  background: var(--ion-card-background);
+  border: 1px solid var(--ion-color-step-150);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.form-header {
+  padding: 20px 20px 0 20px;
+  
+  h3 {
+    font-size: 20px;
+    font-weight: bold;
+    margin: 0;
+    color: var(--ion-text-color);
+  }
+}
+
+.form-content {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.form-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.form-input,
+.form-select {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid var(--ion-color-step-300);
+  border-radius: 8px;
+  background: var(--ion-color-step-100);
+  color: var(--ion-text-color);
+  font-size: 14px;
+  transition: all 0.2s ease;
+  
+  &::placeholder {
+    color: var(--ion-color-medium);
+  }
+  
+  &:focus {
+    outline: none;
+    border-color: var(--ion-color-primary);
+    background: var(--ion-card-background);
+    box-shadow: 0 0 0 2px rgba(var(--ion-color-primary-rgb), 0.2);
+  }
+}
+
+.form-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.save-btn {
+  flex: 1;
+  background: var(--ion-color-warning);
+  color: var(--ion-color-warning-contrast);
+  border: none;
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover:not(:disabled) {
+    background: var(--ion-color-warning-shade);
+    transform: translateY(-1px);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+  }
+}
+
+.cancel-btn {
+  padding: 12px 16px;
+  border: 1px solid var(--ion-color-step-300);
+  border-radius: 8px;
+  background: var(--ion-card-background);
+  color: var(--ion-text-color);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover:not(:disabled) {
+    background: var(--ion-color-step-100);
+    transform: translateY(-1px);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+  }
+}
+
+/* ===== TRANSACTIONS ===== */
+.transactions-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.transaction-card {
+  background: var(--ion-card-background);
+  border: 1px solid var(--ion-color-step-150);
+  border-radius: 12px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+}
+
+.transaction-content {
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.transaction-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+}
+
+.transaction-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.income-bg {
+  background: rgba(var(--ion-color-success-rgb), 0.15);
+}
+
+.expense-bg {
+  background: rgba(var(--ion-color-danger-rgb), 0.15);
+}
+
+.transaction-svg {
+  width: 20px;
+  height: 20px;
+}
+
+.income-bg .transaction-svg {
+  color: var(--ion-color-success);
+}
+
+.expense-bg .transaction-svg {
+  color: var(--ion-color-danger);
+}
+
+.transaction-details {
+  flex: 1;
+}
+
+.transaction-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.transaction-title {
+  font-size: 16px;
+  font-weight: 500;
+  margin: 0;
+  color: var(--ion-text-color);
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.status-completed {
+  background: var(--ion-color-success);
+}
+
+.status-pending {
+  background: var(--ion-color-warning);
+}
+
+.status-cancelled {
+  background: var(--ion-color-danger);
+}
+
+.transaction-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.category-badge {
+  background: var(--ion-color-step-200);
+  color: var(--ion-color-medium);
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  border: 1px solid var(--ion-color-step-300);
+}
+
+.method-text {
+  font-size: 12px;
+  color: var(--ion-color-medium);
+}
+
+.transaction-date {
+  font-size: 12px;
+  color: var(--ion-color-medium);
+  margin: 0;
+}
+
+.transaction-right {
+  text-align: right;
+}
+
+.transaction-amount {
+  font-size: 18px;
+  font-weight: bold;
+  margin: 0 0 4px 0;
+}
+
+.status-badge {
+  font-size: 11px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-weight: 500;
+}
+
+.badge-completed {
+  background: rgba(var(--ion-color-success-rgb), 0.15);
+  color: var(--ion-color-success-shade);
+}
+
+.badge-pending {
+  background: rgba(var(--ion-color-warning-rgb), 0.15);
+  color: var(--ion-color-warning-shade);
+}
+
+.badge-cancelled {
+  background: rgba(var(--ion-color-danger-rgb), 0.15);
+  color: var(--ion-color-danger-shade);
+}
+
+/* ===== EMPTY STATE ===== */
+.empty-state {
+  background: var(--ion-card-background);
+  border: 1px solid var(--ion-color-step-150);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.empty-content {
+  padding: 32px 20px;
+  text-align: center;
+}
+
+.empty-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+  opacity: 0.5;
+}
+
+.empty-title {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0 0 8px 0;
+  color: var(--ion-text-color);
+}
+
+.empty-subtitle {
+  font-size: 14px;
+  margin: 0;
+  color: var(--ion-color-medium);
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+  .header {
+    padding: 16px 12px;
+  }
+
+  .title {
+    font-size: 20px;
+  }
+
+  .content {
+    padding: 12px;
+    gap: 16px;
+  }
+
+  .summary-grid {
+    gap: 8px;
+  }
+
+  .card-content {
+    padding: 12px;
+  }
+
+  .card-amount {
+    font-size: 18px;
+  }
+
+  .filters-content,
+  .form-content {
+    padding: 12px;
+  }
+
+  .form-grid-2 {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .filter-buttons {
+    gap: 6px;
+  }
+
+  .transaction-content {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .transaction-right {
+    align-self: flex-end;
+  }
+
+  .form-actions {
+    flex-direction: column;
+  }
+
+  .header-content {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .add-button,
+  .add-button-secondary {
+    width: 100%;
+    justify-content: center;
+    margin-right: 0;
+    margin-bottom: 8px;
+  }
+}
+
+/* ===== GASTOS FIJOS STYLES ===== */
+.gasto-fijo-card {
+  border-left: 4px solid var(--ion-color-primary);
+  
+  .transaction-header {
+    align-items: center;
+    gap: 8px;
+  }
+}
+
+.gasto-fijo-badge {
+  background: var(--ion-color-primary);
+  color: var(--ion-color-primary-contrast);
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.gasto-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.pay-btn {
+  background: var(--ion-color-success);
+  color: var(--ion-color-success-contrast);
+  border: none;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover:not(:disabled) {
+    background: var(--ion-color-success-shade);
+    transform: translateY(-1px);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .gasto-actions {
+    align-items: stretch;
+  }
+
+  .pay-btn {
+    width: 100%;
+  }
+}
