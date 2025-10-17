@@ -132,6 +132,13 @@ export class BusinessPage implements OnInit {
     // También verificar el token directamente
     const token = await this.apiService.getToken();
     console.log('- Token directo:', token ? 'Existe' : 'No existe');
+    
+    // Verificar si el token es válido
+    if (token) {
+      console.log('- Token preview:', token.substring(0, 20) + '...');
+      const isValid = await this.apiService.isTokenValid();
+      console.log('- Token is valid:', isValid);
+    }
   }
 
   async loadBusinessData(): Promise<void> {
@@ -222,6 +229,33 @@ export class BusinessPage implements OnInit {
   async handleSave(): Promise<void> {
     if (this.isLoading) return;
     
+    // Validar datos antes de enviar
+    if (!this.validateBusinessData()) {
+      return;
+    }
+
+    // Verificar si hay cambios
+    if (!this.hasUnsavedChanges()) {
+      await this.showToast('No hay cambios para guardar', 'primary');
+      this.isEditing = false;
+      return;
+    }
+
+    // Validar que tenemos un ID de negocio
+    const businessId = this.businessData.id || this.businessData.idNegocio;
+    if (!businessId) {
+      await this.showToast('Error: No se encontró ID del negocio', 'danger');
+      return;
+    }
+
+    // Verificar autenticación antes de continuar
+    const isTokenValid = await this.apiService.isTokenValid();
+    if (!isTokenValid) {
+      await this.showToast('Tu sesión ha expirado. Por favor, inicia sesión nuevamente.', 'warning');
+      // Redirigir a login o mostrar modal de login
+      return;
+    }
+
     const loading = await this.loadingController.create({
       message: 'Guardando cambios...',
       spinner: 'crescent'
@@ -229,17 +263,57 @@ export class BusinessPage implements OnInit {
     await loading.present();
 
     try {
-      // TODO: Implement update business logic when backend supports it
-      this.isEditing = false;
+      // Preparar datos para enviar al backend
+      const updateData = {
+        nombreNegocio: this.businessData.nombreNegocio!.trim(),
+        descripcion: this.businessData.descripcion?.trim() || '',
+        sector: this.businessData.sector || '',
+        capitalInicial: Number(this.businessData.capitalInicial) || 0
+      };
+
+      console.log('💾 [BUSINESS] Enviando datos de actualización:', updateData);
+      console.log('💾 [BUSINESS] ID del negocio:', businessId);
+
+      // Llamar al API para actualizar
+      const response = await this.apiService.updateBusiness(businessId, updateData);
       
-      // Por ahora solo actualizar localmente
+      console.log('✅ [BUSINESS] Respuesta del servidor:', response);
+
+      // Actualizar datos locales con la respuesta del servidor
+      if (response.data) {
+        this.businessData = {
+          ...this.businessData,
+          ...response.data
+        };
+      }
+
+      // Guardar copia actualizada
       this.originalBusinessData = { ...this.businessData };
       
-      console.log('💾 [BUSINESS] Datos guardados:', this.businessData);
+      this.isEditing = false;
       await this.showToast('Cambios guardados exitosamente', 'success');
-    } catch (error) {
+      
+    } catch (error: any) {
       console.error('❌ [BUSINESS] Error guardando cambios:', error);
-      await this.showToast('Error al guardar los cambios', 'danger');
+      
+      let errorMessage = 'Error al guardar los cambios';
+      
+      if (error.message) {
+        if (error.message.includes('sesión ha expirado') || error.message.includes('inicia sesión')) {
+          errorMessage = error.message;
+          // Aquí podrías redirigir al login o mostrar un modal
+        } else if (error.message.includes('404')) {
+          errorMessage = 'Negocio no encontrado';
+        } else if (error.message.includes('403')) {
+          errorMessage = 'No tienes permisos para modificar este negocio';
+        } else if (error.message.includes('400')) {
+          errorMessage = 'Datos inválidos. Verifica la información ingresada';
+        } else {
+          errorMessage = error.message;
+        }
+      }
+      
+      await this.showToast(errorMessage, 'danger');
     } finally {
       await loading.dismiss();
     }
@@ -249,6 +323,31 @@ export class BusinessPage implements OnInit {
     // Restaurar datos originales
     this.businessData = { ...this.originalBusinessData };
     this.isEditing = false;
+  }
+
+  // 🔹 Validar datos del negocio antes de guardar
+  private validateBusinessData(): boolean {
+    if (!this.businessData.nombreNegocio?.trim()) {
+      this.showToast('El nombre del negocio es requerido', 'warning');
+      return false;
+    }
+
+    if (this.businessData.nombreNegocio.trim().length < 2) {
+      this.showToast('El nombre del negocio debe tener al menos 2 caracteres', 'warning');
+      return false;
+    }
+
+    if (this.businessData.capitalInicial !== undefined && this.businessData.capitalInicial < 0) {
+      this.showToast('El capital inicial no puede ser negativo', 'warning');
+      return false;
+    }
+
+    return true;
+  }
+
+  // 🔹 Verificar si hay cambios pendientes
+  hasUnsavedChanges(): boolean {
+    return JSON.stringify(this.businessData) !== JSON.stringify(this.originalBusinessData);
   }
 
   async handleDelete(): Promise<void> {

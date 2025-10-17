@@ -3,10 +3,9 @@
     <!-- Header -->
     <div class="header">
       <div class="header-content">
-        <ion-icon name="settings" color="warning" size="large"></ion-icon>
         <div class="header-text">
           <h1 class="title">Configuración</h1>
-          <p class="subtitle">Personaliza tu experiencia</p>
+          <p class="subtitle">Edita tu informacion de personal o de negocio</p>
         </div>
       </div>
     </div>
@@ -17,14 +16,14 @@
         <ion-card-content>
           <div class="profile-content">
             <div class="avatar">
-              <ion-icon name="person" color="warning"></ion-icon>
+              <ion-icon name="person" color="white"></ion-icon>
             </div>
             <div class="profile-info">
               <h3>{{ userData.name }}</h3>
               <p>{{ userData.email }}</p>
             </div>
             <div class="profile-actions">
-              <ion-button fill="outline" color="warning" (click)="goToProfile()">
+              <ion-button fill="outline" (click)="goToProfile()">
                 Ver perfil
               </ion-button>
             </div>
@@ -37,13 +36,13 @@
         <ion-card-content>
           <div class="business-content">
             <div class="business-icon">
-              <ion-icon name="business" color="warning"></ion-icon>
+              <ion-icon name="business" ></ion-icon>
             </div>
             <div class="business-info">
               <h3>Mi Negocio</h3>
               <p>Gestiona la información de tu negocio</p>
             </div>
-            <ion-button fill="outline" color="warning" (click)="goToBusiness()">
+            <ion-button fill="outline" (click)="goToBusiness()">
               <ion-icon name="arrow-forward" slot="end"></ion-icon>
               Administrar
             </ion-button>
@@ -68,7 +67,7 @@
             <ion-toggle 
               [(ngModel)]="darkMode" 
               (ionChange)="toggleDarkMode()"
-              color="warning">
+              >
             </ion-toggle>
           </div>
         </ion-card-content>
@@ -112,7 +111,7 @@
                 <div class="notification-label">Notificaciones generales</div>
                 <div class="notification-description">Recibe alertas importantes de la app</div>
               </div>
-              <ion-toggle [(ngModel)]="notifications" color="warning"></ion-toggle>
+              <ion-toggle [(ngModel)]="notifications" ></ion-toggle>
             </div>
 
             <div class="notification-item">
@@ -120,7 +119,7 @@
                 <div class="notification-label">Notificaciones por email</div>
                 <div class="notification-description">Recibe resúmenes y reportes por correo</div>
               </div>
-              <ion-toggle [(ngModel)]="emailNotifications" color="warning"></ion-toggle>
+              <ion-toggle [(ngModel)]="emailNotifications" ></ion-toggle>
             </div>
 
             <div class="notification-item">
@@ -128,7 +127,7 @@
                 <div class="notification-label">Notificaciones push</div>
                 <div class="notification-description">Alertas instantáneas en tu dispositivo</div>
               </div>
-              <ion-toggle [(ngModel)]="pushNotifications" color="warning"></ion-toggle>
+              <ion-toggle [(ngModel)]="pushNotifications"></ion-toggle>
             </div>
           </div>
         </ion-card-content>

@@ -2,7 +2,7 @@
 ion-tab-bar {
   --background: var(--ion-card-background, white);
   --color: var(--ion-color-medium, #666666);
-  --color-selected: #ff9500; /* Orange 500 equivalent */
+  --color-selected: #E86F00; /* Orange color updated */
   
   border-top: 1px solid var(--ion-color-step-150, #e0e0e0);
   box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
@@ -19,8 +19,8 @@ ion-tab-bar {
 
 ion-tab-button {
   --color: var(--ion-color-medium, #666666);
-  --color-selected: #ff9500;
-  --background-focused: rgba(255, 149, 0, 0.1);
+  --color-selected: #E86F00;
+  --background-focused: rgba(232, 111, 0, 0.1);
   --background-focused-opacity: 0.1;
   
   /* Button styling */
@@ -45,22 +45,22 @@ ion-tab-button {
   
   /* Selected state */
   &.tab-selected {
-    --color: #ff9500;
+    --color: #E86F00;
     
     ion-icon {
-      color: #ff9500;
+      color: #E86F00;
       transform: scale(1.1);
     }
     
     ion-label {
-      color: #ff9500;
+      color: #E86F00;
       font-weight: 600;
     }
   }
   
   /* Hover effect */
   &:hover {
-    --background-focused: rgba(255, 149, 0, 0.05);
+    --background-focused: rgba(232, 111, 0, 0.05);
     
     ion-icon {
       transform: scale(1.05);
@@ -69,7 +69,7 @@ ion-tab-button {
   
   /* Active state */
   &:active {
-    --background-focused: rgba(255, 149, 0, 0.15);
+    --background-focused: rgba(232, 111, 0, 0.15);
   }
 }
 
@@ -86,7 +86,7 @@ ion-tab-button {
     --color: var(--ion-color-medium, #a0a0a0);
     
     &:hover {
-      --background-focused: rgba(255, 149, 0, 0.08);
+      --background-focused: rgba(232, 111, 0, 0.08);
     }
   }
 }

@@ -16,7 +16,7 @@
 
     <div class="content">
       <!-- No Business State -->
-      <div *ngIf="!businessData.nombreNegocio && !isLoading" class="no-business-state">
+      <div *ngIf="!businessData.id && !businessData.idNegocio && !isLoading" class="no-business-state">
         <ion-card>
           <ion-card-content>
             <div class="empty-state">
@@ -37,7 +37,7 @@
       </div>
 
       <!-- Business Info Card -->
-      <ion-card *ngIf="businessData.nombreNegocio" class="business-card">
+      <ion-card *ngIf="businessData.id || businessData.idNegocio" class="business-card">
         <ion-card-content>
           <div class="card-header">
             <h2 class="card-title">Información del Negocio</h2>
@@ -157,7 +157,7 @@
       </ion-card>
 
       <!-- Business Stats -->
-      <div class="stats-row">
+      <div *ngIf="businessData.id || businessData.idNegocio" class="stats-row">
         <ion-card class="stat-card">
           <ion-card-content>
             <div class="stat-value">${{ businessData.capitalInicial || 0 | number }}</div>

@@ -185,6 +185,39 @@ export class ApiService {
     }
   }
 
+  // 🔹 Verificar si el token es válido
+  async isTokenValid(): Promise<boolean> {
+    const token = await this.getToken();
+    if (!token) return false;
+
+    try {
+      // Verificar con una llamada simple al backend
+      const uid = await this.getUid();
+      if (!uid) return false;
+
+      const url = `${this.baseUrl}/users/${uid}`;
+      const headers = new HttpHeaders({
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      });
+
+      await this.http.get(url, { headers })
+        .pipe(
+          timeout(5000), // Timeout más corto para verificación
+          catchError(() => {
+            console.log('[API] Token validation failed');
+            return throwError(() => new Error('Token invalid'));
+          })
+        )
+        .toPromise();
+
+      return true;
+    } catch (error) {
+      console.log('[API] Token is invalid or expired');
+      return false;
+    }
+  }
+
   // 🔹 Ejemplo de ruta protegida al backend
   async getBusiness(): Promise<BusinessData> {
     const token = await this.getToken();
@@ -697,6 +730,55 @@ export class ApiService {
       return response;
     } catch (error: any) {
       console.error('[API] ❌ Error creating transaction:', error);
+      throw this.handleHttpError(error);
+    }
+  }
+
+  // 🔹 Actualizar negocio
+  async updateBusiness(idNegocio: string, businessData: {
+    nombreNegocio?: string;
+    descripcion?: string;
+    sector?: string;
+    capitalInicial?: number;
+  }): Promise<any> {
+    const token = await this.getToken();
+    if (!token) {
+      throw new Error('Usuario no autenticado.');
+    }
+
+    const url = `${this.baseUrl}/business/${idNegocio}`;
+    console.log('[API] 🏢 UPDATE BUSINESS URL:', url);
+    console.log('[API] 📤 Business Data:', businessData);
+    console.log('[API] 🔑 Token preview:', token.substring(0, 20) + '...');
+    
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    });
+
+    try {
+      const response = await this.http.put<any>(url, businessData, { headers })
+        .pipe(
+          timeout(this.requestTimeout),
+          catchError(this.handleError.bind(this))
+        )
+        .toPromise();
+
+      console.log('[API] ✅ Business updated successfully:', response);
+      return response;
+    } catch (error: any) {
+      console.error('[API] ❌ Error updating business:', error);
+      
+      // Si es error 401, intentar refrescar token
+      if (error.message && error.message.includes('401')) {
+        console.log('[API] 🔄 Token might be expired, checking authentication...');
+        
+        // Limpiar token expirado
+        await this.logout();
+        
+        throw new Error('Tu sesión ha expirado. Por favor, inicia sesión nuevamente.');
+      }
+      
       throw this.handleHttpError(error);
     }
   }

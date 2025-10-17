@@ -154,6 +154,24 @@
 .quick-actions ion-button {
   flex: 1;
   font-size: 14px;
+  --background: transparent;
+  --color: var(--ion-text-color);
+  --border-color: #bdbdbd;
+  --border-style: solid;
+  --border-width: 1px;
+  --box-shadow: none;
+  --background-hover: rgba(var(--ion-color-step-150), 0.1);
+  --background-activated: rgba(var(--ion-color-step-200), 0.2);
+  --border-radius: 10px;
+  margin: 4px;
+
+  ion-icon {
+    color: var(--ion-color-medium);
+  }
+
+  &:hover {
+    border-color: #9e9e9e;
+  }
 }
 
 /* KPIs */

@@ -51,24 +51,36 @@
   background: var(--ion-card-background);
   border: 1px solid var(--ion-color-step-150);
   transition: background-color 0.3s ease, border-color 0.3s ease;
+
+   ion-button {
+
+      --background: #E86F00;
+      --color: white;
+      --color: var(--ion-text-color);
+      --border-color: transparent;
+      transition: color 0.3s ease, border-color 0.3s ease;
+    
+  }
 }
 
 .profile-content {
   display: flex;
   align-items: center;
-  gap: 16px;
+
 }
 
 .avatar {
   width: 56px;
   height: 56px;
   border-radius: 50%;
-  background: rgba(var(--ion-color-warning-rgb), 0.15);
+  background: gray; 
+  padding-right: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
-  
+ 
   ion-icon {
+    padding-left: 10px;
     font-size: 36px;
     color: var(--ion-color-warning);
   }
@@ -76,6 +88,7 @@
 
 .profile-info {
   flex: 1;
+  padding-left: 5px;
   
   h3 {
     margin: 0 0 4px 0;
@@ -97,6 +110,7 @@
   flex-direction: column;
   gap: 8px;
   align-items: flex-end;
+  padding-left: 6px;
 }
 
 /* Business Card */
@@ -104,8 +118,8 @@
   margin-bottom: 20px;
   border-radius: 16px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  background: var(--ion-card-background);
-  border: 1px solid rgba(255, 149, 0, 0.2);
+  background: #e8700019;
+  border: 1px solid rgba(232, 111, 0, 0.2);
   position: relative;
   transition: background-color 0.3s ease, border-color 0.3s ease;
   
@@ -116,7 +130,7 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background: linear-gradient(135deg, rgba(255, 149, 0, 0.08) 0%, rgba(255, 149, 0, 0.03) 100%);
+    background: linear-gradient(135deg, rgba(232, 111, 0, 0.08) 0%, rgba(232, 111, 0, 0.03) 100%);
     border-radius: inherit;
     pointer-events: none;
   }
@@ -124,6 +138,14 @@
   ion-card-content {
     position: relative;
     z-index: 1;
+  }
+  
+  ion-button {
+    --background: #E86F00;
+    --color: white;
+    --border-radius: 8px;
+    --border-color: transparent;
+    font-weight: 600;
   }
 }
 
@@ -137,14 +159,14 @@
   width: 56px;
   height: 56px;
   border-radius: 50%;
-  background: rgba(var(--ion-color-warning-rgb), 0.2);
+  background: rgba(232, 111, 0, 0.2);
   display: flex;
   align-items: center;
   justify-content: center;
   
   ion-icon {
     font-size: 36px;
-    color: var(--ion-color-warning);
+    color: white;
   }
 }
 
@@ -315,8 +337,8 @@
 
 /* Toggle Styling */
 ion-toggle {
-  --background: var(--ion-color-step-200);
-  --background-checked: var(--ion-color-warning);
+  --background: #E86F00;
+  --background-checked: #E86F00;
   --handle-background: white;
   --handle-background-checked: white;
 }

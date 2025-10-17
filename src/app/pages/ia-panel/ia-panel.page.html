@@ -7,10 +7,12 @@
           <h1 class="title">Recomendaciones IA</h1>
           <p class="subtitle">Insights y predicciones inteligentes</p>
         </div>
-        <ion-button fill="outline" size="small">
-          <ion-icon slot="start" name="refresh"></ion-icon>
-          Actualizar
-        </ion-button>
+        <!--
+          <ion-button fill="outline" size="small">
+            <ion-icon slot="start" name="refresh"></ion-icon>
+            Actualizar
+          </ion-button>
+        -->
       </div>
     </div>
 
@@ -88,10 +90,10 @@
               <p class="rec-impact">Impacto: {{rec.impact}}</p>
 
               <div class="rec-actions">
-                <ion-button size="small" color="warning" (click)="applyRecommendation(rec.id)">
+                <ion-button size="small" class="ia-primary" (click)="applyRecommendation(rec.id)">
                   Aplicar
                 </ion-button>
-                <ion-button size="small" fill="outline" (click)="viewDetails(rec.id)">
+                <ion-button size="small" class="ia-secondary" fill="outline" (click)="viewDetails(rec.id)">
                   Más detalles
                 </ion-button>
               </div>
@@ -104,7 +106,7 @@
 
   <!-- Floating Action Button for Chat -->
   <ion-fab vertical="bottom" horizontal="end" slot="fixed">
-    <ion-fab-button color="warning" (click)="openChat()">
+    <ion-fab-button (click)="openChat()">
       <ion-icon name="chatbubble-outline"></ion-icon>
     </ion-fab-button>
   </ion-fab>
