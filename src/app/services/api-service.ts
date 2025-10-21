@@ -700,9 +700,9 @@ export class ApiService {
   // 🔹 Crear transacción financiera
   async createTransaction(transactionData: {
     idNegocio: string;
-    tipo: 'income' | 'expense';
+    tipo: 'income' | 'expense' | 'ingreso' | 'egreso' | boolean | number;
     monto: number;
-    descripcion: string;
+    descripcion?: string;
   }): Promise<any> {
     const token = await this.getToken();
     if (!token) {
@@ -711,7 +711,39 @@ export class ApiService {
 
     const url = `${this.baseUrl}/transaction/`;
     console.log('[API] 💰 CREATE TRANSACTION URL:', url);
-    console.log('[API] 📤 Transaction Data:', transactionData);
+    
+    // Normalizar el tipo según la lógica del backend
+    let tipoNormalizado: number;
+    
+    if (typeof transactionData.tipo === 'boolean') {
+      // Si es booleano: false = ingreso (0), true = egreso (1)
+      tipoNormalizado = transactionData.tipo ? 1 : 0;
+    } else if (typeof transactionData.tipo === 'number') {
+      // Si es número: 0 = ingreso, 1 = egreso
+      tipoNormalizado = transactionData.tipo;
+    } else if (typeof transactionData.tipo === 'string') {
+      // Si es string: convertir a número según las reglas del backend
+      const tipoStr = transactionData.tipo.toLowerCase();
+      if (tipoStr === 'income' || tipoStr === 'ingreso') {
+        tipoNormalizado = 0; // ingreso
+      } else if (tipoStr === 'expense' || tipoStr === 'egreso') {
+        tipoNormalizado = 1; // egreso
+      } else {
+        throw new Error('Tipo inválido. Usa "income"/"expense" o "ingreso"/"egreso"');
+      }
+    } else {
+      throw new Error('Tipo inválido. Debe ser string, boolean o number');
+    }
+
+    // Preparar datos para enviar al backend
+    const dataToSend = {
+      idNegocio: transactionData.idNegocio,
+      tipo: tipoNormalizado, // Enviar como número (0 o 1)
+      monto: transactionData.monto,
+      descripcion: transactionData.descripcion || ''
+    };
+    
+    console.log('[API] 📤 Transaction Data (normalized):', dataToSend);
     
     const headers = new HttpHeaders({
       'Content-Type': 'application/json',
@@ -719,7 +751,7 @@ export class ApiService {
     });
 
     try {
-      const response = await this.http.post<any>(url, transactionData, { headers })
+      const response = await this.http.post<any>(url, dataToSend, { headers })
         .pipe(
           timeout(this.requestTimeout),
           catchError(this.handleError.bind(this))
@@ -730,6 +762,73 @@ export class ApiService {
       return response;
     } catch (error: any) {
       console.error('[API] ❌ Error creating transaction:', error);
+      throw this.handleHttpError(error);
+    }
+  }
+
+  // 🔹 Obtener transacciones por negocio
+  async getTransactionsByBusiness(idNegocio: string): Promise<any[]> {
+    if (!idNegocio || idNegocio.trim() === '') {
+      throw new Error('El ID del negocio no puede estar vacío.');
+    }
+
+    const token = await this.getToken();
+    if (!token) {
+      throw new Error('Usuario no autenticado.');
+    }
+
+    const url = `${this.baseUrl}/transaction/negocios/${idNegocio}/transacciones`;
+    console.log('[API] 📋 GET TRANSACTIONS BY BUSINESS URL:', url);
+    
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    });
+
+    try {
+      const response = await this.http.get<{ 
+        message: string, 
+        count: number, 
+        data: any[] 
+      }>(url, { headers })
+        .pipe(
+          timeout(this.requestTimeout),
+          catchError(this.handleError.bind(this))
+        )
+        .toPromise();
+
+      console.log('[API] ✅ Transactions retrieved successfully:', response);
+      
+      // Procesar los datos para normalizar el tipo según la interfaz del frontend
+      const processedData = (response?.data || []).map(transaction => {
+        return {
+          ...transaction,
+          // Convertir tipo booleano del backend a string para el frontend
+          // false = ingreso -> 'income', true = egreso -> 'expense'
+          typeString: transaction.tipo === false ? 'income' : 'expense',
+          // Mantener el tipo original también
+          tipoOriginal: transaction.tipo,
+          // Asegurar que la fecha esté en formato correcto
+          date: transaction.fechaISO || transaction.fecha,
+          // Agregar propiedades que espera el frontend
+          id: transaction.idTransaccion,
+          type: transaction.tipo === false ? 'income' : 'expense',
+          amount: transaction.monto,
+          description: transaction.descripcion || '',
+          category: 'General', // Valor por defecto si no viene del backend
+          method: 'No especificado', // Valor por defecto si no viene del backend
+          status: 'completed' // Valor por defecto
+        };
+      });
+
+      console.log('[API] 📊 Processed transactions for frontend:', processedData);
+      return processedData;
+    } catch (error: any) {
+      if (error.status === 404) {
+        console.log('[API] ℹ️ No transactions found for business:', idNegocio);
+        return [];
+      }
+      console.error('[API] ❌ Error getting transactions:', error);
       throw this.handleHttpError(error);
     }
   }

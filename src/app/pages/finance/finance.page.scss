@@ -2,32 +2,41 @@
    MODERN FINANCE PAGE - IONIC COLORS
    ======================================== */
 
+/* ===== ION-CONTENT SETUP ===== */
+ion-content {
+  --overflow-hidden: false;
+  --offset-top: 0;
+  --offset-bottom: 0;
+}
+
+/* ===== TEMPORARY WRAPPER ===== */
+.ion-content-wrapper {
+  height: 100vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
 /* ===== BASE STYLES ===== */
 .finance-page {
   min-height: 100vh;
-  padding-bottom: 80px; /* Space for tabs */
-  background: linear-gradient(
-    to bottom,
-    var(--ion-background-color) 0%,
-    var(--ion-color-step-50) 100%
-  );
-  transition: all 0.3s ease;
+  background: var(--ion-background-color);
+  transition: background-color 0.3s ease;
+  position: relative;
 }
 
 /* ===== HEADER ===== */
 .header {
-  padding: 24px;
   background: var(--ion-card-background);
   border-bottom: 1px solid var(--ion-color-step-150);
-  transition: all 0.3s ease;
+  padding: 24px;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
 .header-content {
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 12px;
+  align-items: center;
 }
 
 .header-text {
@@ -39,17 +48,19 @@
   font-weight: bold;
   margin: 0;
   color: var(--ion-text-color);
+  transition: color 0.3s ease;
 }
 
 .subtitle {
   font-size: 14px;
   margin: 4px 0 0 0;
   color: var(--ion-color-medium);
+  transition: color 0.3s ease;
 }
 
 .add-button {
-  background: var(--ion-color-warning);
-  color: var(--ion-color-warning-contrast);
+  background: #E86F00;
+  color: white;
   border: none;
   border-radius: 8px;
   padding: 8px 16px;
@@ -63,7 +74,7 @@
   margin-right: 8px;
 
   &:hover {
-    background: var(--ion-color-warning-shade);
+    background: #d66200;
     transform: translateY(-1px);
   }
 }
@@ -95,10 +106,12 @@
 
 /* ===== CONTENT ===== */
 .content {
-  padding: 24px;
+  padding: 16px;
   display: flex;
   flex-direction: column;
   gap: 24px;
+  background: var(--ion-background-color);
+  transition: background-color 0.3s ease;
 }
 
 /* ===== SUMMARY CARDS ===== */
@@ -113,7 +126,7 @@
   border: 1px solid var(--ion-color-step-150);
   border-radius: 12px;
   overflow: hidden;
-  transition: all 0.3s ease;
+  transition: background-color 0.3s ease, border-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 
   &:hover {
@@ -139,12 +152,14 @@
   font-size: 14px;
   font-weight: 500;
   color: var(--ion-color-medium);
+  transition: color 0.3s ease;
 }
 
 .card-amount {
   font-size: 20px;
   font-weight: bold;
   margin: 0;
+  transition: color 0.3s ease;
 }
 
 .income-color {
@@ -162,6 +177,7 @@
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
 .filters-content {
@@ -237,9 +253,9 @@
   }
 
   &.active.default {
-    background: var(--ion-color-warning);
-    color: var(--ion-color-warning-contrast);
-    border-color: var(--ion-color-warning);
+    background: #E86F00;
+    color: white;
+    border-color: #E86F00;
   }
 
   &.active.income {
@@ -255,9 +271,9 @@
   }
 
   &.active.pending {
-    background: var(--ion-color-warning);
-    color: var(--ion-color-warning-contrast);
-    border-color: var(--ion-color-warning);
+    background: #E86F00;
+    color: white;
+    border-color: #E86F00;
   }
 
   &.active.completed {
@@ -298,6 +314,7 @@
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
 .form-header {
@@ -308,6 +325,7 @@
     font-weight: bold;
     margin: 0;
     color: var(--ion-text-color);
+    transition: color 0.3s ease;
   }
 }
 
@@ -355,8 +373,8 @@
 
 .save-btn {
   flex: 1;
-  background: var(--ion-color-warning);
-  color: var(--ion-color-warning-contrast);
+  background: #E86F00;
+  color: white;
   border: none;
   border-radius: 8px;
   padding: 12px 16px;
@@ -366,7 +384,7 @@
   transition: all 0.2s ease;
 
   &:hover:not(:disabled) {
-    background: var(--ion-color-warning-shade);
+    background: #d66200;
     transform: translateY(-1px);
   }
 
@@ -496,7 +514,7 @@
 }
 
 .status-pending {
-  background: var(--ion-color-warning);
+  background: #E86F00;
 }
 
 .status-cancelled {
@@ -554,8 +572,8 @@
 }
 
 .badge-pending {
-  background: rgba(var(--ion-color-warning-rgb), 0.15);
-  color: var(--ion-color-warning-shade);
+  background: rgba(232, 111, 0, 0.15);
+  color: #d66200;
 }
 
 .badge-cancelled {
@@ -723,5 +741,260 @@
 
   .pay-btn {
     width: 100%;
+  }
+}
+
+/* ========================================
+   FLOATING ACTION BUTTON (FAB)
+   ======================================== */
+
+.fab-container {
+  position: fixed;
+  bottom: 80px; /* Encima de la barra de tabs */
+  right: 20px;
+  z-index: 1000;
+}
+
+.fab-button {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: #E86F00;
+  border: none;
+  box-shadow: 0 4px 12px rgba(232, 111, 0, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 16px rgba(232, 111, 0, 0.4);
+  }
+  
+  &:active {
+    transform: scale(0.95);
+  }
+  
+  .fab-icon {
+    width: 24px;
+    height: 24px;
+    color: white;
+  }
+}
+
+/* ========================================
+   ACTION SELECTION MODAL
+   ======================================== */
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  animation: fadeIn 0.3s ease;
+}
+
+.action-modal {
+  background: var(--ion-background-color);
+  border-radius: 16px;
+  width: 90%;
+  max-width: 400px;
+  margin: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  animation: slideUp 0.3s ease;
+}
+
+.modal-header {
+  padding: 24px 24px 16px;
+  border-bottom: 1px solid var(--ion-color-step-100);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  
+  h3 {
+    margin: 0;
+    color: var(--ion-text-color);
+    font-size: 20px;
+    font-weight: 600;
+  }
+  
+  .close-modal {
+    background: none;
+    border: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--ion-color-medium);
+    transition: all 0.2s ease;
+    
+    &:hover {
+      background: var(--ion-color-step-100);
+      color: var(--ion-text-color);
+    }
+    
+    svg {
+      width: 20px;
+      height: 20px;
+    }
+  }
+}
+
+.modal-actions {
+  padding: 16px 24px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.modal-action-btn {
+  background: var(--ion-color-step-50);
+  border: 1px solid var(--ion-color-step-150);
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+  
+  &:hover {
+    background: var(--ion-color-step-100);
+    border-color: #E86F00;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(232, 111, 0, 0.15);
+  }
+  
+  &:active {
+    transform: translateY(0);
+  }
+  
+  .action-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: #E86F00;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    
+    svg {
+      width: 24px;
+      height: 24px;
+      color: white;
+    }
+  }
+  
+  .action-text {
+    flex: 1;
+    
+    h4 {
+      margin: 0 0 4px;
+      color: var(--ion-text-color);
+      font-size: 16px;
+      font-weight: 600;
+    }
+    
+    p {
+      margin: 0;
+      color: var(--ion-color-medium);
+      font-size: 14px;
+    }
+  }
+}
+
+/* ===== ANIMACIONES ===== */
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ===== RESPONSIVE ===== */
+
+@media (max-width: 480px) {
+  .fab-container {
+    bottom: 70px;
+    right: 16px;
+  }
+  
+  .fab-button {
+    width: 52px;
+    height: 52px;
+    
+    .fab-icon {
+      width: 20px;
+      height: 20px;
+    }
+  }
+  
+  .action-modal {
+    width: 95%;
+    margin: 16px;
+  }
+  
+  .modal-header {
+    padding: 20px 20px 12px;
+    
+    h3 {
+      font-size: 18px;
+    }
+  }
+  
+  .modal-actions {
+    padding: 12px 20px 20px;
+  }
+  
+  .modal-action-btn {
+    padding: 14px;
+    gap: 14px;
+    
+    .action-icon {
+      width: 44px;
+      height: 44px;
+      
+      svg {
+        width: 20px;
+        height: 20px;
+      }
+    }
+    
+    .action-text {
+      h4 {
+        font-size: 15px;
+      }
+      
+      p {
+        font-size: 13px;
+      }
+    }
   }
 }

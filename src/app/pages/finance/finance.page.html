@@ -1,62 +1,47 @@
-<!-- Modern Finance Page - Exact React Copy -->
-<div class="finance-page">
-  <!-- Header -->
-  <div class="header">
-    <div class="header-content">
-      <div class="header-text">
-        <h1 class="title">Transacciones</h1>
-        <p class="subtitle">Historial de ingresos y gastos</p>
-      </div>
-      <button class="add-button" (click)="showAddForm = true">
-        <svg class="icon-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="m12 5-7 7 7 7"/>
-          <path d="M19 12H5"/>
-        </svg>
-        Agregar Transacción
-      </button>
-      <button class="add-button-secondary" (click)="showAddGastoFijoForm = true">
-        <svg class="icon-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M12 2L2 7l10 5 10-5-10-5z"/>
-          <path d="M2 17l10 5 10-5"/>
-          <path d="M2 12l10 5 10-5"/>
-        </svg>
-        Gasto Fijo
-      </button>
-    </div>
-  </div>
-
-  <div class="content">
-    <!-- Summary Cards -->
-    <div class="summary-grid">
-      <div class="summary-card">
-        <div class="card-content">
-          <div class="card-header">
-            <span class="card-label">Ingresos</span>
-          </div>
-          <p class="card-amount income-color">${{ totalIncome.toFixed(2) }}</p>
-        </div>
-      </div>
-
-      <div class="summary-card">
-        <div class="card-content">
-          <div class="card-header">
-            <span class="card-label">Gastos</span>
-          </div>
-          <p class="card-amount expense-color">${{ totalExpenses.toFixed(2) }}</p>
-        </div>
-      </div>
-
-      <div class="summary-card">
-        <div class="card-content">
-          <div class="card-header">
-            <span class="card-label">Balance</span>
-          </div>
-          <p class="card-amount" [ngClass]="getBalance() >= 0 ? 'income-color' : 'expense-color'">
-            ${{ getBalance().toFixed(2) }}
-          </p>
+<div class="ion-content-wrapper">
+  <div class="finance-page">
+    <!-- Header -->
+    <div class="header">
+      <div class="header-content">
+        <div class="header-text">
+          <h1 class="title">Transacciones</h1>
+          <p class="subtitle">Historial de ingresos y gastos</p>
         </div>
       </div>
     </div>
+
+    <div class="content">
+      <!-- Summary Cards -->
+      <div class="summary-grid">
+        <div class="summary-card">
+          <div class="card-content">
+            <div class="card-header">
+              <span class="card-label">Ingresos</span>
+            </div>
+            <p class="card-amount income-color">${{ totalIncome.toFixed(2) }}</p>
+          </div>
+        </div>
+
+        <div class="summary-card">
+          <div class="card-content">
+            <div class="card-header">
+              <span class="card-label">Gastos</span>
+            </div>
+            <p class="card-amount expense-color">${{ totalExpenses.toFixed(2) }}</p>
+          </div>
+        </div>
+
+        <div class="summary-card">
+          <div class="card-content">
+            <div class="card-header">
+              <span class="card-label">Balance</span>
+            </div>
+            <p class="card-amount" [ngClass]="getBalance() >= 0 ? 'income-color' : 'expense-color'">
+              ${{ getBalance().toFixed(2) }}
+            </p>
+          </div>
+        </div>
+      </div>
 
     <!-- Filters Card -->
     <div class="filters-card">
@@ -343,6 +328,59 @@
           <h3 class="empty-title">No se encontraron transacciones</h3>
           <p class="empty-subtitle">Intenta ajustar los filtros o agregar una nueva transacción</p>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Floating Action Button -->
+  <div class="fab-container">
+    <button class="fab-button" (click)="showActionModal = true">
+      <svg class="fab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 5v14"/>
+        <path d="M5 12h14"/>
+      </svg>
+    </button>
+  </div>
+
+  <!-- Action Selection Modal -->
+  <div class="modal-overlay" *ngIf="showActionModal" (click)="showActionModal = false">
+    <div class="action-modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>¿Qué deseas agregar?</h3>
+        <button class="close-modal" (click)="showActionModal = false">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 6L6 18"/>
+            <path d="M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+      <div class="modal-actions">
+        <button class="modal-action-btn transaction-btn" (click)="openTransactionForm()">
+          <div class="action-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 1v22"/>
+              <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+            </svg>
+          </div>
+          <div class="action-text">
+            <h4>Nueva Transacción</h4>
+            <p>Registrar ingreso o gasto</p>
+          </div>
+        </button>
+        
+        <button class="modal-action-btn gasto-btn" (click)="openGastoFijoForm()">
+          <div class="action-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+              <path d="M2 17l10 5 10-5"/>
+              <path d="M2 12l10 5 10-5"/>
+            </svg>
+          </div>
+          <div class="action-text">
+            <h4>Gasto Fijo</h4>
+            <p>Crear gasto recurrente</p>
+          </div>
+        </button>
       </div>
     </div>
   </div>

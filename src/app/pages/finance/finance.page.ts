@@ -1,6 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { IonicModule } from '@ionic/angular';
 import { ApiService } from '../../services/api-service';
 import { ToastController, LoadingController } from '@ionic/angular';
 
@@ -34,9 +35,11 @@ interface GastoFijo {
   standalone: true,
   imports: [
     CommonModule, 
-    FormsModule
+    FormsModule,
+    IonicModule,
   ]
 })
+
 export class FinancePage implements OnInit {
   
   filterType: 'all' | 'income' | 'expense' | 'pending' | 'completed' | 'cancelled' = 'all';
@@ -44,6 +47,7 @@ export class FinancePage implements OnInit {
   searchTerm: string = '';
   showAddForm: boolean = false;
   showAddGastoFijoForm: boolean = false;
+  showActionModal: boolean = false;
   isLoading: boolean = false;
   businessId: string = ''; // ID del negocio actual
 
@@ -68,17 +72,14 @@ export class FinancePage implements OnInit {
   transactions: Transaction[] = [];
   gastosFijos: GastoFijo[] = [];
 
-  constructor(
-    private apiService: ApiService,
-    private toastController: ToastController,
-    private loadingController: LoadingController
-  ) {
-    // No need for icon registration with SVG icons
-  }
+  private apiService = inject(ApiService);
+  private toastController = inject(ToastController);
+  private loadingController = inject(LoadingController);
 
   async ngOnInit() {
     await this.loadBusinessId();
     await this.loadGastosFijos();
+    await this.loadTransactions();
   }
 
   // 🔹 Cargar ID del negocio desde el storage o contexto
@@ -104,6 +105,25 @@ export class FinancePage implements OnInit {
     }
   }
 
+  // 🔹 Cargar transacciones del negocio
+  private async loadTransactions(): Promise<void> {
+    if (!this.businessId) {
+      console.log('[FINANCE] No business ID available, skipping transaction load');
+      return;
+    }
+
+    try {
+      console.log('[FINANCE] 📋 Loading transactions for business:', this.businessId);
+      const transactions = await this.apiService.getTransactionsByBusiness(this.businessId);
+      this.transactions = transactions || [];
+      console.log('[FINANCE] ✅ Transactions loaded:', this.transactions.length);
+    } catch (error) {
+      console.error('[FINANCE] ❌ Error loading transactions:', error);
+      // No mostrar error si no hay transacciones, es normal en negocios nuevos
+      this.transactions = [];
+    }
+  }
+
   // 🔹 Mostrar toast
   private async presentToast(message: string, color: string = 'primary'): Promise<void> {
     const toast = await this.toastController.create({
@@ -115,9 +135,11 @@ export class FinancePage implements OnInit {
     await toast.present();
   }
 
-  // 🔹 Mapear tipo del frontend al backend
+  // 🔹 Mapear tipo del frontend al backend - Compatible con la nueva implementación
   private mapTransactionType(type: 'income' | 'expense'): 'income' | 'expense' {
-    return type; // En este caso son iguales, pero puedes cambiar si necesitas mapeo diferente
+    // El nuevo API service maneja automáticamente la conversión a número
+    // Solo necesitamos pasar 'income' o 'expense' como string
+    return type;
   }
 
   // 🔹 Validar datos de transacción
@@ -304,19 +326,8 @@ export class FinancePage implements OnInit {
       
       console.log('[FINANCE] ✅ Transaction created:', response);
 
-      // Agregar a la lista local (simulando la respuesta del backend)
-      const localTransaction: Transaction = {
-        id: response.data?.idTransaccion || Date.now(),
-        type: this.newTransaction.type as 'income' | 'expense',
-        category: this.newTransaction.category!,
-        description: this.newTransaction.description!,
-        amount: Number(this.newTransaction.amount),
-        date: new Date().toISOString().split('T')[0],
-        method: this.newTransaction.method!,
-        status: 'completed'
-      };
-
-      this.transactions.unshift(localTransaction);
+      // Recargar transacciones desde el backend en lugar de agregar localmente
+      await this.loadTransactions();
       
       await this.presentToast('Transacción guardada exitosamente', 'success');
       this.cancelAdd();
@@ -516,5 +527,19 @@ export class FinancePage implements OnInit {
                            gasto.descripcion.toLowerCase().includes(this.searchTerm.toLowerCase());
       return matchesType && matchesSearch;
     });
+  }
+
+  // 🔹 MÉTODOS PARA EL FAB Y MODAL
+
+  // Abrir formulario de transacción desde el modal
+  openTransactionForm(): void {
+    this.showActionModal = false;
+    this.showAddForm = true;
+  }
+
+  // Abrir formulario de gasto fijo desde el modal
+  openGastoFijoForm(): void {
+    this.showActionModal = false;
+    this.showAddGastoFijoForm = true;
   }
 }
