@@ -6,7 +6,7 @@ import { ApiService } from '../../services/api-service';
 import { ToastController, LoadingController } from '@ionic/angular';
 
 interface Transaction {
-  id: number;
+  id: string | number;
   type: 'income' | 'expense';
   category: string;
   description: string;
@@ -14,6 +14,14 @@ interface Transaction {
   date: string;
   method: string;
   status: 'completed' | 'pending' | 'cancelled';
+}
+
+interface Product {
+  idProducto: string;
+  nombreProducto: string;
+  precioVenta: number;
+  costoProduccion: number;
+  stock: number;
 }
 
 interface GastoFijo {
@@ -28,36 +36,56 @@ interface GastoFijo {
   createdAt: string;
 }
 
+interface VentaForm {
+  idProducto: string;
+  cantidadVendida: number;
+  descripcion: string;
+  method: string;
+}
+
+interface FinancialTransactionForm {
+  type: 'income' | 'expense';
+  category: string;
+  description: string;
+  amount: number;
+  method: string;
+}
+
 @Component({
   selector: 'app-finance',
   templateUrl: './finance.page.html',
   styleUrls: ['./finance.page.scss'],
   standalone: true,
   imports: [
-    CommonModule, 
+    CommonModule,
     FormsModule,
     IonicModule,
   ]
 })
-
 export class FinancePage implements OnInit {
-  
   filterType: 'all' | 'income' | 'expense' | 'pending' | 'completed' | 'cancelled' = 'all';
   filterCategory: string = 'all';
   searchTerm: string = '';
-  showAddForm: boolean = false;
+  showAddVentaForm: boolean = false;
+  showAddTransactionForm: boolean = false;
   showAddGastoFijoForm: boolean = false;
   showActionModal: boolean = false;
   isLoading: boolean = false;
-  businessId: string = ''; // ID del negocio actual
+  businessId: string = '';
 
-  newTransaction: Partial<Transaction> = {
+  newVenta: VentaForm = {
+    idProducto: '',
+    cantidadVendida: 1,
+    descripcion: '',
+    method: ''
+  };
+
+  newTransaction: FinancialTransactionForm = {
     type: 'income',
     category: '',
     description: '',
     amount: 0,
-    method: '',
-    status: 'completed'
+    method: ''
   };
 
   newGastoFijo: Partial<GastoFijo> = {
@@ -71,6 +99,7 @@ export class FinancePage implements OnInit {
 
   transactions: Transaction[] = [];
   gastosFijos: GastoFijo[] = [];
+  products: Product[] = [];
 
   private apiService = inject(ApiService);
   private toastController = inject(ToastController);
@@ -78,53 +107,121 @@ export class FinancePage implements OnInit {
 
   async ngOnInit() {
     await this.loadBusinessId();
+    await this.loadProducts();
+    await this.loadAllMovements();
     await this.loadGastosFijos();
-    await this.loadTransactions();
   }
 
-  // 🔹 Cargar ID del negocio desde el storage o contexto
   private async loadBusinessId(): Promise<void> {
     try {
-      // Aquí puedes obtener el ID del negocio de diferentes maneras:
-      // 1. Desde el localStorage/Preferences
-      // 2. Desde un servicio de estado global
-      // 3. Como parámetro de navegación
-      
-      // Por ahora, vamos a asumir que tienes un método para obtenerlo
       const uid = await this.apiService.getUid();
-      if (uid) {
-        const businesses = await this.apiService.getBusinessByUserId(uid);
-        if (businesses && businesses.length > 0) {
-          this.businessId = businesses[0]['idNegocio'] || businesses[0]['id'];
-          console.log('[FINANCE] Business ID loaded:', this.businessId);
-        }
+      if (!uid) return;
+
+      const businesses = await this.apiService.getBusinessByUserId(uid);
+      if (businesses && businesses.length > 0) {
+        this.businessId = businesses[0]['idNegocio'] || businesses[0]['id'];
       }
     } catch (error) {
       console.error('[FINANCE] Error loading business ID:', error);
-      await this.presentToast('Error al cargar información del negocio', 'danger');
+      await this.presentToast('Error al cargar informacion del negocio', 'danger');
     }
   }
 
-  // 🔹 Cargar transacciones del negocio
-  private async loadTransactions(): Promise<void> {
-    if (!this.businessId) {
-      console.log('[FINANCE] No business ID available, skipping transaction load');
-      return;
-    }
+  private async loadProducts(): Promise<void> {
+    if (!this.businessId) return;
 
     try {
-      console.log('[FINANCE] 📋 Loading transactions for business:', this.businessId);
-      const transactions = await this.apiService.getTransactionsByBusiness(this.businessId);
-      this.transactions = transactions || [];
-      console.log('[FINANCE] ✅ Transactions loaded:', this.transactions.length);
+      const rawProducts = await this.apiService.getProductsByBusiness(this.businessId);
+      this.products = (rawProducts || []).map((p: any) => ({
+        idProducto: p.idProducto || p.id || '',
+        nombreProducto: p.nombreProducto || 'Producto',
+        precioVenta: Number(p.precioVenta) || 0,
+        costoProduccion: Number(p.costoProduccion) || 0,
+        stock: Number(p.stock) || 0
+      })).filter((p: Product) => !!p.idProducto);
     } catch (error) {
-      console.error('[FINANCE] ❌ Error loading transactions:', error);
-      // No mostrar error si no hay transacciones, es normal en negocios nuevos
+      console.error('[FINANCE] Error loading products:', error);
+      this.products = [];
+    }
+  }
+
+  private getSelectedProduct(productId: string): Product | undefined {
+    return this.products.find(p => p.idProducto === productId);
+  }
+
+  private normalizeDate(value: any): string {
+    if (!value) return new Date().toISOString();
+
+    if (typeof value === 'string') return value;
+
+    if (value?.toDate && typeof value.toDate === 'function') {
+      return value.toDate().toISOString();
+    }
+
+    if (typeof value?._seconds === 'number') {
+      return new Date(value._seconds * 1000).toISOString();
+    }
+
+    return new Date().toISOString();
+  }
+
+  private async loadVentasAsTransactions(): Promise<Transaction[]> {
+    if (!this.products.length) return [];
+
+    const salesByProduct = await Promise.all(
+      this.products.map(async (product) => {
+        const ventas = await this.apiService.getVentasByProducto(product.idProducto);
+        return (ventas || []).map((venta: any): Transaction => {
+          const cantidad = Number(venta.cantidadVendida) || 0;
+          const precio = Number(venta.precioUnitario) || 0;
+          const total = Number(venta.totalVenta) || (cantidad * precio);
+
+          return {
+            id: venta.idVenta || `${product.idProducto}-${this.normalizeDate(venta.fechaVenta)}`,
+            type: 'income',
+            category: 'Ventas',
+            description: `Venta: ${product.nombreProducto} x${cantidad}`,
+            amount: total,
+            date: this.normalizeDate(venta.fechaVenta),
+            method: 'Venta de producto',
+            status: 'completed'
+          };
+        });
+      })
+    );
+
+    return salesByProduct.flat();
+  }
+
+  private async loadTransactions(): Promise<Transaction[]> {
+    if (!this.businessId) return [];
+
+    try {
+      return await this.apiService.getTransactionsByBusiness(this.businessId);
+    } catch (error) {
+      console.error('[FINANCE] Error loading transactions:', error);
+      return [];
+    }
+  }
+
+  private async loadAllMovements(): Promise<void> {
+    if (!this.businessId) return;
+
+    try {
+      const [financialTransactions, ventas] = await Promise.all([
+        this.loadTransactions(),
+        this.loadVentasAsTransactions()
+      ]);
+
+      this.transactions = [...financialTransactions, ...ventas].sort((a, b) => {
+        return new Date(b.date).getTime() - new Date(a.date).getTime();
+      });
+    } catch (error) {
+      console.error('[FINANCE] Error loading all movements:', error);
       this.transactions = [];
     }
   }
 
-  // 🔹 Mostrar toast
   private async presentToast(message: string, color: string = 'primary'): Promise<void> {
     const toast = await this.toastController.create({
       message,
@@ -135,17 +232,28 @@ export class FinancePage implements OnInit {
     await toast.present();
   }
 
-  // 🔹 Mapear tipo del frontend al backend - Compatible con la nueva implementación
-  private mapTransactionType(type: 'income' | 'expense'): 'income' | 'expense' {
-    // El nuevo API service maneja automáticamente la conversión a número
-    // Solo necesitamos pasar 'income' o 'expense' como string
-    return type;
+  private validateVentaData(): boolean {
+    if (!this.newVenta.idProducto) {
+      this.presentToast('El producto es requerido', 'warning');
+      return false;
+    }
+
+    if (!this.newVenta.cantidadVendida || this.newVenta.cantidadVendida <= 0) {
+      this.presentToast('La cantidad vendida debe ser mayor a 0', 'warning');
+      return false;
+    }
+
+    if (!this.newVenta.method) {
+      this.presentToast('El metodo de pago es requerido', 'warning');
+      return false;
+    }
+
+    return true;
   }
 
-  // 🔹 Validar datos de transacción
-  private validateTransactionData(): boolean {
+  private validateFinancialTransactionData(): boolean {
     if (!this.newTransaction.description?.trim()) {
-      this.presentToast('La descripción es requerida', 'warning');
+      this.presentToast('La descripcion es requerida', 'warning');
       return false;
     }
 
@@ -155,17 +263,17 @@ export class FinancePage implements OnInit {
     }
 
     if (!this.newTransaction.category) {
-      this.presentToast('La categoría es requerida', 'warning');
+      this.presentToast('La categoria es requerida', 'warning');
       return false;
     }
 
     if (!this.newTransaction.method) {
-      this.presentToast('El método de pago es requerido', 'warning');
+      this.presentToast('El metodo de pago es requerido', 'warning');
       return false;
     }
 
     if (!this.newTransaction.type) {
-      this.presentToast('El tipo de transacción es requerido', 'warning');
+      this.presentToast('El tipo de transaccion es requerido', 'warning');
       return false;
     }
 
@@ -188,10 +296,6 @@ export class FinancePage implements OnInit {
     return this.totalIncome - this.totalExpenses;
   }
 
-  getBalanceClass(): string {
-    return this.getBalance() >= 0 ? 'balance-positive' : 'balance-negative';
-  }
-
   setFilterType(type: 'all' | 'income' | 'expense' | 'pending' | 'completed' | 'cancelled'): void {
     this.filterType = type;
   }
@@ -199,8 +303,7 @@ export class FinancePage implements OnInit {
   getFilteredTransactions(): Transaction[] {
     return this.transactions.filter(transaction => {
       let matchesType = true;
-      
-      // Filtrar por tipo de transacción o status
+
       if (this.filterType === 'all') {
         matchesType = true;
       } else if (this.filterType === 'income' || this.filterType === 'expense') {
@@ -208,7 +311,7 @@ export class FinancePage implements OnInit {
       } else if (this.filterType === 'pending' || this.filterType === 'completed' || this.filterType === 'cancelled') {
         matchesType = transaction.status === this.filterType;
       }
-      
+
       const matchesCategory = this.filterCategory === 'all' || transaction.category === this.filterCategory;
       const matchesSearch = transaction.description.toLowerCase().includes(this.searchTerm.toLowerCase());
       return matchesType && matchesCategory && matchesSearch;
@@ -230,14 +333,6 @@ export class FinancePage implements OnInit {
         default: return 'trending-down';
       }
     }
-  }
-
-  getTransactionIconClass(transaction: Transaction): string {
-    return transaction.type === 'income' ? 'income-icon-bg' : 'expense-icon-bg';
-  }
-
-  getAmountClass(type: string): string {
-    return type === 'income' ? 'amount-income' : 'amount-expense';
   }
 
   getStatusClass(status: string): string {
@@ -267,116 +362,135 @@ export class FinancePage implements OnInit {
     }
   }
 
-  getStatusColor(status: string): string {
-    switch (status) {
-      case 'completed': return 'success';
-      case 'pending': return 'warning';
-      case 'cancelled': return 'danger';
-      default: return 'medium';
-    }
-  }
-
   formatDate(dateString: string): string {
     const date = new Date(dateString);
     const months = [
       'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
       'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'
     ];
-    
+
     const day = date.getDate();
     const month = months[date.getMonth()];
     const year = date.getFullYear();
-    
+
     return `${day} de ${month}, ${year}`;
   }
 
-  async addTransaction(): Promise<void> {
-    // Validación de campos requeridos
-    if (!this.validateTransactionData()) {
-      return;
-    }
-
-    // Validar que tengamos el ID del negocio
+  async addVenta(): Promise<void> {
+    if (!this.validateVentaData()) return;
     if (!this.businessId) {
-      await this.presentToast('Error: No se encontró información del negocio', 'danger');
+      await this.presentToast('Error: No se encontro informacion del negocio', 'danger');
       return;
     }
 
-    // Mostrar loading
+    const selectedProduct = this.getSelectedProduct(this.newVenta.idProducto);
+    if (!selectedProduct) {
+      await this.presentToast('Selecciona un producto valido', 'warning');
+      return;
+    }
+
     this.isLoading = true;
     const loading = await this.loadingController.create({
-      message: 'Guardando transacción...',
+      message: 'Guardando venta...',
       spinner: 'crescent'
     });
     await loading.present();
 
     try {
-      // Preparar datos para el backend
-      const transactionData = {
+      const ventaData = {
         idNegocio: this.businessId,
-        tipo: this.mapTransactionType(this.newTransaction.type as 'income' | 'expense'),
-        monto: Number(this.newTransaction.amount),
-        descripcion: this.newTransaction.description!
+        idProducto: selectedProduct.idProducto,
+        cantidadVendida: Number(this.newVenta.cantidadVendida),
+        precioUnitario: Number(selectedProduct.precioVenta),
+        costoProduccion: Number(selectedProduct.costoProduccion)
       };
 
-      console.log('[FINANCE] 📤 Sending transaction data:', transactionData);
-
-      // Enviar al backend
-      const response = await this.apiService.createTransaction(transactionData);
-      
-      console.log('[FINANCE] ✅ Transaction created:', response);
-
-      // Recargar transacciones desde el backend en lugar de agregar localmente
-      await this.loadTransactions();
-      
-      await this.presentToast('Transacción guardada exitosamente', 'success');
-      this.cancelAdd();
-
+      await this.apiService.createVenta(ventaData);
+      await this.apiService.decreaseStock(
+        selectedProduct.idProducto,
+        Number(this.newVenta.cantidadVendida)
+      );
+      await this.loadAllMovements();
+      await this.loadProducts();
+      await this.presentToast('Venta guardada y stock actualizado', 'success');
+      this.cancelAddVenta();
     } catch (error: any) {
-      console.error('[FINANCE] ❌ Error creating transaction:', error);
-      let errorMessage = 'Error al guardar la transacción';
-      
-      if (error.message) {
-        errorMessage = error.message;
-      }
-      
-      await this.presentToast(errorMessage, 'danger');
+      console.error('[FINANCE] Error creating venta:', error);
+      await this.presentToast(error?.message || 'Error al guardar la venta', 'danger');
     } finally {
       this.isLoading = false;
       await loading.dismiss();
     }
   }
 
-  cancelAdd(): void {
-    this.showAddForm = false;
+  async addFinancialTransaction(): Promise<void> {
+    if (!this.validateFinancialTransactionData()) return;
+    if (!this.businessId) {
+      await this.presentToast('Error: No se encontro informacion del negocio', 'danger');
+      return;
+    }
+
+    this.isLoading = true;
+    const loading = await this.loadingController.create({
+      message: 'Guardando transaccion...',
+      spinner: 'crescent'
+    });
+    await loading.present();
+
+    try {
+      await this.apiService.createTransaction({
+        idNegocio: this.businessId,
+        tipo: this.newTransaction.type,
+        monto: Number(this.newTransaction.amount),
+        descripcion: this.newTransaction.description
+      });
+
+      await this.loadAllMovements();
+      await this.presentToast('Transaccion guardada exitosamente', 'success');
+      this.cancelAddTransaction();
+    } catch (error: any) {
+      console.error('[FINANCE] Error creating transaction:', error);
+      await this.presentToast(error?.message || 'Error al guardar la transaccion', 'danger');
+    } finally {
+      this.isLoading = false;
+      await loading.dismiss();
+    }
+  }
+
+  cancelAddVenta(): void {
+    this.showAddVentaForm = false;
+    this.isLoading = false;
+    this.newVenta = {
+      idProducto: '',
+      cantidadVendida: 1,
+      descripcion: '',
+      method: ''
+    };
+  }
+
+  cancelAddTransaction(): void {
+    this.showAddTransactionForm = false;
     this.isLoading = false;
     this.newTransaction = {
       type: 'income',
       category: '',
       description: '',
       amount: 0,
-      method: '',
-      status: 'completed'
+      method: ''
     };
   }
 
-  // 🔹 MÉTODOS PARA GASTOS FIJOS
-
-  // Cargar gastos fijos del negocio
   async loadGastosFijos(): Promise<void> {
     if (!this.businessId) return;
 
     try {
       const gastos = await this.apiService.getGastosFijosByBusiness(this.businessId);
       this.gastosFijos = gastos || [];
-      console.log('[FINANCE] Gastos fijos loaded:', this.gastosFijos);
     } catch (error) {
       console.error('[FINANCE] Error loading gastos fijos:', error);
-      // No mostramos error si no hay gastos fijos
     }
   }
 
-  // Validar datos de gasto fijo
   private validateGastoFijoData(): boolean {
     if (!this.newGastoFijo.nombreGasto?.trim()) {
       this.presentToast('El nombre del gasto es requerido', 'warning');
@@ -389,7 +503,7 @@ export class FinancePage implements OnInit {
     }
 
     if (!this.newGastoFijo.descripcion?.trim()) {
-      this.presentToast('La descripción es requerida', 'warning');
+      this.presentToast('La descripcion es requerida', 'warning');
       return false;
     }
 
@@ -401,14 +515,10 @@ export class FinancePage implements OnInit {
     return true;
   }
 
-  // Crear gasto fijo
   async addGastoFijo(): Promise<void> {
-    if (!this.validateGastoFijoData()) {
-      return;
-    }
-
+    if (!this.validateGastoFijoData()) return;
     if (!this.businessId) {
-      await this.presentToast('Error: No se encontró información del negocio', 'danger');
+      await this.presentToast('Error: No se encontro informacion del negocio', 'danger');
       return;
     }
 
@@ -420,45 +530,29 @@ export class FinancePage implements OnInit {
     await loading.present();
 
     try {
-      // Preparar datos para el backend
       const gastoData = {
         idNegocio: this.businessId,
         nombreGasto: this.newGastoFijo.nombreGasto!,
         costoGasto: Number(this.newGastoFijo.costoGasto),
         descripcion: this.newGastoFijo.descripcion!,
         recurrencia: this.newGastoFijo.recurrencia!,
-        fechasEjecucion: [], // Se puede calcular en el backend
+        fechasEjecucion: [],
         pagado: false
       };
 
-      console.log('[FINANCE] 📤 Sending gasto fijo data:', gastoData);
-
-      const response = await this.apiService.createGastoFijo(gastoData);
-      
-      console.log('[FINANCE] ✅ Gasto fijo created:', response);
-
-      // Recargar gastos fijos
+      await this.apiService.createGastoFijo(gastoData);
       await this.loadGastosFijos();
-      
       await this.presentToast('Gasto fijo creado exitosamente', 'success');
       this.cancelAddGastoFijo();
-
     } catch (error: any) {
-      console.error('[FINANCE] ❌ Error creating gasto fijo:', error);
-      let errorMessage = 'Error al crear el gasto fijo';
-      
-      if (error.message) {
-        errorMessage = error.message;
-      }
-      
-      await this.presentToast(errorMessage, 'danger');
+      console.error('[FINANCE] Error creating gasto fijo:', error);
+      await this.presentToast(error?.message || 'Error al crear el gasto fijo', 'danger');
     } finally {
       this.isLoading = false;
       await loading.dismiss();
     }
   }
 
-  // Cancelar agregar gasto fijo
   cancelAddGastoFijo(): void {
     this.showAddGastoFijoForm = false;
     this.isLoading = false;
@@ -472,7 +566,6 @@ export class FinancePage implements OnInit {
     };
   }
 
-  // Marcar gasto fijo como pagado
   async markAsPaid(idGasto: string): Promise<void> {
     this.isLoading = true;
     const loading = await this.loadingController.create({
@@ -482,39 +575,35 @@ export class FinancePage implements OnInit {
     await loading.present();
 
     try {
-      await this.apiService.markGastoFijoAsPaid(idGasto);
-      
-      // Actualizar el estado local
       const gasto = this.gastosFijos.find(g => g.idGasto === idGasto);
+
+      await this.apiService.markGastoFijoAsPaid(idGasto);
+
       if (gasto) {
+        await this.apiService.createGastoFijoPagado({
+          idNegocio: gasto.idNegocio || this.businessId,
+          nombreGasto: gasto.nombreGasto,
+          costoGasto: Number(gasto.costoGasto) || 0
+        });
         gasto.pagado = true;
       }
-      
-      await this.presentToast('Gasto marcado como pagado', 'success');
 
+      await this.presentToast('Gasto marcado como pagado', 'success');
     } catch (error: any) {
-      console.error('[FINANCE] ❌ Error marking as paid:', error);
-      let errorMessage = 'Error al marcar como pagado';
-      
-      if (error.message) {
-        errorMessage = error.message;
-      }
-      
-      await this.presentToast(errorMessage, 'danger');
+      console.error('[FINANCE] Error marking as paid:', error);
+      await this.presentToast(error?.message || 'Error al marcar como pagado', 'danger');
     } finally {
       this.isLoading = false;
       await loading.dismiss();
     }
   }
 
-  // Filtrar gastos fijos
   getFilteredGastosFijos(): GastoFijo[] {
     if (!this.gastosFijos) return [];
-    
+
     return this.gastosFijos.filter(gasto => {
       let matchesType = true;
-      
-      // Filtrar por status de pago
+
       if (this.filterType === 'all') {
         matchesType = true;
       } else if (this.filterType === 'pending') {
@@ -522,24 +611,31 @@ export class FinancePage implements OnInit {
       } else if (this.filterType === 'completed') {
         matchesType = gasto.pagado;
       }
-      
+
       const matchesSearch = gasto.nombreGasto.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-                           gasto.descripcion.toLowerCase().includes(this.searchTerm.toLowerCase());
+        gasto.descripcion.toLowerCase().includes(this.searchTerm.toLowerCase());
       return matchesType && matchesSearch;
     });
   }
 
-  // 🔹 MÉTODOS PARA EL FAB Y MODAL
-
-  // Abrir formulario de transacción desde el modal
-  openTransactionForm(): void {
+  openVentaForm(): void {
     this.showActionModal = false;
-    this.showAddForm = true;
+    this.showAddVentaForm = true;
+    this.showAddTransactionForm = false;
+    this.showAddGastoFijoForm = false;
   }
 
-  // Abrir formulario de gasto fijo desde el modal
+  openTransactionForm(): void {
+    this.showActionModal = false;
+    this.showAddTransactionForm = true;
+    this.showAddVentaForm = false;
+    this.showAddGastoFijoForm = false;
+  }
+
   openGastoFijoForm(): void {
     this.showActionModal = false;
     this.showAddGastoFijoForm = true;
+    this.showAddVentaForm = false;
+    this.showAddTransactionForm = false;
   }
 }

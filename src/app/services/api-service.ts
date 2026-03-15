@@ -53,8 +53,7 @@ export class ApiService {
 
       const response = await this.http.get<UserData>(url, { headers })
         .pipe(
-          timeout(this.requestTimeout),
-          catchError(this.handleError.bind(this))
+          timeout(this.requestTimeout)
         )
         .toPromise();
 
@@ -88,8 +87,7 @@ export class ApiService {
 
       const response = await this.http.post<FirebaseAuthResponse>(url, body, { headers })
         .pipe(
-          timeout(this.requestTimeout),
-          catchError(this.handleError.bind(this))
+          timeout(this.requestTimeout)
         )
         .toPromise();
 
@@ -133,8 +131,7 @@ export class ApiService {
 
       const response = await this.http.post<FirebaseAuthResponse>(url, body, { headers })
         .pipe(
-          timeout(this.requestTimeout),
-          catchError(this.handleError.bind(this))
+          timeout(this.requestTimeout)
         )
         .toPromise();
 
@@ -235,8 +232,7 @@ export class ApiService {
 
       const response = await this.http.get<BusinessData>(url, { headers })
         .pipe(
-          timeout(this.requestTimeout),
-          catchError(this.handleError.bind(this))
+          timeout(this.requestTimeout)
         )
         .toPromise();
 
@@ -267,8 +263,7 @@ export class ApiService {
 
       const response = await this.http.post<BusinessData>(url, businessData, { headers })
         .pipe(
-          timeout(this.requestTimeout),
-          catchError(this.handleError.bind(this))
+          timeout(this.requestTimeout)
         )
         .toPromise();
 
@@ -303,8 +298,7 @@ export class ApiService {
 
       const response = await this.http.get<{ message: string, data: BusinessData[] }>(url, { headers })
         .pipe(
-          timeout(this.requestTimeout),
-          catchError(this.handleError.bind(this))
+          timeout(this.requestTimeout)
         )
         .toPromise();
 
@@ -427,8 +421,7 @@ export class ApiService {
       
       const response = await this.http.get<{ message: string, email: string | null }>(url, { headers })
         .pipe(
-          timeout(this.requestTimeout),
-          catchError(this.handleError.bind(this))
+          timeout(this.requestTimeout)
         )
         .toPromise();
       
@@ -457,8 +450,7 @@ export class ApiService {
       
       const response = await this.http.post<any>(url, userData, { headers })
         .pipe(
-          timeout(this.requestTimeout),
-          catchError(this.handleError.bind(this))
+          timeout(this.requestTimeout)
         )
         .toPromise();
       
@@ -568,7 +560,7 @@ export class ApiService {
       throw new Error('Usuario no autenticado.');
     }
 
-    const url = `${this.baseUrl}/products/decrease-stock`;
+    const url = `${this.baseUrl}/product/decrease-stock`;
     const headers = new HttpHeaders({
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${token}`
@@ -642,8 +634,7 @@ export class ApiService {
     try {
       const response = await this.http.put<any>(url, dataToSend, { headers })
         .pipe(
-          timeout(this.requestTimeout),
-          catchError(this.handleError.bind(this))
+          timeout(this.requestTimeout)
         )
         .toPromise();
       
@@ -686,8 +677,7 @@ export class ApiService {
     try {
       const response = await this.http.delete<any>(url, { headers })
         .pipe(
-          timeout(this.requestTimeout),
-          catchError(this.handleError.bind(this))
+          timeout(this.requestTimeout)
         )
         .toPromise();
 
@@ -753,8 +743,7 @@ export class ApiService {
     try {
       const response = await this.http.post<any>(url, dataToSend, { headers })
         .pipe(
-          timeout(this.requestTimeout),
-          catchError(this.handleError.bind(this))
+          timeout(this.requestTimeout)
         )
         .toPromise();
 
@@ -767,6 +756,221 @@ export class ApiService {
   }
 
   // 🔹 Obtener transacciones por negocio
+  // Crear venta de producto
+  async createVenta(ventaData: {
+    idNegocio: string;
+    idProducto: string;
+    cantidadVendida: number;
+    precioUnitario: number;
+    costoProduccion: number;
+  }): Promise<any> {
+    const token = await this.getToken();
+    if (!token) {
+      throw new Error('Usuario no autenticado.');
+    }
+
+    const url = `${this.baseUrl}/product-sold/`;
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    });
+
+    try {
+      const response = await this.http.post<any>(url, ventaData, { headers })
+        .pipe(
+          timeout(this.requestTimeout)
+        )
+        .toPromise();
+
+      return response;
+    } catch (error) {
+      throw this.handleHttpError(error);
+    }
+  }
+
+  // Obtener ventas por producto
+  async getVentasByProducto(idProducto: string): Promise<any[]> {
+    if (!idProducto || idProducto.trim() === '') {
+      throw new Error('El ID del producto no puede estar vacío.');
+    }
+
+    const token = await this.getToken();
+    if (!token) {
+      throw new Error('Usuario no autenticado.');
+    }
+
+    const url = `${this.baseUrl}/product-sold/ventas/producto/${idProducto}`;
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    });
+
+    try {
+      const response = await this.http.get<{ message: string; data: any[] }>(url, { headers })
+        .pipe(
+          timeout(this.requestTimeout)
+        )
+        .toPromise();
+
+      return response?.data || [];
+    } catch (error: any) {
+      if (error.status === 404) {
+        return [];
+      }
+      throw this.handleHttpError(error);
+    }
+  }
+
+  // Obtener ventas por producto en un mes
+  async getVentasByProductoEnMes(idProducto: string, year: number, month: number): Promise<any[]> {
+    if (!idProducto || idProducto.trim() === '') {
+      throw new Error('El ID del producto no puede estar vacío.');
+    }
+
+    const token = await this.getToken();
+    if (!token) {
+      throw new Error('Usuario no autenticado.');
+    }
+
+    const url = `${this.baseUrl}/product-sold/ventas/producto/${idProducto}/${year}/${month}`;
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    });
+
+    try {
+      const response = await this.http.get<{ message: string; data: any[] }>(url, { headers })
+        .pipe(
+          timeout(this.requestTimeout)
+        )
+        .toPromise();
+
+      return response?.data || [];
+    } catch (error: any) {
+      if (error.status === 404) {
+        return [];
+      }
+      throw this.handleHttpError(error);
+    }
+  }
+
+  // Obtener resumen de ventas por producto en un mes
+  async getResumenVentasByProductoEnMes(idProducto: string, year: number, month: number): Promise<any> {
+    if (!idProducto || idProducto.trim() === '') {
+      throw new Error('El ID del producto no puede estar vacío.');
+    }
+
+    const token = await this.getToken();
+    if (!token) {
+      throw new Error('Usuario no autenticado.');
+    }
+
+    const url = `${this.baseUrl}/product-sold/ventas/producto/resumen/${idProducto}/${year}/${month}`;
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    });
+
+    try {
+      const response = await this.http.get<any>(url, { headers })
+        .pipe(
+          timeout(this.requestTimeout)
+        )
+        .toPromise();
+
+      return response;
+    } catch (error) {
+      throw this.handleHttpError(error);
+    }
+  }
+
+  // Obtener resumen de ventas por negocio en un mes
+  async getResumenVentasByNegocioEnMes(idNegocio: string, year: number, month: number): Promise<any> {
+    if (!idNegocio || idNegocio.trim() === '') {
+      throw new Error('El ID del negocio no puede estar vacío.');
+    }
+
+    const token = await this.getToken();
+    if (!token) {
+      throw new Error('Usuario no autenticado.');
+    }
+
+    const url = `${this.baseUrl}/product-sold/ventas/producto/negocio/${idNegocio}/${year}/${month}`;
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    });
+
+    try {
+      const response = await this.http.get<any>(url, { headers })
+        .pipe(
+          timeout(this.requestTimeout)
+        )
+        .toPromise();
+
+      return response;
+    } catch (error) {
+      throw this.handleHttpError(error);
+    }
+  }
+
+  async getRentabilidadLive(idNegocio: string, year: number, month: number): Promise<any> {
+    if (!idNegocio || idNegocio.trim() === '') {
+      throw new Error('El ID del negocio no puede estar vacío.');
+    }
+
+    const token = await this.getToken();
+    if (!token) {
+      throw new Error('Usuario no autenticado.');
+    }
+
+    const url = `${this.baseUrl}/rentabilidad/live/${idNegocio}/${year}/${month}`;
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    });
+
+    try {
+      const response = await this.http.get<any>(url, { headers })
+        .pipe(timeout(this.requestTimeout))
+        .toPromise();
+
+      return response?.data || response;
+    } catch (error) {
+      throw this.handleHttpError(error);
+    }
+  }
+
+  async getEgresosByMonthShort(idNegocio: string, year: number, month: number): Promise<any> {
+    if (!idNegocio || idNegocio.trim() === '') {
+      throw new Error('El ID del negocio no puede estar vacío.');
+    }
+
+    const token = await this.getToken();
+    if (!token) {
+      throw new Error('Usuario no autenticado.');
+    }
+
+    const url = `${this.baseUrl}/transaction/negocios/${idNegocio}/egresos/${year}/${month}/short`;
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    });
+
+    try {
+      const response = await this.http.get<any>(url, { headers })
+        .pipe(timeout(this.requestTimeout))
+        .toPromise();
+
+      return response;
+    } catch (error: any) {
+      if (error?.status === 404) {
+        return { totalEgresos: 0, count: 0 };
+      }
+      throw this.handleHttpError(error);
+    }
+  }
+
   async getTransactionsByBusiness(idNegocio: string): Promise<any[]> {
     if (!idNegocio || idNegocio.trim() === '') {
       throw new Error('El ID del negocio no puede estar vacío.');
@@ -792,8 +996,7 @@ export class ApiService {
         data: any[] 
       }>(url, { headers })
         .pipe(
-          timeout(this.requestTimeout),
-          catchError(this.handleError.bind(this))
+          timeout(this.requestTimeout)
         )
         .toPromise();
 
@@ -858,8 +1061,7 @@ export class ApiService {
     try {
       const response = await this.http.put<any>(url, businessData, { headers })
         .pipe(
-          timeout(this.requestTimeout),
-          catchError(this.handleError.bind(this))
+          timeout(this.requestTimeout)
         )
         .toPromise();
 
@@ -909,8 +1111,7 @@ export class ApiService {
     try {
       const response = await this.http.post<any>(url, gastoData, { headers })
         .pipe(
-          timeout(this.requestTimeout),
-          catchError(this.handleError.bind(this))
+          timeout(this.requestTimeout)
         )
         .toPromise();
 
@@ -940,8 +1141,7 @@ export class ApiService {
     try {
       const response = await this.http.patch<any>(url, {}, { headers })
         .pipe(
-          timeout(this.requestTimeout),
-          catchError(this.handleError.bind(this))
+          timeout(this.requestTimeout)
         )
         .toPromise();
 
@@ -949,6 +1149,36 @@ export class ApiService {
       return response;
     } catch (error: any) {
       console.error('[API] ❌ Error marking gasto fijo as paid:', error);
+      throw this.handleHttpError(error);
+    }
+  }
+
+  // 🔹 Registrar gasto fijo pagado en historial
+  async createGastoFijoPagado(gastoPagadoData: {
+    idNegocio: string;
+    nombreGasto: string;
+    costoGasto: number;
+  }): Promise<any> {
+    const token = await this.getToken();
+    if (!token) {
+      throw new Error('Usuario no autenticado.');
+    }
+
+    const url = `${this.baseUrl}/gasto-fijo-pagado/`;
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    });
+
+    try {
+      const response = await this.http.post<any>(url, gastoPagadoData, { headers })
+        .pipe(
+          timeout(this.requestTimeout)
+        )
+        .toPromise();
+
+      return response;
+    } catch (error: any) {
       throw this.handleHttpError(error);
     }
   }
@@ -975,16 +1205,18 @@ export class ApiService {
     try {
       const response = await this.http.get<{ message: string, data: any[] }>(url, { headers })
         .pipe(
-          timeout(this.requestTimeout),
-          catchError(this.handleError.bind(this))
+          timeout(this.requestTimeout)
         )
         .toPromise();
 
       console.log('[API] ✅ Gastos fijos retrieved successfully:', response);
       return response?.data || [];
     } catch (error: any) {
-      if (error.status === 404) {
-        console.log('[API] ℹ️ No gastos fijos found for business:', idNegocio);
+      const is404 =
+        error?.status === 404 ||
+        (typeof error?.message === 'string' && error.message.includes('404'));
+      if (is404) {
+        console.log('[API] No gastos fijos found for business:', idNegocio);
         return [];
       }
       console.error('[API] ❌ Error getting gastos fijos:', error);
@@ -992,3 +1224,4 @@ export class ApiService {
     }
   }
 }
+
