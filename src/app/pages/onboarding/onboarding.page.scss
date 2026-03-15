@@ -178,6 +178,88 @@
       }
     }
   }
+
+  .form-row {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+
+  .form-field {
+    flex: 1;
+    min-width: 120px;
+
+    .field-label {
+      display: block;
+      margin: 0 0 8px 2px;
+      font-size: 13px;
+      color: var(--ion-color-medium);
+      font-weight: 500;
+    }
+
+    ion-input {
+      --background: var(--ion-color-step-50);
+      --color: var(--ion-text-color);
+      --border-radius: 12px;
+      --padding-start: 16px;
+      --padding-end: 16px;
+      --padding-top: 12px;
+      --padding-bottom: 12px;
+      border: 2px solid var(--ion-color-step-150);
+      font-size: 16px;
+      transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+
+      &.invalid {
+        border-color: #f44336;
+        --background: rgba(244, 67, 54, 0.1);
+      }
+    }
+  }
+}
+
+.inventory-actions {
+  margin-top: 4px;
+}
+
+.inventory-hint {
+  margin: 12px 0 0 0;
+  color: var(--ion-color-medium);
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.inventory-list {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.inventory-item {
+  border: 1px solid var(--ion-color-step-150);
+  border-radius: 12px;
+  background: var(--ion-color-step-50);
+  padding: 10px 12px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 6px 8px;
+  align-items: center;
+}
+
+.inventory-item-main {
+  font-weight: 600;
+  color: var(--ion-text-color);
+}
+
+.inventory-item-sub {
+  grid-column: 1 / 2;
+  font-size: 13px;
+  color: var(--ion-color-medium);
+}
+
+.inventory-error {
+  margin-top: -8px;
 }
 
 // Feature Card

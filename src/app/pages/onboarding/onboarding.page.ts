@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { IonContent, IonCard, IonCardContent, IonIcon, IonButton, IonInput, IonSelect, IonSelectOption } from '@ionic/angular/standalone';
+import { IonContent, IonCard, IonCardContent, IonIcon, IonButton, IonInput, IonSelect, IonSelectOption, IonLabel } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import { chevronBack, chevronForward, checkmark, checkmarkCircle, alertCircle, calendarOutline, close, trendingUp, analytics, pieChartOutline, person, calendar, call } from 'ionicons/icons';
 import { ApiService } from '../../services/api-service';
@@ -27,18 +27,25 @@ interface BusinessData {
   capitalInicial: number | null;
 }
 
+interface InitialInventoryProduct {
+  nombreProducto: string;
+  precioVenta: number | null;
+  costoProduccion: number | null;
+  stock: number | null;
+}
+
 @Component({
   selector: 'app-onboarding',
   templateUrl: './onboarding.page.html',
   styleUrls: ['./onboarding.page.scss'],
   standalone: true,
-  imports: [IonContent, IonCard, IonCardContent, IonIcon, IonButton, IonInput, IonSelect, IonSelectOption, CommonModule, FormsModule]
+  imports: [IonContent, IonCard, IonCardContent, IonIcon, IonButton, IonInput, IonSelect, IonSelectOption, IonLabel, CommonModule, FormsModule]
 })
 export class OnboardingPage implements OnInit {
 
   // State
   currentStep: number = 0;
-  totalSteps: number = 6; // Aumentado a 6 para incluir el paso de datos del negocio
+  totalSteps: number = 7; // Incluye inventario inicial + 3 pasos de features
 
   // User Data
   userData: UserData = {
@@ -54,6 +61,16 @@ export class OnboardingPage implements OnInit {
     sector: '',
     capitalInicial: null
   };
+
+  // Initial Inventory (stock previo, no afecta balance)
+  initialInventoryProducts: InitialInventoryProduct[] = [];
+  newInitialInventoryProduct: InitialInventoryProduct = {
+    nombreProducto: '',
+    precioVenta: null,
+    costoProduccion: null,
+    stock: null
+  };
+  initialInventoryError: string = '';
 
   // Validation Errors
   nameError: string = '';
@@ -165,8 +182,10 @@ export class OnboardingPage implements OnInit {
       case 2:
         return this.validateBusinessData();
       case 3:
+        return this.validateInitialInventoryStep();
       case 4:
       case 5:
+      case 6:
         return true; // Feature introduction steps don't need validation
       default:
         return true;
@@ -234,6 +253,7 @@ export class OnboardingPage implements OnInit {
     this.businessDescriptionError = '';
     this.businessSectorError = '';
     this.businessCapitalError = '';
+    this.initialInventoryError = '';
   }
 
   clearNameError(): void {
@@ -262,6 +282,113 @@ export class OnboardingPage implements OnInit {
 
   clearBusinessCapitalError(): void {
     this.businessCapitalError = '';
+  }
+
+  validateInitialInventoryStep(): boolean {
+    this.initialInventoryError = '';
+    return true;
+  }
+
+  clearInitialInventoryError(): void {
+    this.initialInventoryError = '';
+  }
+
+  isInitialInventoryNameValid(): boolean {
+    return !!(this.newInitialInventoryProduct.nombreProducto && this.newInitialInventoryProduct.nombreProducto.trim().length >= 2);
+  }
+
+  isInitialInventoryPriceValid(): boolean {
+    return !!(this.newInitialInventoryProduct.precioVenta && this.newInitialInventoryProduct.precioVenta > 0);
+  }
+
+  isInitialInventoryCostValid(): boolean {
+    return !!(this.newInitialInventoryProduct.costoProduccion !== null && this.newInitialInventoryProduct.costoProduccion >= 0);
+  }
+
+  isInitialInventoryStockValid(): boolean {
+    return !!(this.newInitialInventoryProduct.stock !== null && this.newInitialInventoryProduct.stock >= 0);
+  }
+
+  isInitialInventoryFormValid(): boolean {
+    return this.isInitialInventoryNameValid() &&
+      this.isInitialInventoryPriceValid() &&
+      this.isInitialInventoryCostValid() &&
+      this.isInitialInventoryStockValid();
+  }
+
+  addInitialInventoryProduct(): void {
+    this.clearInitialInventoryError();
+
+    const nombreProducto = (this.newInitialInventoryProduct.nombreProducto || '').trim();
+    const precioVenta = Number(this.newInitialInventoryProduct.precioVenta);
+    const costoProduccion = Number(this.newInitialInventoryProduct.costoProduccion);
+    const stock = Number(this.newInitialInventoryProduct.stock);
+
+    if (!this.isInitialInventoryNameValid()) {
+      this.initialInventoryError = 'Ingresa un nombre valido (minimo 2 caracteres).';
+      return;
+    }
+
+    if (!this.isInitialInventoryPriceValid() || !Number.isFinite(precioVenta)) {
+      this.initialInventoryError = 'Ingresa un precio de venta valido (> 0).';
+      return;
+    }
+
+    if (!this.isInitialInventoryCostValid() || !Number.isFinite(costoProduccion)) {
+      this.initialInventoryError = 'Ingresa un costo de produccion valido (>= 0).';
+      return;
+    }
+
+    if (!this.isInitialInventoryStockValid() || !Number.isFinite(stock)) {
+      this.initialInventoryError = 'Ingresa un stock valido (>= 0).';
+      return;
+    }
+
+    this.initialInventoryProducts.push({
+      nombreProducto,
+      precioVenta,
+      costoProduccion,
+      stock
+    });
+
+    this.newInitialInventoryProduct = {
+      nombreProducto: '',
+      precioVenta: null,
+      costoProduccion: null,
+      stock: null
+    };
+  }
+
+  removeInitialInventoryProduct(index: number): void {
+    if (index < 0 || index >= this.initialInventoryProducts.length) return;
+    this.initialInventoryProducts.splice(index, 1);
+  }
+
+  private async resolveCreatedBusinessId(createdBusiness: any): Promise<string> {
+    const directId = createdBusiness?.idNegocio || createdBusiness?.id || '';
+    if (directId) return directId;
+
+    try {
+      const uid = await this.apiService.getUid();
+      if (!uid) return '';
+
+      const businesses: any[] = await this.apiService.getBusinessByUserId(uid);
+      if (!businesses || businesses.length === 0) return '';
+
+      const byName = businesses.find((b: any) =>
+        (b?.nombreNegocio || '').trim().toLowerCase() === (this.businessData.nombreNegocio || '').trim().toLowerCase()
+      );
+      const sortedByDate = [...businesses].sort((a: any, b: any) => {
+        const da = new Date(a?.fechaCreacion || a?.createdAt || 0).getTime();
+        const db = new Date(b?.fechaCreacion || b?.createdAt || 0).getTime();
+        return db - da;
+      });
+      const candidate = byName || sortedByDate[0];
+      return candidate?.idNegocio || candidate?.id || '';
+    } catch (error) {
+      console.error('[ONBOARDING] Error resolving business id for initial inventory:', error);
+      return '';
+    }
   }
 
   // Date Picker Methods - Native HTML date input
@@ -317,7 +444,7 @@ export class OnboardingPage implements OnInit {
 
   // Feature Methods
   getCurrentFeature(): OnboardingFeature | null {
-    const featureIndex = this.currentStep - 3; // Ahora las features empiezan en step 3
+    const featureIndex = this.currentStep - 4; // Las features empiezan en step 4
     if (featureIndex >= 0 && featureIndex < this.onboardingFeatures.length) {
       return this.onboardingFeatures[featureIndex];
     }
@@ -363,8 +490,34 @@ export class OnboardingPage implements OnInit {
       console.log('📤 [ONBOARDING] Datos del negocio preparados para backend:', backendBusinessData);
 
       // Enviar datos del negocio al backend
-      await this.apiService.createBusiness(backendBusinessData);
+      const businessResponse = await this.apiService.createBusiness(backendBusinessData);
       console.log('✅ [ONBOARDING] Negocio creado en backend exitosamente');
+
+      const createdBusiness: any = (businessResponse as any)?.data || businessResponse;
+      const idNegocio = await this.resolveCreatedBusinessId(createdBusiness);
+      let inventorySyncPending = false;
+
+      if (idNegocio && this.initialInventoryProducts.length > 0) {
+        try {
+          await Promise.all(
+            this.initialInventoryProducts.map((product) =>
+              this.apiService.createProduct({
+                idNegocio,
+                nombreProducto: product.nombreProducto.trim(),
+                precioVenta: Number(product.precioVenta) || 0,
+                costoProduccion: Number(product.costoProduccion) || 0,
+                stock: Number(product.stock) || 0
+              })
+            )
+          );
+          console.log('✅ [ONBOARDING] Inventario inicial guardado en backend');
+        } catch (inventoryError) {
+          inventorySyncPending = true;
+          console.error('❌ [ONBOARDING] Error guardando inventario inicial:', inventoryError);
+        }
+      } else if (this.initialInventoryProducts.length > 0) {
+        inventorySyncPending = true;
+      }
 
       // Guardar datos en localStorage para uso local (como backup)
       const localStorageData = {
@@ -377,6 +530,8 @@ export class OnboardingPage implements OnInit {
           sector: this.businessData.sector.trim(),
           capitalInicial: this.businessData.capitalInicial || 0
         },
+        initialInventory: this.initialInventoryProducts,
+        inventorySyncPending,
         completedAt: new Date().toISOString()
       };
 
@@ -405,6 +560,7 @@ export class OnboardingPage implements OnInit {
           sector: this.businessData.sector.trim(),
           capitalInicial: this.businessData.capitalInicial || 0
         },
+        initialInventory: this.initialInventoryProducts,
         completedAt: new Date().toISOString(),
         syncPending: true // Marcar para sincronizar después
       };

@@ -68,7 +68,6 @@
               "namedChunks": true
             },
             "ci": {
-              "progress": false
             }
           },
           "defaultConfiguration": "production"

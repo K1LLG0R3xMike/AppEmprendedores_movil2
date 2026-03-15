@@ -158,8 +158,91 @@
         </ion-card-content>
       </ion-card>
 
-      <!-- Steps 3-5: Feature Introduction Cards -->
-      <ion-card *ngIf="currentStep >= 3 && currentStep <= 5" class="onboarding-card feature-card">
+      <!-- Step 3: Initial Inventory -->
+      <ion-card *ngIf="currentStep === 3" class="onboarding-card">
+        <ion-card-content>
+          <div class="card-header">
+            <h2>Registrar inventario existente (Opcional)</h2>
+          </div>
+
+          <div class="form-fields">
+            <div class="form-row">
+              <div class="form-field">
+                <ion-label class="field-label">Nombre del Producto</ion-label>
+                <ion-input
+                  [(ngModel)]="newInitialInventoryProduct.nombreProducto"
+                  placeholder="Nombre del producto"
+                  [class.invalid]="!isInitialInventoryNameValid()"
+                  (ionInput)="clearInitialInventoryError()">
+                </ion-input>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-field">
+                <ion-label class="field-label">Precio de Venta</ion-label>
+                <ion-input
+                  [(ngModel)]="newInitialInventoryProduct.precioVenta"
+                  type="number"
+                  placeholder="0.00"
+                  [class.invalid]="!isInitialInventoryPriceValid()"
+                  (ionInput)="clearInitialInventoryError()">
+                </ion-input>
+              </div>
+              <div class="form-field">
+                <ion-label class="field-label">Costo de Produccion</ion-label>
+                <ion-input
+                  [(ngModel)]="newInitialInventoryProduct.costoProduccion"
+                  type="number"
+                  placeholder="0.00"
+                  [class.invalid]="!isInitialInventoryCostValid()"
+                  (ionInput)="clearInitialInventoryError()">
+                </ion-input>
+              </div>
+              <div class="form-field">
+                <ion-label class="field-label">Stock</ion-label>
+                <ion-input
+                  [(ngModel)]="newInitialInventoryProduct.stock"
+                  type="number"
+                  placeholder="0"
+                  [class.invalid]="!isInitialInventoryStockValid()"
+                  (ionInput)="clearInitialInventoryError()">
+                </ion-input>
+              </div>
+            </div>
+
+            <div *ngIf="initialInventoryError" class="error-message inventory-error">
+              <ion-icon name="alert-circle"></ion-icon>
+              {{ initialInventoryError }}
+            </div>
+
+            <div class="inventory-actions">
+              <ion-button expand="block" (click)="addInitialInventoryProduct()" [disabled]="!isInitialInventoryFormValid()">
+                Agregar producto al inventario inicial
+              </ion-button>
+            </div>
+
+            <p class="inventory-hint">
+              Este inventario inicial no modifica el balance ni crea transacciones.
+            </p>
+
+            <div class="inventory-list" *ngIf="initialInventoryProducts.length > 0">
+              <div class="inventory-item" *ngFor="let product of initialInventoryProducts; let i = index">
+                <div class="inventory-item-main">{{ product.nombreProducto }}</div>
+                <div class="inventory-item-sub">
+                  Stock: {{ product.stock }} | Venta: {{ product.precioVenta }} | Costo: {{ product.costoProduccion }}
+                </div>
+                <ion-button fill="clear" color="danger" size="small" (click)="removeInitialInventoryProduct(i)">
+                  <ion-icon name="close" slot="icon-only"></ion-icon>
+                </ion-button>
+              </div>
+            </div>
+          </div>
+        </ion-card-content>
+      </ion-card>
+
+      <!-- Steps 4-6: Feature Introduction Cards -->
+      <ion-card *ngIf="currentStep >= 4 && currentStep <= 6" class="onboarding-card feature-card">
         <ion-card-content>
           <div class="feature-content">
             <!-- Feature Icon -->
@@ -178,7 +261,7 @@
               <div 
                 *ngFor="let feature of onboardingFeatures; let i = index"
                 class="indicator"
-                [class.active]="i === currentStep - 3">
+                [class.active]="i === currentStep - 4">
               </div>
             </div>
           </div>
@@ -200,15 +283,15 @@
       <ion-button 
         (click)="nextStep()"
         [disabled]="isNextDisabled()">
-        <span *ngIf="currentStep < 5">Siguiente</span>
-        <span *ngIf="currentStep === 5">Comenzar</span>
+        <span *ngIf="currentStep < 6">Siguiente</span>
+        <span *ngIf="currentStep === 6">Comenzar</span>
         <ion-icon 
-          *ngIf="currentStep < 5" 
+          *ngIf="currentStep < 6" 
           name="chevron-forward" 
           slot="end">
         </ion-icon>
         <ion-icon 
-          *ngIf="currentStep === 5" 
+          *ngIf="currentStep === 6" 
           name="checkmark" 
           slot="end">
         </ion-icon>

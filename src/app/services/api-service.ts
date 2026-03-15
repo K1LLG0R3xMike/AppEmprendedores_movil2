@@ -29,6 +29,7 @@ export class ApiService {
   private readonly firebaseApiKey = environment.firebaseApiKey;
   private readonly baseUrl = environment.apiBaseUrl;
   private readonly requestTimeout = 10000; // 10 segundos
+  private readonly dashboardBalanceKey = 'dashboard_balance_total';
 
   constructor(private http: HttpClient) {}
 
@@ -268,7 +269,21 @@ export class ApiService {
         .toPromise();
 
       if (!response) {
-        throw new Error('Respuesta vacía del servidor.');
+        throw new Error('Respuesta vac�a del servidor.');
+      }
+
+
+      const capitalInicial = Number(
+        businessData?.capitalInicial ??
+        response?.['data']?.['capitalInicial'] ??
+        response?.['capitalInicial'] ??
+        0
+      );
+
+      try {
+        await this.setDashboardBalanceLocal(Number.isFinite(capitalInicial) ? capitalInicial : 0);
+      } catch (storageError) {
+        console.warn('[API] No se pudo inicializar balance local tras crear negocio:', storageError);
       }
 
       return response;
@@ -332,6 +347,55 @@ export class ApiService {
   async isAuthenticated(): Promise<boolean> {
     const token = await this.getToken();
     return token !== null && token.trim() !== '';
+  }
+
+  // 🔹 Balance local para Dashboard (persistente en Ionic/Android)
+  async getDashboardBalanceLocal(): Promise<number> {
+    try {
+      const pref = await Preferences.get({ key: this.dashboardBalanceKey });
+      if (pref.value !== null && pref.value !== undefined) {
+        const parsed = Number(pref.value);
+        return Number.isFinite(parsed) ? parsed : 0;
+      }
+    } catch (error) {
+      console.warn('[API] Error reading dashboard balance from Preferences:', error);
+    }
+
+    try {
+      const raw = localStorage.getItem(this.dashboardBalanceKey);
+      if (raw !== null) {
+        const parsed = Number(raw);
+        return Number.isFinite(parsed) ? parsed : 0;
+      }
+    } catch (error) {
+      console.warn('[API] Error reading dashboard balance from localStorage:', error);
+    }
+
+    return 0;
+  }
+
+  async setDashboardBalanceLocal(value: number): Promise<number> {
+    const normalized = Number.isFinite(value) ? value : 0;
+    const serialized = String(normalized);
+
+    await Preferences.set({
+      key: this.dashboardBalanceKey,
+      value: serialized
+    });
+
+    try {
+      localStorage.setItem(this.dashboardBalanceKey, serialized);
+    } catch (error) {
+      console.warn('[API] Error writing dashboard balance to localStorage:', error);
+    }
+
+    return normalized;
+  }
+
+  async applyDeltaToDashboardBalance(delta: number): Promise<number> {
+    const current = await this.getDashboardBalanceLocal();
+    const safeDelta = Number.isFinite(delta) ? delta : 0;
+    return this.setDashboardBalanceLocal(current + safeDelta);
   }
 
   // 🔹 Manejo de errores HTTP para Observables
@@ -1177,13 +1241,45 @@ export class ApiService {
         )
         .toPromise();
 
+
       return response;
     } catch (error: any) {
       throw this.handleHttpError(error);
     }
   }
+  // Get paid fixed expenses history
+  async getGastosFijosPagados(): Promise<any[]> {
+    const token = await this.getToken();
+    if (!token) {
+      throw new Error('Usuario no autenticado.');
+    }
 
-  // 🔹 Obtener gastos fijos por negocio
+    const url = `${this.baseUrl}/gasto-fijo-pagado/`;
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    });
+
+    try {
+      const response = await this.http.get<{ message: string; total: number; data: any[] }>(url, { headers })
+        .pipe(
+          timeout(this.requestTimeout)
+        )
+        .toPromise();
+
+      return response?.data || [];
+    } catch (error: any) {
+      const is404 =
+        error?.status === 404 ||
+        (typeof error?.message === 'string' && error.message.includes('404'));
+
+      if (is404) {
+        return [];
+      }
+
+      throw this.handleHttpError(error);
+    }
+  }
   async getGastosFijosByBusiness(idNegocio: string): Promise<any[]> {
     if (!idNegocio || idNegocio.trim() === '') {
       throw new Error('El ID del negocio no puede estar vacío.');

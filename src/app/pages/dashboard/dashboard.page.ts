@@ -84,7 +84,12 @@ export class DashboardPage implements OnInit {
   }
 
   async ngOnInit() {
+    await this.loadBalanceFromStorage();
     await this.loadDashboardContext();
+  }
+
+  async ionViewWillEnter() {
+    await this.loadBalanceFromStorage();
   }
 
   private getCurrentYearMonth(): { year: number; month: number } {
@@ -122,9 +127,19 @@ export class DashboardPage implements OnInit {
     return new Date().toISOString();
   }
 
+  private async loadBalanceFromStorage(): Promise<void> {
+    try {
+      this.balanceGeneral = await this.apiService.getDashboardBalanceLocal();
+    } catch (error) {
+      console.error('[DASHBOARD] Error loading local balance:', error);
+      this.balanceGeneral = 0;
+    }
+  }
+
   private async loadDashboardContext(): Promise<void> {
     try {
       this.isLoading = true;
+      await this.loadBalanceFromStorage();
       await this.loadUserData();
 
       const uid = this.authService.uid || await this.apiService.getUid();
@@ -145,14 +160,16 @@ export class DashboardPage implements OnInit {
         gastosFijos,
         transacciones,
         productos,
-        egresosShort
+        egresosShort,
+        gastosFijosPagados
       ] = await Promise.all([
         this.apiService.getRentabilidadLive(idNegocio, year, month).catch(() => null),
         this.apiService.getResumenVentasByNegocioEnMes(idNegocio, year, month).catch(() => null),
         this.apiService.getGastosFijosByBusiness(idNegocio).catch(() => ({ totals: {}, data: [] })),
         this.apiService.getTransactionsByBusiness(idNegocio).catch(() => []),
         this.apiService.getProductsByBusiness(idNegocio).catch(() => []),
-        this.apiService.getEgresosByMonthShort(idNegocio, year, month).catch(() => ({ totalEgresos: 0, count: 0 }))
+        this.apiService.getEgresosByMonthShort(idNegocio, year, month).catch(() => ({ totalEgresos: 0, count: 0 })),
+        this.apiService.getGastosFijosPagados().catch(() => [])
       ]);
 
       const gastosFijosPayload: any = gastosFijos;
@@ -170,22 +187,78 @@ export class DashboardPage implements OnInit {
       this.ingresosMes = totalVentas;
       this.gastosMes = totalGastosMes;
       this.rentabilidadMes = rentabilidadNeta;
-      this.balanceGeneral = 0;
       this.productosCount = (productos || []).length;
 
-      this.recentActivities = (transacciones || [])
-        .slice()
-        .sort((a: any, b: any) => {
-          const da = new Date(this.normalizeDate(a.date || a.fechaISO || a.fecha)).getTime();
-          const db = new Date(this.normalizeDate(b.date || b.fechaISO || b.fecha)).getTime();
-          return db - da;
+      const productosList = productos || [];
+      const productNameById = new Map<string, string>();
+      productosList.forEach((product: any) => {
+        const productId = String(product?.idProducto || product?.id || '');
+        if (productId) {
+          productNameById.set(productId, product?.nombreProducto || product?.nombre || product?.name || 'Producto');
+        }
+      });
+
+      const ventasByProduct = await Promise.all(
+        productosList.map(async (product: any) => {
+          const productId = product?.idProducto || product?.id;
+          if (!productId) return [];
+
+          const ventas = await this.apiService.getVentasByProducto(productId).catch(() => []);
+          return (ventas || []).map((venta: any) => ({
+            ...venta,
+            __productName: productNameById.get(String(productId)) || 'Producto'
+          }));
         })
+      );
+
+      const ventas = ventasByProduct
+        .flat()
+        .filter((venta: any) => !venta?.idNegocio || venta.idNegocio === idNegocio);
+
+      const gastosPagadosDelNegocio = (gastosFijosPagados || []).filter((gasto: any) => {
+        const businessId = gasto?.idNegocio || gasto?.negocioId || gasto?.idBusiness;
+        return !businessId || businessId === idNegocio;
+      });
+
+      const actividadesTransacciones = (transacciones || []).map((t: any) => ({
+        title: t.description || t.descripcion || 'Transaccion',
+        date: this.normalizeDate(t.date || t.fechaISO || t.fecha),
+        amount: Math.abs(Number(t.amount || t.monto || 0)),
+        type: (t.type === 'income' || t.tipo === false || t.tipo === 0) ? 'income' as const : 'expense' as const
+      }));
+
+      const actividadesVentas = (ventas || []).map((venta: any) => {
+        const cantidad = Number(venta?.cantidadVendida || 0);
+        const nombreProducto = venta?.__productName || productNameById.get(String(venta?.idProducto || '')) || 'Producto';
+        const totalVenta = Number(venta?.totalVenta ?? (cantidad * Number(venta?.precioUnitario || 0)));
+
+        return {
+          title: `Venta: ${nombreProducto}${cantidad > 0 ? ` x${cantidad}` : ''}`,
+          date: this.normalizeDate(venta?.fechaVenta || venta?.fechaVentaISO || venta?.createdAt),
+          amount: Math.abs(Number.isFinite(totalVenta) ? totalVenta : 0),
+          type: 'income' as const
+        };
+      });
+
+      const actividadesGastosPagados = gastosPagadosDelNegocio.map((gasto: any) => ({
+        title: `Pago gasto fijo: ${gasto?.nombreGasto || 'Gasto fijo'}`,
+        date: this.normalizeDate(gasto?.createdAtISO || gasto?.createdAt || gasto?.fecha),
+        amount: Math.abs(Number(gasto?.costoGasto || 0)),
+        type: 'expense' as const
+      }));
+
+      this.recentActivities = [
+        ...actividadesTransacciones,
+        ...actividadesVentas,
+        ...actividadesGastosPagados
+      ]
+        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
         .slice(0, 4)
-        .map((t: any) => ({
-          title: t.description || 'Movimiento',
-          time: this.formatRelativeTime(this.normalizeDate(t.date || t.fechaISO || t.fecha)),
-          amount: Number(t.amount || t.monto || 0),
-          type: (t.type === 'income' || t.tipo === false) ? 'income' : 'expense'
+        .map((activity) => ({
+          title: activity.title,
+          time: this.formatRelativeTime(activity.date),
+          amount: activity.amount,
+          type: activity.type
         }));
     } catch (error) {
       console.error('[DASHBOARD] Error loading dashboard context:', error);

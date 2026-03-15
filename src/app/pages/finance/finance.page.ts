@@ -406,6 +406,8 @@ export class FinancePage implements OnInit {
       };
 
       await this.apiService.createVenta(ventaData);
+      const totalVenta = Number(this.newVenta.cantidadVendida) * Number(selectedProduct.precioVenta);
+      await this.apiService.applyDeltaToDashboardBalance(totalVenta);
       await this.apiService.decreaseStock(
         selectedProduct.idProducto,
         Number(this.newVenta.cantidadVendida)
@@ -444,6 +446,9 @@ export class FinancePage implements OnInit {
         monto: Number(this.newTransaction.amount),
         descripcion: this.newTransaction.description
       });
+      const amount = Number(this.newTransaction.amount) || 0;
+      const delta = this.newTransaction.type === 'income' ? amount : -amount;
+      await this.apiService.applyDeltaToDashboardBalance(delta);
 
       await this.loadAllMovements();
       await this.presentToast('Transaccion guardada exitosamente', 'success');
@@ -585,6 +590,7 @@ export class FinancePage implements OnInit {
           nombreGasto: gasto.nombreGasto,
           costoGasto: Number(gasto.costoGasto) || 0
         });
+        await this.apiService.applyDeltaToDashboardBalance(-(Number(gasto.costoGasto) || 0));
         gasto.pagado = true;
       }
 
