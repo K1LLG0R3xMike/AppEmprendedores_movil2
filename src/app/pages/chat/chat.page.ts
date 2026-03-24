@@ -2,7 +2,7 @@ import { Component, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
-import { AiService, ChatMsg } from 'src/app/services/ai.service';
+import { AiService, AiServiceError, ChatMsg } from 'src/app/services/ai.service';
 import { addIcons } from 'ionicons';
 import { sparkles, person, send, stop, refresh } from 'ionicons/icons';
 
@@ -33,7 +33,7 @@ export class ChatPage implements OnDestroy {
     this.text = '';
 
     this.messages.push({ role: 'user', content: value });
-    this.messages.push({ role: 'assistant', content: '' });
+    this.messages.push({ role: 'assistant', content: 'Pensando...' });
     const idx = this.messages.length - 1;
 
     // Scroll to bottom after adding messages
@@ -43,20 +43,33 @@ export class ChatPage implements OnDestroy {
     this.abortCtrl = new AbortController();
 
     try {
-      await this.ai.streamChat(this.messages, {
-        onToken: (t) => {
-          this.messages[idx].content += t;
-          // Auto-scroll while typing
-          this.scrollToBottom();
-        },
-        onDone: () => {
-          this.loading = false;
-          this.scrollToBottom();
-        },
-        onError: () => (this.loading = false),
-        signal: this.abortCtrl.signal,
+      const requestMessages = this.messages
+        .slice(0, idx)
+        .filter((m) => m.content && m.content.trim().length > 0);
+
+      const response = await this.ai.chatOnce(requestMessages, {
+        signal: this.abortCtrl.signal
       });
-    } catch {
+
+      this.messages[idx].content = response?.text || 'No se recibió respuesta del asistente.';
+      this.scrollToBottom();
+    } catch (error: any) {
+      if (error?.name === 'AbortError') {
+        this.messages[idx].content = 'Respuesta detenida.';
+      } else if (error instanceof AiServiceError) {
+        if (error.status === 429 && error.retryAfterSeconds) {
+          this.messages[idx].content = `IA saturada por cuota. Intenta de nuevo en ${error.retryAfterSeconds} segundos.`;
+        } else if (error.status === 401 || error.status === 403) {
+          this.messages[idx].content = 'Tu sesión expiró o no tiene permisos. Inicia sesión de nuevo.';
+        } else if (error.status === 400) {
+          this.messages[idx].content = `Solicitud inválida: ${error.message}`;
+        } else {
+          this.messages[idx].content = error.message || 'No se pudo completar la consulta con IA.';
+        }
+      } else {
+        this.messages[idx].content = error?.message || 'No se pudo completar la consulta con IA.';
+      }
+    } finally {
       this.loading = false;
     }
   }
