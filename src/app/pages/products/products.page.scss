@@ -10,7 +10,7 @@
   align-items: center;
   padding: 24px;
   background: var(--ion-card-background, white);
-  border-bottom: 1px solid var(--ion-border-color, #e0e0e0);
+  border-bottom: 1px solid var(--ion-border-color, #e0e0e000);
   
   .header-left {
     display: flex;
@@ -35,7 +35,7 @@
     align-items: center;
     
     ion-button {
-      --background: #ff9500;
+      --background: #E86F00;
       --background-hover: #ff7b00;
       --background-activated: #e6850e;
       --color: white;
@@ -74,8 +74,8 @@ ion-card {
   margin-bottom: 16px;
   border-radius: 16px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  border: 1px solid var(--ion-border-color, #e0e0e0);
-  background: var(--ion-card-background, white);
+  border: 1px solid var(--ion-border-color, #e0e0e000);
+  background: var(--ion-card-background, rgba(255, 255, 255, 0));
 }
 
 ion-card-content {
@@ -172,7 +172,7 @@ ion-card-content {
         font-weight: 600;
         
         &:first-child {
-          --background: #ff9500;
+          --background: #E86F00;
           --background-hover: #ff7b00;
           --background-activated: #e6850e;
           --color: white;

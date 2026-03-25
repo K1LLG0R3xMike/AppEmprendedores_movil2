@@ -278,7 +278,7 @@ ion-content {
     height: 32px;
     
     &.ia-primary {
-      --background: #ff9500;
+      --background: #E86F00;
       --color: white;
     }
     
@@ -303,7 +303,7 @@ p, span, div {
   transition: color 0.3s ease;
   ion-button {
     &.ia-primary {
-      --background: #ff9500;
+      --background: #E86F00;
       --color: white;
     }
     
@@ -326,7 +326,7 @@ ion-fab {
   
   ion-fab-button {
     --box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
-    --background: #ff9500;
+    --background: #E86F00;
     --color: white;
     width: 56px;
     height: 56px;

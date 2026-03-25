@@ -103,12 +103,7 @@
           </div>
 
           <!-- Register Button -->
-          <ion-button 
-            expand="block" 
-            color="warning" 
-            type="submit"
-            [disabled]="!isFormValid() || loading"
-            class="register-button">
+          <ion-button expand="block" color="backgroun: #E86F00"  type="submit" [disabled]="!isFormValid() || loading" class="register-button">
             <div *ngIf="loading; else buttonText" class="loading-spinner">
               <ion-spinner name="crescent" color="light"></ion-spinner>
             </div>
@@ -119,7 +114,7 @@
 
           <!-- Login Link -->
           <div class="login-link">
-            <ion-button fill="clear" color="warning" (click)="goToLogin()">
+            <ion-button fill="clear"  (click)="goToLogin()">
               ¿Ya tienes cuenta? Inicia sesión aquí
             </ion-button>
           </div>

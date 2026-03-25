@@ -1,79 +1,75 @@
 .register-container {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
-  background: var(--ion-background-color);
-  padding: 24px 24px 32px 24px;
-  transition: background-color 0.3s ease;
+  --background: var(--ion-background-color);
 }
 
 .register-content {
   width: 100%;
   max-width: 400px;
+  min-height: 100vh;
+  margin: 0 auto;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  transition: background-color 0.3s ease;
 }
 
 .error-message {
-  background: var(--ion-color-danger-tint, #ffebee);
+  width: 100%;
+  margin-bottom: 12px;
   color: var(--ion-color-danger);
-  padding: 12px 16px;
-  border-radius: 8px;
-  margin-bottom: 16px;
-  font-size: 14px;
-  text-align: center;
   font-weight: 500;
-  transition: background-color 0.3s ease, color 0.3s ease;
+  text-align: center;
+
+  p {
+    margin: 0;
+  }
 }
 
 .app-icon {
-  display: flex;
-  justify-content: center;
+  padding: 16px;
+  border-radius: 50%;
+  background-color: #e86f00;
   margin-bottom: 16px;
-  
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
   ion-icon {
-    font-size: 32px;
-    background: #ff9500;
+    font-size: 40px;
     color: white;
-    padding: 16px;
-    border-radius: 50%;
   }
 }
 
 .title {
-  font-size: 24px;
+  font-size: 28px;
   font-weight: bold;
   color: var(--ion-text-color);
-  margin: 0 0 8px 0;
-  text-align: center;
+  margin: 0;
   transition: color 0.3s ease;
 }
 
 .subtitle {
-  font-size: 16px;
+  font-size: 14px;
   color: var(--ion-color-medium);
-  margin: 0 0 32px 0;
-  text-align: center;
+  margin: 8px 0 32px;
   transition: color 0.3s ease;
 }
 
 .register-card {
-  background: var(--ion-card-background);
-  border-radius: 16px;
-  margin-bottom: 20px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  text-align: left;
+  border-radius: 12px;
+  background-color: var(--ion-card-background);
   border: 1px solid var(--ion-color-step-150);
+  box-shadow: none;
   transition: background-color 0.3s ease, border-color 0.3s ease;
-  
-  @media (prefers-color-scheme: dark) {
-    background: #424242; // Colors.grey[800] en Flutter
-    border-color: #616161; // Colors.grey[700] en Flutter
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-  }
 }
 
 .register-card ion-card-content {
-  padding: 20px; // Padding exacto de Flutter
+  padding: 16px;
 }
 
 .field-group {
@@ -82,126 +78,99 @@
 
 .field-label {
   display: block;
+  margin: 12px 0 6px;
   font-size: 14px;
-  font-weight: 400;
   color: var(--ion-text-color);
-  margin-bottom: 8px;
-  text-align: left;
   transition: color 0.3s ease;
 }
 
 .input-container {
   position: relative;
-  
+
   ion-input {
+    margin-bottom: 0;
+    --padding-start: 12px;
+    --padding-end: 44px;
     --background: var(--ion-color-step-50);
     --color: var(--ion-text-color);
-    --border-radius: 8px;
-    --padding-start: 16px;
-    --padding-end: 48px;
+    --placeholder-color: var(--ion-color-medium);
+    border-radius: 8px;
     border: 1px solid var(--ion-color-step-150);
-    font-size: 16px;
     transition: background-color 0.3s ease, border-color 0.3s ease;
   }
-  
+
   .validation-icon {
     position: absolute;
-    right: 16px;
+    right: 14px;
     top: 50%;
     transform: translateY(-50%);
-    font-size: 20px;
+    font-size: 18px;
+    pointer-events: none;
   }
-  
+
   .toggle-password {
     position: absolute;
-    right: 8px;
+    right: 4px;
     top: 50%;
     transform: translateY(-50%);
     --color: var(--ion-color-medium);
-    
-    ion-icon {
-      font-size: 20px;
-    }
+    z-index: 2;
   }
 }
 
 .validation-text {
   font-size: 12px;
-  margin-top: 4px;
+  margin-top: 6px;
   transition: color 0.3s ease;
-  
+
   &.success {
     color: var(--ion-color-success);
   }
-  
+
   &.error {
     color: var(--ion-color-danger);
   }
 }
 
 .register-button {
-  --background: #ff9500; // kRegisterPrimaryColor
-  --background-hover: #ff7b00;
-  --background-activated: #e6850e;
-  --color: white;
-  --border-radius: 8px; // Botones de Flutter usan menos radius
-  --padding-top: 16px;
-  --padding-bottom: 16px;
-  font-size: 16px;
-  font-weight: 500;
-  width: 100%;
+  margin-top: 24px;
   margin-bottom: 16px;
-  
-  &[disabled] {
-    --background: var(--ion-color-medium);
-    --color: var(--ion-color-medium-contrast);
-  }
+  background: #E86F00;
+  --background-hover: #E86F00;
+  --background-activated: #E86F00;
+  border-radius: 8px;
+  color: white;
+  font-weight: 600;
 }
 
 .loading-spinner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
   ion-spinner {
-    width: 22px;
-    height: 22px;
+    width: 18px;
+    height: 18px;
     --color: white;
   }
 }
 
 .login-link {
+  width: 100%;
+  margin-top: 4px;
   text-align: center;
   color: var(--ion-text-color);
   transition: color 0.3s ease;
-  
+
   ion-button {
-    --color: #ff9500;
+    --color: #ff8c42;
     font-weight: 500;
-    
-    &:hover {
-      opacity: 0.8;
-    }
+    text-transform: none;
   }
 }
 
-// Responsive design
 @media (max-width: 480px) {
-  .register-container {
+  .register-content {
     padding: 16px;
-  }
-  
-  .register-card ion-card-content {
-    padding: 20px;
-  }
-}
-
-// Animations
-.register-card {
-  animation: fadeIn 0.3s ease-out;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
   }
 }
