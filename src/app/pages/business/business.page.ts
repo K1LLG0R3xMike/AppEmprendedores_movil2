@@ -289,6 +289,11 @@ export class BusinessPage implements OnInit {
 
       // Guardar copia actualizada
       this.originalBusinessData = { ...this.businessData };
+
+      // Mantener sincronizado el componente de capital inicial del balance local
+      await this.apiService.setDashboardInitialCapital(
+        Number(this.businessData.capitalInicial) || 0
+      );
       
       this.isEditing = false;
       await this.showToast('Cambios guardados exitosamente', 'success');

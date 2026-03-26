@@ -405,9 +405,29 @@ export class FinancePage implements OnInit {
         costoProduccion: Number(selectedProduct.costoProduccion)
       };
 
-      await this.apiService.createVenta(ventaData);
+      const ventaResponse = await this.apiService.createVenta(ventaData);
       const totalVenta = Number(this.newVenta.cantidadVendida) * Number(selectedProduct.precioVenta);
-      await this.apiService.applyDeltaToDashboardBalance(totalVenta);
+      const ventaId =
+        ventaResponse?.data?.idVenta ||
+        ventaResponse?.data?.id ||
+        ventaResponse?.idVenta ||
+        ventaResponse?.id;
+
+      await this.apiService.registerDashboardBalanceMovement('venta', totalVenta, {
+        idNegocio: this.businessId,
+        description: this.newVenta.descripcion?.trim() || `Venta de ${selectedProduct.nombreProducto}`,
+        category: 'Ventas',
+        source: 'finance_venta',
+        metadata: {
+          idVenta: ventaId,
+          idProducto: selectedProduct.idProducto,
+          nombreProducto: selectedProduct.nombreProducto,
+          cantidadVendida: Number(this.newVenta.cantidadVendida),
+          precioUnitario: Number(selectedProduct.precioVenta),
+          costoProduccion: Number(selectedProduct.costoProduccion),
+          totalVenta
+        }
+      });
       await this.apiService.decreaseStock(
         selectedProduct.idProducto,
         Number(this.newVenta.cantidadVendida)
@@ -440,15 +460,35 @@ export class FinancePage implements OnInit {
     await loading.present();
 
     try {
-      await this.apiService.createTransaction({
+      const transactionResponse = await this.apiService.createTransaction({
         idNegocio: this.businessId,
         tipo: this.newTransaction.type,
         monto: Number(this.newTransaction.amount),
         descripcion: this.newTransaction.description
       });
       const amount = Number(this.newTransaction.amount) || 0;
-      const delta = this.newTransaction.type === 'income' ? amount : -amount;
-      await this.apiService.applyDeltaToDashboardBalance(delta);
+      const transactionId =
+        transactionResponse?.data?.idTransaccion ||
+        transactionResponse?.data?.id ||
+        transactionResponse?.idTransaccion ||
+        transactionResponse?.id;
+      await this.apiService.registerDashboardBalanceMovement(
+        this.newTransaction.type === 'income' ? 'transaccion_ingreso' : 'transaccion_egreso',
+        amount,
+        {
+          idNegocio: this.businessId,
+          description: this.newTransaction.description?.trim() || 'Transaccion manual',
+          category: this.newTransaction.category?.trim() || 'Transacciones',
+          source: 'finance_transaction',
+          metadata: {
+            idTransaccion: transactionId,
+            tipo: this.newTransaction.type,
+            monto: amount,
+            method: this.newTransaction.method,
+            descripcion: this.newTransaction.description
+          }
+        }
+      );
 
       await this.loadAllMovements();
       await this.presentToast('Transaccion guardada exitosamente', 'success');
@@ -590,7 +630,22 @@ export class FinancePage implements OnInit {
           nombreGasto: gasto.nombreGasto,
           costoGasto: Number(gasto.costoGasto) || 0
         });
-        await this.apiService.applyDeltaToDashboardBalance(-(Number(gasto.costoGasto) || 0));
+        await this.apiService.registerDashboardBalanceMovement(
+          'gasto_fijo_pagado',
+          Number(gasto.costoGasto) || 0,
+          {
+            idNegocio: gasto.idNegocio || this.businessId,
+            description: `Pago gasto fijo: ${gasto.nombreGasto}`,
+            category: 'Gastos fijos',
+            source: 'finance_gasto_fijo_pagado',
+            metadata: {
+              idGasto: gasto.idGasto,
+              nombreGasto: gasto.nombreGasto,
+              costoGasto: Number(gasto.costoGasto) || 0,
+              recurrencia: gasto.recurrencia
+            }
+          }
+        );
         gasto.pagado = true;
       }
 
