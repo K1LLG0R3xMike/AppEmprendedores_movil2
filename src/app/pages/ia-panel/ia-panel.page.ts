@@ -2,17 +2,17 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { 
-  IonContent, 
-  IonCard, 
-  IonCardContent, 
-  IonIcon, 
+import {
+  IonContent,
+  IonCard,
+  IonCardContent,
+  IonIcon,
   IonButton,
   IonFab,
   IonFabButton
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import { 
+import {
   refresh,
   hardwareChip,
   trendingUp,
@@ -21,9 +21,10 @@ import {
   bulb,
   chatbubbleOutline
 } from 'ionicons/icons';
+import { ApiService } from '../../services/api-service';
 
 interface Recommendation {
-  id: number;
+  id: string;
   title: string;
   description: string;
   priority: 'high' | 'medium' | 'low';
@@ -36,44 +37,25 @@ interface Recommendation {
   styleUrls: ['./ia-panel.page.scss'],
   standalone: true,
   imports: [
-    IonContent, 
-    IonCard, 
-    IonCardContent, 
-    IonIcon, 
+    IonContent,
+    IonCard,
+    IonCardContent,
+    IonIcon,
     IonButton,
     IonFab,
     IonFabButton,
-    CommonModule, 
+    CommonModule,
     FormsModule
   ]
 })
 export class IaPanelPage implements OnInit {
-  recommendations: Recommendation[] = [
-    {
-      id: 1,
-      title: 'Optimizar inventario de Zapatillas Deportivas',
-      description: 'El stock está bajo (12 unidades). Basado en las ventas históricas, se recomienda reabastecer con 30 unidades.',
-      priority: 'high',
-      impact: 'Evitar pérdida de ventas por falta de stock'
-    },
-    {
-      id: 2,
-      title: 'Ajustar precio de Camiseta Básica',
-      description: 'El margen de ganancia es del 52%. Podrías reducir el precio en 5% para aumentar las ventas sin afectar significativamente la rentabilidad.',
-      priority: 'medium',
-      impact: 'Incremento estimado del 15% en ventas'
-    },
-    {
-      id: 3,
-      title: 'Promocionar Mochila Urbana',
-      description: 'Este producto tiene buen margen pero pocas ventas. Una campaña promocional podría aumentar su rotación.',
-      priority: 'low',
-      impact: 'Mejorar rotación de inventario'
-    }
-  ];
+  recommendations: Recommendation[] = [];
 
-  constructor(private router: Router) {
-    addIcons({ 
+  constructor(
+    private router: Router,
+    private apiService: ApiService
+  ) {
+    addIcons({
       refresh,
       hardwareChip,
       trendingUp,
@@ -84,19 +66,20 @@ export class IaPanelPage implements OnInit {
     });
   }
 
-  ngOnInit() {
+  ngOnInit(): void {
+    void this.loadRecommendationsFromBackend();
   }
 
   getPriorityColor(priority: string): string {
     switch (priority) {
       case 'high':
-        return '#f04438'; // Red
+        return '#f04438';
       case 'medium':
-        return '#f79009'; // Yellow/Orange
+        return '#f79009';
       case 'low':
-        return '#12b76a'; // Green
+        return '#12b76a';
       default:
-        return '#667085'; // Gray
+        return '#667085';
     }
   }
 
@@ -113,14 +96,12 @@ export class IaPanelPage implements OnInit {
     }
   }
 
-  applyRecommendation(id: number): void {
+  applyRecommendation(id: string): void {
     console.log('Applying recommendation:', id);
-    // TODO: Implement recommendation application logic
   }
 
-  viewDetails(id: number): void {
+  viewDetails(id: string): void {
     console.log('Viewing details for recommendation:', id);
-    // TODO: Navigate to detailed view or show modal
   }
 
   openChat(): void {
@@ -129,6 +110,70 @@ export class IaPanelPage implements OnInit {
 
   refreshRecommendations(): void {
     console.log('Refreshing AI recommendations...');
-    // TODO: Implement refresh logic
+    void this.loadRecommendationsFromBackend();
+  }
+
+  private async loadRecommendationsFromBackend(): Promise<void> {
+    try {
+      const uid = await this.apiService.getUid();
+      if (!uid) {
+        this.recommendations = [];
+        return;
+      }
+
+      const businesses = await this.apiService.getBusinessByUserId(uid);
+      const idNegocio = this.resolveBusinessId(businesses);
+      if (!idNegocio) {
+        this.recommendations = [];
+        return;
+      }
+
+      const items = await this.apiService.getAiRecommendationsByBusiness(idNegocio);
+      this.recommendations = this.mapBackendRecommendations(items);
+    } catch (error) {
+      console.error('[IA] Error loading recommendations:', error);
+      this.recommendations = [];
+    }
+  }
+
+  private resolveBusinessId(businesses: any[]): string | null {
+    if (!Array.isArray(businesses) || businesses.length === 0) {
+      return null;
+    }
+
+    const firstBusiness = businesses[0];
+    return firstBusiness?.idNegocio || firstBusiness?.id || firstBusiness?._id || null;
+  }
+
+  private mapBackendRecommendations(items: any[]): Recommendation[] {
+    if (!Array.isArray(items)) {
+      return [];
+    }
+
+    return items.map((item: any, index: number) => {
+      const typeRaw = String(item?.tipo || item?.type || '').toLowerCase();
+      const priority = this.resolvePriority(typeRaw, item?.priority);
+      const id = String(item?.idRecomendacion || item?.id || `ia-rec-${index}`);
+
+      return {
+        id,
+        title: item?.titulo || item?.title || (typeRaw ? `Recomendacion: ${typeRaw}` : 'Recomendacion IA'),
+        description: item?.mensaje || item?.descripcion || item?.description || 'Sin descripcion',
+        priority,
+        impact: item?.impacto || item?.impact || 'Revisar sugerencia para tu negocio'
+      };
+    });
+  }
+
+  private resolvePriority(typeRaw: string, priorityRaw: any): 'high' | 'medium' | 'low' {
+    const priority = String(priorityRaw || '').toLowerCase();
+    if (priority === 'high' || priority === 'alta') return 'high';
+    if (priority === 'medium' || priority === 'media') return 'medium';
+    if (priority === 'low' || priority === 'baja') return 'low';
+
+    if (typeRaw.includes('alerta') || typeRaw.includes('riesgo')) return 'high';
+    if (typeRaw.includes('rentabilidad') || typeRaw.includes('balance')) return 'medium';
+
+    return 'low';
   }
 }

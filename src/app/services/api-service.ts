@@ -1346,6 +1346,149 @@ export class ApiService {
     }
   }
 
+  async createAiRecommendation(recommendationData: {
+    idNegocio: string;
+    tipo: string;
+    mensaje: string;
+  }): Promise<any> {
+    const token = await this.getToken();
+    if (!token) throw new Error('Usuario no autenticado.');
+
+    const url = `${this.baseUrl}/ai-recommendation/`;
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    });
+
+    try {
+      const response = await this.http.post<any>(url, recommendationData, { headers })
+        .pipe(timeout(this.requestTimeout))
+        .toPromise();
+      return response;
+    } catch (error: any) {
+      throw this.handleHttpError(error);
+    }
+  }
+
+  async getAiRecommendations(): Promise<any[]> {
+    const token = await this.getToken();
+    if (!token) throw new Error('Usuario no autenticado.');
+
+    const url = `${this.baseUrl}/ai-recommendation/`;
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    });
+
+    try {
+      const response = await this.http.get<{ message?: string; data?: any[] }>(url, { headers })
+        .pipe(timeout(this.requestTimeout))
+        .toPromise();
+      if (Array.isArray(response)) return response;
+      return response?.data || [];
+    } catch (error: any) {
+      if (error?.status === 404) return [];
+      throw this.handleHttpError(error);
+    }
+  }
+
+  async getAiRecommendationsByType(tipo: string): Promise<any[]> {
+    if (!tipo || !tipo.trim()) throw new Error('El tipo es requerido.');
+
+    const token = await this.getToken();
+    if (!token) throw new Error('Usuario no autenticado.');
+
+    const url = `${this.baseUrl}/ai-recommendation/tipo/${encodeURIComponent(tipo)}`;
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    });
+
+    try {
+      const response = await this.http.get<{ message?: string; data?: any[] }>(url, { headers })
+        .pipe(timeout(this.requestTimeout))
+        .toPromise();
+      if (Array.isArray(response)) return response;
+      return response?.data || [];
+    } catch (error: any) {
+      if (error?.status === 404) return [];
+      throw this.handleHttpError(error);
+    }
+  }
+
+  async getAiRecommendationsByBusiness(idNegocio: string): Promise<any[]> {
+    if (!idNegocio || !idNegocio.trim()) {
+      throw new Error('El ID del negocio no puede estar vacio.');
+    }
+
+    const token = await this.getToken();
+    if (!token) throw new Error('Usuario no autenticado.');
+
+    const url = `${this.baseUrl}/ai-recommendation/negocio/${idNegocio}`;
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    });
+
+    try {
+      const response = await this.http.get<{ message?: string; data?: any[] }>(url, { headers })
+        .pipe(timeout(this.requestTimeout))
+        .toPromise();
+      if (Array.isArray(response)) return response;
+      return response?.data || [];
+    } catch (error: any) {
+      const is500 =
+        error?.status === 500 ||
+        (typeof error?.message === 'string' && error.message.includes('500'));
+
+      if (is500) {
+        console.warn('[API] ai-recommendation por negocio devolvio 500, usando fallback local por filtro:', {
+          idNegocio,
+          endpoint: url
+        });
+
+        try {
+          const fallbackList = await this.getAiRecommendations();
+          return (fallbackList || []).filter((item: any) => {
+            const businessId = item?.idNegocio || item?.negocioId || item?.idBusiness;
+            return businessId === idNegocio;
+          });
+        } catch (fallbackError: any) {
+          if (fallbackError?.status === 404) return [];
+          throw this.handleHttpError(fallbackError);
+        }
+      }
+
+      if (error?.status === 404) return [];
+      throw this.handleHttpError(error);
+    }
+  }
+
+  async createHistorialRentabilidad(historialData: {
+    idNegocio: string;
+    rentabilidadEsperada: number;
+    rentabilidadReal: number;
+    periodo: string;
+  }): Promise<any> {
+    const token = await this.getToken();
+    if (!token) throw new Error('Usuario no autenticado.');
+
+    const url = `${this.baseUrl}/historial-rentabilidad/`;
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    });
+
+    try {
+      const response = await this.http.post<any>(url, historialData, { headers })
+        .pipe(timeout(this.requestTimeout))
+        .toPromise();
+      return response;
+    } catch (error: any) {
+      throw this.handleHttpError(error);
+    }
+  }
+
   startWeeklyDashboardSyncScheduler(intervalMs: number = 6 * 60 * 60 * 1000): void {
     if (this.dashboardWeeklySyncTimer) {
       console.log('[SCHEDULER] Scheduler already running');

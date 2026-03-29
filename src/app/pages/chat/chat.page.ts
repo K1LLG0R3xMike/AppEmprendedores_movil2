@@ -1,4 +1,4 @@
-import { Component, OnDestroy } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
@@ -10,24 +10,25 @@ import { sparkles, person, send, stop, refresh } from 'ionicons/icons';
   selector: 'app-chat',
   templateUrl: './chat.page.html',
   styleUrls: ['./chat.page.scss'],
-  standalone: true,  // 👈 habilita standalone
-  imports: [
-    CommonModule,   // 👈 para *ngIf, *ngFor
-    FormsModule,    // 👈 para [(ngModel)]
-    IonicModule     // 👈 para <ion-...>
-  ]
+  standalone: true,
+  imports: [CommonModule, FormsModule, IonicModule]
 })
-export class ChatPage implements OnDestroy {
+export class ChatPage implements OnInit, OnDestroy {
   messages: ChatMsg[] = [];
   text = '';
   loading = false;
   private abortCtrl?: AbortController;
+  private readonly storageKey = 'ia_chat_history_v1';
 
   constructor(private ai: AiService) {
     addIcons({ sparkles, person, send, stop, refresh });
   }
 
-  async send() {
+  ngOnInit(): void {
+    this.loadMessagesFromLocalStorage();
+  }
+
+  async send(): Promise<void> {
     const value = this.text.trim();
     if (!value) return;
     this.text = '';
@@ -35,8 +36,8 @@ export class ChatPage implements OnDestroy {
     this.messages.push({ role: 'user', content: value });
     this.messages.push({ role: 'assistant', content: 'Pensando...' });
     const idx = this.messages.length - 1;
+    this.saveMessagesToLocalStorage();
 
-    // Scroll to bottom after adding messages
     setTimeout(() => this.scrollToBottom(), 100);
 
     this.loading = true;
@@ -51,7 +52,8 @@ export class ChatPage implements OnDestroy {
         signal: this.abortCtrl.signal
       });
 
-      this.messages[idx].content = response?.text || 'No se recibió respuesta del asistente.';
+      this.messages[idx].content = response?.text || 'No se recibio respuesta del asistente.';
+      this.saveMessagesToLocalStorage();
       this.scrollToBottom();
     } catch (error: any) {
       if (error?.name === 'AbortError') {
@@ -60,33 +62,36 @@ export class ChatPage implements OnDestroy {
         if (error.status === 429 && error.retryAfterSeconds) {
           this.messages[idx].content = `IA saturada por cuota. Intenta de nuevo en ${error.retryAfterSeconds} segundos.`;
         } else if (error.status === 401 || error.status === 403) {
-          this.messages[idx].content = 'Tu sesión expiró o no tiene permisos. Inicia sesión de nuevo.';
+          this.messages[idx].content = 'Tu sesion expiro o no tiene permisos. Inicia sesion de nuevo.';
         } else if (error.status === 400) {
-          this.messages[idx].content = `Solicitud inválida: ${error.message}`;
+          this.messages[idx].content = `Solicitud invalida: ${error.message}`;
         } else {
           this.messages[idx].content = error.message || 'No se pudo completar la consulta con IA.';
         }
       } else {
         this.messages[idx].content = error?.message || 'No se pudo completar la consulta con IA.';
       }
+
+      this.saveMessagesToLocalStorage();
     } finally {
       this.loading = false;
     }
   }
 
-  stop() {
+  stop(): void {
     this.abortCtrl?.abort();
     this.loading = false;
   }
 
-  reset() {
+  reset(): void {
     this.messages = [];
+    this.clearMessagesFromLocalStorage();
   }
 
   getCurrentTime(): string {
-    return new Date().toLocaleTimeString('es-ES', { 
-      hour: '2-digit', 
-      minute: '2-digit' 
+    return new Date().toLocaleTimeString('es-ES', {
+      hour: '2-digit',
+      minute: '2-digit'
     });
   }
 
@@ -97,6 +102,45 @@ export class ChatPage implements OnDestroy {
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
       }
     }, 50);
+  }
+
+  private saveMessagesToLocalStorage(): void {
+    try {
+      localStorage.setItem(this.storageKey, JSON.stringify(this.messages));
+    } catch (error) {
+      console.warn('[CHAT] No se pudo guardar historial en localStorage:', error);
+    }
+  }
+
+  private loadMessagesFromLocalStorage(): void {
+    try {
+      const raw = localStorage.getItem(this.storageKey);
+      if (!raw) return;
+
+      const parsed = JSON.parse(raw);
+      if (!Array.isArray(parsed)) return;
+
+      const validMessages: ChatMsg[] = parsed
+        .filter((m: any) => m && (m.role === 'user' || m.role === 'assistant'))
+        .map((m: any) => ({
+          role: m.role,
+          content: String(m.content || '')
+        }))
+        .filter((m: ChatMsg) => m.content.trim().length > 0);
+
+      this.messages = validMessages;
+    } catch (error) {
+      console.warn('[CHAT] No se pudo leer historial desde localStorage:', error);
+      this.messages = [];
+    }
+  }
+
+  private clearMessagesFromLocalStorage(): void {
+    try {
+      localStorage.removeItem(this.storageKey);
+    } catch (error) {
+      console.warn('[CHAT] No se pudo limpiar historial en localStorage:', error);
+    }
   }
 
   ngOnDestroy(): void {

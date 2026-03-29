@@ -39,7 +39,7 @@ export const routes: Routes = [
       {
         path: 'ia-panel',
         loadComponent: () =>
-          import('../pages/ia-panel/ia-panel.page').then((m) => m.IaPanelPage),
+          import('../pages/ia-panel').then((m) => m.IaPanelPage),
       },
       {
         path: 'profile',
