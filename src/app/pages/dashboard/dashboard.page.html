@@ -53,13 +53,13 @@
     <!-- Quick Actions -->
     <h2 class="section-title">Acciones Rápidas</h2>
     <div class="row quick-actions">
-      <ion-button fill="clear" (click)="goTo('tabs/products')">
-        <ion-icon slot="start" name="cube-outline"></ion-icon>
-        Agregar Producto
+      <ion-button fill="clear" (click)="openPdfModal()">
+        <ion-icon slot="start" name="document-text-outline"></ion-icon>
+        Reportes PDF
       </ion-button>
-      <ion-button fill="clear" (click)="goTo('tabs/ia')">
-        <ion-icon slot="start" name="hardware-chip-outline"></ion-icon>
-        Ver IA
+      <ion-button fill="clear" (click)="openWeeklyBalancesModal()">
+        <ion-icon slot="start" name="list-outline"></ion-icon>
+        Balances Semanales
       </ion-button>
       <ion-button fill="clear" (click)="goTo('tabs/business')">
         <ion-icon slot="start" name="business-outline"></ion-icon>
@@ -125,6 +125,99 @@
         </div>
       </ion-card-content>
     </ion-card>
+
+    <div class="modal-overlay" *ngIf="showWeeklyBalancesModal" (click)="closeWeeklyBalancesModal()">
+      <div class="modal-card" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h3>Balances Semanales</h3>
+          <ion-button fill="clear" size="small" (click)="closeWeeklyBalancesModal()">Cerrar</ion-button>
+        </div>
+
+        <div class="modal-body">
+          <div class="manual-sync-actions">
+            <ion-button
+              size="small"
+              [disabled]="isManualWeeklySyncLoading"
+              (click)="syncWeeklyBalanceNow()">
+              {{ isManualWeeklySyncLoading ? 'Generando...' : 'Generar balance semanal' }}
+            </ion-button>
+
+            <div class="manual-sync-hint" *ngIf="weeklySyncStatus?.pending">
+              Semana pendiente: {{ weeklySyncStatus?.currentWeekKey }}.
+            </div>
+            <div class="manual-sync-hint" *ngIf="weeklySyncStatus && !weeklySyncStatus.pending">
+              Esta semana ya esta sincronizada.
+            </div>
+          </div>
+
+          <div class="modal-empty" *ngIf="weeklyBalancesLoading">Cargando balances...</div>
+          <div class="modal-empty" *ngIf="!weeklyBalancesLoading && weeklyBalances.length === 0">
+            No hay balances semanales disponibles.
+          </div>
+
+          <div class="modal-list" *ngIf="!weeklyBalancesLoading && weeklyBalances.length > 0">
+            <div class="modal-item" *ngFor="let balance of weeklyBalances">
+              <div class="item-main">
+                <div class="item-title">{{ balance.weekKey }}</div>
+                <div class="item-subtitle">{{ getBalanceRangeLabel(balance) }}</div>
+              </div>
+              <div class="item-amount">${{ balance.balanceTotal | number:'1.0-0' }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-overlay" *ngIf="showPdfModal" (click)="closePdfModal()">
+      <div class="modal-card modal-card-large" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h3>Reportes PDF</h3>
+          <ion-button fill="clear" size="small" (click)="closePdfModal()">Cerrar</ion-button>
+        </div>
+
+        <div class="modal-body">
+          <h4 class="modal-section-title">Generar desde balance semanal</h4>
+          <div class="modal-empty" *ngIf="weeklyBalancesLoading">Cargando balances...</div>
+          <div class="modal-empty" *ngIf="!weeklyBalancesLoading && weeklyBalances.length === 0">
+            No hay balances para generar PDF.
+          </div>
+
+          <div class="modal-list" *ngIf="!weeklyBalancesLoading && weeklyBalances.length > 0">
+            <div class="modal-item" *ngFor="let balance of weeklyBalances | slice:0:8">
+              <div class="item-main">
+                <div class="item-title">{{ balance.weekKey }}</div>
+                <div class="item-subtitle">{{ getBalanceRangeLabel(balance) }}</div>
+              </div>
+              <ion-button
+                size="small"
+                fill="outline"
+                [disabled]="generatingPdfBalanceId === balance.idBalance"
+                (click)="generatePdfForBalance(balance.idBalance)">
+                {{ generatingPdfBalanceId === balance.idBalance ? 'Generando...' : 'Generar PDF' }}
+              </ion-button>
+            </div>
+          </div>
+
+          <h4 class="modal-section-title">PDF generados</h4>
+          <div class="modal-empty" *ngIf="pdfReportsLoading">Cargando reportes...</div>
+          <div class="modal-empty" *ngIf="!pdfReportsLoading && pdfReports.length === 0">
+            Aun no hay reportes PDF generados.
+          </div>
+
+          <div class="modal-list" *ngIf="!pdfReportsLoading && pdfReports.length > 0">
+            <div class="modal-item" *ngFor="let report of pdfReports | slice:0:12">
+              <div class="item-main">
+                <div class="item-title">{{ report.weekKey }}</div>
+                <div class="item-subtitle">{{ formatDateShort(report.createdAt) }}</div>
+              </div>
+              <ion-button size="small" fill="outline" (click)="openPdfUrl(report.pdfUrl)">
+                Abrir PDF
+              </ion-button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
     </div> <!-- End content -->
   </div>
 </ion-content>

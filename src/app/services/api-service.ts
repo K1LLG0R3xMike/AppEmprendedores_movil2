@@ -83,7 +83,7 @@ export interface DashboardWeeklySnapshot {
   weekEnd: string;
   generatedAt: string;
   syncedAt: string;
-  source: 'frontend_scheduler';
+  source: 'frontend_scheduler' | 'dashboard' | string;
   balanceTotal: number;
   components: DashboardBalanceComponents;
   ingresos: DashboardBalanceMovementRecord[];
@@ -101,6 +101,14 @@ interface DashboardWeeklySyncState {
   syncedAt: string;
 }
 
+export interface DashboardWeeklySyncStatus {
+  idNegocio: string;
+  currentWeekKey: string;
+  lastSyncedWeekKey: string | null;
+  lastSyncedAt: string | null;
+  pending: boolean;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -113,7 +121,8 @@ export class ApiService {
   private readonly dashboardBalanceComponentsKey = 'dashboard_balance_components';
   private readonly dashboardBalanceMovementsKey = 'dashboard_balance_movements';
   private readonly dashboardWeeklySyncStateKey = 'dashboard_balance_weekly_sync_state';
-  private readonly dashboardWeeklySyncEndpoint = '/dashboard-weekly-balance/';
+  private readonly dashboardWeeklySyncEndpoint = '/balance-semanal/';
+  private readonly balancePdfEndpoint = '/balance-pdf';
   private readonly dashboardBalanceMovementsLimit = 5000;
   private dashboardWeeklySyncTimer: any = null;
 
@@ -1019,6 +1028,19 @@ export class ApiService {
     return response;
   }
 
+  private extractSyncedBalanceId(response: any): string | null {
+    const value =
+      response?.data?.idBalance ||
+      response?.data?.idSnapshot ||
+      response?.data?.id ||
+      response?.idBalance ||
+      response?.idSnapshot ||
+      response?.id;
+
+    if (typeof value === 'string' && value.trim()) return value;
+    return null;
+  }
+
   async runWeeklyDashboardSyncIfNeeded(): Promise<{
     status: 'synced' | 'skipped' | 'disabled';
     reason?: string;
@@ -1076,7 +1098,7 @@ export class ApiService {
       weekStart: weekRange.weekStart,
       weekEnd: weekRange.weekEnd,
       generatedAt: nowIso,
-      source: 'frontend_scheduler',
+      source: 'dashboard',
       balanceTotal: components.balanceTotal,
       components,
       ingresos: analysis.ingresos,
@@ -1104,7 +1126,7 @@ export class ApiService {
       weekEnd: weekRange.weekEnd,
       generatedAt: nowIso,
       syncedAt: nowIso,
-      source: 'frontend_scheduler',
+      source: 'dashboard',
       balanceTotal: components.balanceTotal,
       components,
       ingresos: analysis.ingresos,
@@ -1115,22 +1137,213 @@ export class ApiService {
       weeklyMovimientos
     };
 
-    await this.postDashboardWeeklySnapshotToBackend(snapshot, idToken);
+    const syncResponse = await this.postDashboardWeeklySnapshotToBackend(snapshot, idToken);
+    const syncedBalanceId = this.extractSyncedBalanceId(syncResponse) || snapshot.idSnapshot;
 
     await this.setDashboardWeeklySyncStateLocal({
       weekKey,
       idNegocio,
-      snapshotId: snapshot.idSnapshot,
+      snapshotId: syncedBalanceId,
       syncedAt: nowIso
     });
 
     console.log('[SCHEDULER] Weekly sync completed:', {
       weekKey,
       idNegocio,
-      snapshotId: snapshot.idSnapshot
+      snapshotId: syncedBalanceId
     });
 
     return { status: 'synced', snapshot };
+  }
+
+  async getDashboardWeeklySyncStatus(idNegocio: string): Promise<DashboardWeeklySyncStatus> {
+    const safeBusinessId = (idNegocio || '').trim();
+    const currentWeekKey = this.getIsoWeekKey();
+    const lastState = await this.getDashboardWeeklySyncStateLocal();
+
+    const sameBusiness = !!safeBusinessId && lastState?.idNegocio === safeBusinessId;
+    const lastSyncedWeekKey = sameBusiness ? (lastState?.weekKey || null) : null;
+    const lastSyncedAt = sameBusiness ? (lastState?.syncedAt || null) : null;
+    const pending = !!safeBusinessId && lastSyncedWeekKey !== currentWeekKey;
+
+    return {
+      idNegocio: safeBusinessId,
+      currentWeekKey,
+      lastSyncedWeekKey,
+      lastSyncedAt,
+      pending
+    };
+  }
+
+  async createBalanceSemanal(snapshot: Partial<DashboardWeeklySnapshot>): Promise<any> {
+    const token = await this.getToken();
+    if (!token) throw new Error('Usuario no autenticado.');
+
+    const url = `${this.baseUrl}${this.dashboardWeeklySyncEndpoint}`;
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    });
+
+    try {
+      const response = await this.http.post<any>(url, snapshot, { headers })
+        .pipe(timeout(this.requestTimeout))
+        .toPromise();
+
+      return response;
+    } catch (error: any) {
+      throw this.handleHttpError(error);
+    }
+  }
+
+  async getBalancesSemanales(): Promise<any[]> {
+    const token = await this.getToken();
+    if (!token) throw new Error('Usuario no autenticado.');
+
+    const url = `${this.baseUrl}/balance-semanal/`;
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    });
+
+    try {
+      const response = await this.http.get<{ message?: string; data?: any[] }>(url, { headers })
+        .pipe(timeout(this.requestTimeout))
+        .toPromise();
+      if (Array.isArray(response)) return response;
+      return response?.data || [];
+    } catch (error: any) {
+      if (error?.status === 404) return [];
+      throw this.handleHttpError(error);
+    }
+  }
+
+  async getBalancesSemanalesByBusiness(idNegocio: string): Promise<any[]> {
+    if (!idNegocio || !idNegocio.trim()) {
+      throw new Error('El ID del negocio no puede estar vacio.');
+    }
+
+    try {
+      const token = await this.getToken();
+      if (!token) throw new Error('Usuario no autenticado.');
+
+      const url = `${this.baseUrl}/balance-semanal/negocio/${idNegocio}`;
+      const headers = new HttpHeaders({
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      });
+
+      const response = await this.http.get<{ message?: string; data?: any[] }>(url, { headers })
+        .pipe(timeout(this.requestTimeout))
+        .toPromise();
+      if (Array.isArray(response)) return response;
+      return response?.data || [];
+    } catch (error: any) {
+      if (error?.status === 404) return [];
+      if (error?.status === 500) {
+        console.warn('[API] balance-semanal por negocio devolvio 500, usando fallback local por filtro:', {
+          idNegocio
+        });
+
+        try {
+          const allBalances = await this.getBalancesSemanales();
+          return (allBalances || []).filter((item: any) => {
+            const businessId = item?.idNegocio || item?.negocioId || item?.idBusiness;
+            return businessId === idNegocio;
+          });
+        } catch (fallbackError) {
+          console.error('[API] Fallback de balances semanales tambien fallo:', fallbackError);
+          return [];
+        }
+      }
+
+      throw this.handleHttpError(error);
+    }
+  }
+
+  async generateBalancePdf(idBalance: string): Promise<any> {
+    if (!idBalance || !idBalance.trim()) {
+      throw new Error('El ID del balance es requerido.');
+    }
+
+    const token = await this.getToken();
+    if (!token) throw new Error('Usuario no autenticado.');
+
+    const url = `${this.baseUrl}${this.balancePdfEndpoint}/generar/${idBalance}`;
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    });
+
+    try {
+      const response = await this.http.post<any>(url, {}, { headers })
+        .pipe(timeout(this.requestTimeout))
+        .toPromise();
+      return response;
+    } catch (error: any) {
+      throw this.handleHttpError(error);
+    }
+  }
+
+  async getBalancePdfReportsByBusiness(idNegocio: string): Promise<any[]> {
+    if (!idNegocio || !idNegocio.trim()) {
+      throw new Error('El ID del negocio no puede estar vacio.');
+    }
+
+    try {
+      const token = await this.getToken();
+      if (!token) throw new Error('Usuario no autenticado.');
+
+      const url = `${this.baseUrl}${this.balancePdfEndpoint}/negocio/${idNegocio}`;
+      const headers = new HttpHeaders({
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      });
+
+      const response = await this.http.get<{ message?: string; data?: any[] }>(url, { headers })
+        .pipe(timeout(this.requestTimeout))
+        .toPromise();
+
+      if (Array.isArray(response)) return response;
+      return response?.data || [];
+    } catch (error: any) {
+      if (error?.status === 404) return [];
+      if (error?.status === 500) {
+        console.warn('[API] balance-pdf por negocio devolvio 500, intentando fallback por listado global:', {
+          idNegocio
+        });
+
+        try {
+          const token = await this.getToken();
+          if (!token) throw new Error('Usuario no autenticado.');
+
+          const headers = new HttpHeaders({
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          });
+
+          const fallbackUrl = `${this.baseUrl}${this.balancePdfEndpoint}/`;
+          const fallbackResponse = await this.http.get<{ message?: string; data?: any[] }>(fallbackUrl, { headers })
+            .pipe(timeout(this.requestTimeout))
+            .toPromise();
+
+          const list = Array.isArray(fallbackResponse)
+            ? fallbackResponse
+            : (fallbackResponse?.data || []);
+
+          return (list || []).filter((item: any) => {
+            const businessId = item?.idNegocio || item?.negocioId || item?.idBusiness;
+            return businessId === idNegocio;
+          });
+        } catch (fallbackError: any) {
+          if (fallbackError?.status === 404) return [];
+          console.error('[API] Fallback de reportes PDF tambien fallo:', fallbackError);
+          return [];
+        }
+      }
+
+      throw this.handleHttpError(error);
+    }
   }
 
   startWeeklyDashboardSyncScheduler(intervalMs: number = 6 * 60 * 60 * 1000): void {
@@ -1914,7 +2127,7 @@ export class ApiService {
     costoGasto: number;
     descripcion: string;
     recurrencia: string;
-    fechasEjecucion: string[];
+    fechasEjecucion: Array<string | number>;
     pagado?: boolean;
   }): Promise<any> {
     const token = await this.getToken();
@@ -1942,6 +2155,8 @@ export class ApiService {
       return response;
     } catch (error: any) {
       console.error('[API] âŒ Error creating gasto fijo:', error);
+      console.error('[API] âŒ createGastoFijo payload:', gastoData);
+      console.error('[API] âŒ createGastoFijo backend response:', error?.error);
       throw this.handleHttpError(error);
     }
   }

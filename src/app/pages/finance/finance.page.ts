@@ -552,12 +552,37 @@ export class FinancePage implements OnInit {
       return false;
     }
 
-    if (!this.newGastoFijo.recurrencia) {
+    const recurrencia = this.normalizeRecurrencia(this.newGastoFijo.recurrencia || '');
+    if (!recurrencia) {
       this.presentToast('La recurrencia es requerida', 'warning');
       return false;
     }
 
     return true;
+  }
+
+  private normalizeRecurrencia(value: string): 'diaria' | 'semanal' | 'mensual' | 'anual' | '' {
+    const normalized = (value || '').toLowerCase().trim();
+
+    if (normalized === 'diaria' || normalized === 'semanal' || normalized === 'mensual' || normalized === 'anual') {
+      return normalized;
+    }
+
+    return '';
+  }
+
+  private getDefaultFechasEjecucion(recurrencia: 'diaria' | 'semanal' | 'mensual' | 'anual'): number[] {
+    switch (recurrencia) {
+      case 'semanal':
+        return [1];
+      case 'mensual':
+        return [1];
+      case 'anual':
+        return [1];
+      case 'diaria':
+      default:
+        return [1];
+    }
   }
 
   async addGastoFijo(): Promise<void> {
@@ -575,13 +600,19 @@ export class FinancePage implements OnInit {
     await loading.present();
 
     try {
+      const recurrencia = this.normalizeRecurrencia(this.newGastoFijo.recurrencia || '');
+      if (!recurrencia) {
+        await this.presentToast('Recurrencia invalida. Usa diaria, semanal, mensual o anual', 'warning');
+        return;
+      }
+
       const gastoData = {
         idNegocio: this.businessId,
         nombreGasto: this.newGastoFijo.nombreGasto!,
         costoGasto: Number(this.newGastoFijo.costoGasto),
         descripcion: this.newGastoFijo.descripcion!,
-        recurrencia: this.newGastoFijo.recurrencia!,
-        fechasEjecucion: [],
+        recurrencia,
+        fechasEjecucion: this.getDefaultFechasEjecucion(recurrencia),
         pagado: false
       };
 
