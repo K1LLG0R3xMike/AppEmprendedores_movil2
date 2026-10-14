@@ -5,8 +5,14 @@
     <div class="header">
       <div class="header-content">
         <div class="header-text">
-          <h1 class="title">Hola, {{ userName }}</h1>
-          <p class="subtitle">Resumen de {{ businessName }}</p>
+          <ng-container *ngIf="!isLoading; else headerCargando">
+            <h1 class="title">Hola, {{ userName }}</h1>
+            <p class="subtitle">Resumen de {{ businessName }}</p>
+          </ng-container>
+          <ng-template #headerCargando>
+            <ion-skeleton-text [animated]="true" class="sk-title"></ion-skeleton-text>
+            <ion-skeleton-text [animated]="true" class="sk-subtitle"></ion-skeleton-text>
+          </ng-template>
         </div>
         <div class="header-actions">
           <ion-button fill="clear" size="large" (click)="goToSettings()">
@@ -18,15 +24,27 @@
     
     <!-- Content -->
     <div class="content">
+      <ng-container *ngIf="!isLoading; else contenidoCargando">
       <!-- Balance General -->
       <ion-card class="balance-card">
       <ion-card-content>
         <div class="balance-header">
           <ion-icon name="cash-outline" color="warning"></ion-icon>
           <span class="balance-title">Balance General</span>
+
+          <div class="month-selector">
+            <ion-button fill="clear" size="small" aria-label="Mes anterior" (click)="changeMonth(-1)">
+              <ion-icon name="chevron-back-outline" slot="icon-only"></ion-icon>
+            </ion-button>
+            <span class="month-label">{{ selectedMonthLabel }}</span>
+            <ion-button fill="clear" size="small" aria-label="Mes siguiente"
+              [disabled]="isCurrentMonthSelected" (click)="changeMonth(1)">
+              <ion-icon name="chevron-forward-outline" slot="icon-only"></ion-icon>
+            </ion-button>
+          </div>
         </div>
         <div class="balance-value">{{ balanceGeneralFmt }}</div>
-        <div class="balance-label">Balance total</div>
+        <div class="balance-label">Balance total a hoy</div>
 
         <div class="row">
           <div class="income">
@@ -35,7 +53,6 @@
               <span>Ingresos</span>
             </div>
             <div class="value green">{{ ingresosMesFmt }}</div>
-            <div class="month">Este mes</div>
           </div>
 
           <div class="expense">
@@ -44,87 +61,190 @@
               <span>Gastos</span>
             </div>
             <div class="value red">{{ gastosMesFmt }}</div>
-            <div class="month">Este mes</div>
           </div>
+        </div>
+
+        <ion-button class="historicos-toggle" fill="clear" size="small" expand="block" (click)="toggleHistoricos()">
+          {{ showHistoricos ? 'Ocultar históricos' : 'Ver históricos' }}
+          <ion-icon slot="end" [name]="showHistoricos ? 'chevron-up-outline' : 'chevron-down-outline'"></ion-icon>
+        </ion-button>
+
+        <div class="historicos" *ngIf="showHistoricos">
+          <ng-container *ngIf="resumenHistorico as historico; else historicosCargando">
+            <div class="historico-item">
+              <span>Ingresos totales</span>
+              <strong class="green">{{ formatMoney(historico.ingresos) }}</strong>
+            </div>
+            <div class="historico-item">
+              <span>Gastos totales</span>
+              <strong class="red">{{ formatMoney(historico.gastos) }}</strong>
+            </div>
+            <div class="historico-item total">
+              <span>Resultado neto</span>
+              <strong [class.green]="historico.resultadoNeto >= 0" [class.red]="historico.resultadoNeto < 0">
+                {{ formatMoney(historico.resultadoNeto) }}
+              </strong>
+            </div>
+          </ng-container>
+          <ng-template #historicosCargando>
+            <div class="historico-item">Calculando históricos...</div>
+          </ng-template>
         </div>
       </ion-card-content>
     </ion-card>
 
-    <!-- Quick Actions -->
-    <h2 class="section-title">Acciones Rápidas</h2>
-    <div class="row quick-actions">
-      <ion-button fill="clear" (click)="openPdfModal()">
-        <ion-icon slot="start" name="document-text-outline"></ion-icon>
-        Reportes PDF
-      </ion-button>
-      <ion-button fill="clear" (click)="openWeeklyBalancesModal()">
-        <ion-icon slot="start" name="list-outline"></ion-icon>
-        Balances Semanales
-      </ion-button>
-      <ion-button fill="clear" (click)="goTo('tabs/business')">
-        <ion-icon slot="start" name="business-outline"></ion-icon>
-        Ver Negocio
-      </ion-button>
-    </div>
-
-    <!-- KPIs -->
-    <div class="row kpis">
+    <!-- Indicadores -->
+    <div class="kpis">
       <ion-card class="kpi-card">
         <ion-card-content>
-          <div>
+          <div class="kpi-icon" [class.green]="rentabilidadMes >= 0" [class.red]="rentabilidadMes < 0">
+            <ion-icon [name]="rentabilidadMes >= 0 ? 'trending-up-outline' : 'trending-down-outline'"></ion-icon>
+          </div>
+          <div class="kpi-text">
+            <div class="kpi-label">Rentabilidad</div>
+            <div class="kpi-value" [class.green]="rentabilidadMes > 0" [class.red]="rentabilidadMes < 0">{{ rentabilidadMesFmt }}</div>
+            <div class="kpi-hint">{{ selectedMonthLabel }}</div>
+          </div>
+        </ion-card-content>
+      </ion-card>
+
+      <ion-card class="kpi-card">
+        <ion-card-content>
+          <div class="kpi-icon blue">
+            <ion-icon name="pie-chart-outline"></ion-icon>
+          </div>
+          <div class="kpi-text">
+            <div class="kpi-label">Margen promedio</div>
+            <div class="kpi-value" [class.red]="margenPromedio !== null && margenPromedio < 0">{{ margenPromedioFmt }}</div>
+            <div class="kpi-hint">De tus productos</div>
+          </div>
+        </ion-card-content>
+      </ion-card>
+
+      <ion-card class="kpi-card">
+        <ion-card-content>
+          <div class="kpi-icon orange">
+            <ion-icon name="cube-outline"></ion-icon>
+          </div>
+          <div class="kpi-text">
             <div class="kpi-label">Productos</div>
             <div class="kpi-value">{{ productosCount }}</div>
+            <div class="kpi-hint" [class.warn]="productosStockBajo > 0">
+              {{ productosStockBajo > 0 ? productosStockBajo + ' con stock bajo' : 'Stock en orden' }}
+            </div>
           </div>
-          <ion-icon name="cube-outline" color="warning"></ion-icon>
         </ion-card-content>
       </ion-card>
 
       <ion-card class="kpi-card">
         <ion-card-content>
-          <div>
-            <div class="kpi-label">Rentabilidad</div>
-            <div class="kpi-value">{{ rentabilidadMesFmt }}</div>
+          <div class="kpi-icon" [class.red]="gastosPendientesCount > 0" [class.green]="gastosPendientesCount === 0">
+            <ion-icon name="receipt-outline"></ion-icon>
           </div>
-          <ion-icon name="trending-up-outline" color="success"></ion-icon>
+          <div class="kpi-text">
+            <div class="kpi-label">Gastos fijos pendientes</div>
+            <div class="kpi-value">{{ formatMoney(gastosPendientesTotal) }}</div>
+            <div class="kpi-hint" [class.warn]="gastosPendientesCount > 0">
+              {{ gastosPendientesCount > 0 ? gastosPendientesCount + ' por pagar' : 'Todo pagado' }}
+            </div>
+          </div>
         </ion-card-content>
       </ion-card>
     </div>
 
-    <!-- Recent Activity -->
+    <!-- Acciones rápidas -->
+    <h2 class="section-title">Acciones rápidas</h2>
+    <div class="quick-actions">
+      <button class="qa primary" (click)="nuevaVenta()">
+        <ion-icon name="add-circle-outline"></ion-icon>
+        <span>Nueva venta</span>
+      </button>
+      <button class="qa primary" (click)="nuevoGasto()">
+        <ion-icon name="remove-circle-outline"></ion-icon>
+        <span>Nuevo gasto</span>
+      </button>
+      <button class="qa" (click)="openPdfModal()">
+        <ion-icon name="document-text-outline"></ion-icon>
+        <span>Reportes PDF</span>
+      </button>
+      <button class="qa" (click)="openWeeklyBalancesModal()">
+        <ion-icon name="list-outline"></ion-icon>
+        <span>Balances semanales</span>
+      </button>
+    </div>
+
+    <!-- Actividad reciente -->
     <ion-card class="recent-activity">
-      <ion-card-header>
-        <ion-card-title>Actividad Reciente</ion-card-title>
-      </ion-card-header>
       <ion-card-content>
-        <div class="activity-item" *ngFor="let activity of recentActivities">
-          <div class="icon" [ngClass]="activity.type === 'income' ? 'green-bg' : 'red-bg'">
-            <ion-icon
-              [name]="activity.type === 'income' ? 'trending-up-outline' : 'trending-down-outline'"
-              [color]="activity.type === 'income' ? 'success' : 'danger'">
-            </ion-icon>
+        <div class="card-head">
+          <h2 class="section-title">Actividad reciente</h2>
+          <button class="link-btn" (click)="goTo('tabs/finance')">Ver todas →</button>
+        </div>
+
+        <div class="act-item" *ngFor="let activity of recentActivities">
+          <div class="act-icon" [ngClass]="'is-' + activity.type">
+            <ion-icon [name]="activity.type === 'income' ? 'trending-up-outline' : 'trending-down-outline'"></ion-icon>
           </div>
-          <div class="info">
-            <div class="title">{{ activity.title }}</div>
-            <div class="time">{{ activity.time }}</div>
+          <div class="act-info">
+            <div class="act-title">{{ activity.title }}</div>
+            <div class="act-date">{{ activity.time }}</div>
           </div>
-          <div class="details">
-            <div class="amount" [ngClass]="activity.type === 'income' ? 'green' : 'red'">
-              {{ activity.type === 'income' ? '+' : '-' }}${{ activity.amount.toFixed(0) }}
-            </div>
-            <div class="badge" [ngClass]="activity.type === 'income' ? 'income' : 'expense'">
-              {{ activity.type === 'income' ? 'Ingreso' : 'Gasto' }}
-            </div>
+          <div class="act-amount" [ngClass]="'is-' + activity.type">
+            {{ activity.type === 'income' ? '+' : '-' }}{{ formatMoney(activity.amount) }}
           </div>
         </div>
 
-        <div class="activity-item" *ngIf="recentActivities.length === 0">
-          <div class="info">
-            <div class="title">Sin actividad reciente</div>
-            <div class="time">Aun no hay movimientos</div>
-          </div>
+        <div class="act-empty" *ngIf="recentActivities.length === 0">
+          Aún no hay movimientos. Registra tu primera venta o gasto.
         </div>
       </ion-card-content>
     </ion-card>
+      </ng-container>
+
+    <!-- Esqueleto de carga: mismas clases que el contenido real para respetar el diseño -->
+    <ng-template #contenidoCargando>
+      <ion-card class="balance-card" aria-busy="true" aria-label="Cargando resumen">
+        <ion-card-content>
+          <ion-skeleton-text [animated]="true" class="sk-line sk-40"></ion-skeleton-text>
+          <ion-skeleton-text [animated]="true" class="sk-big"></ion-skeleton-text>
+          <ion-skeleton-text [animated]="true" class="sk-line sk-30 sk-center"></ion-skeleton-text>
+          <div class="row">
+            <ion-skeleton-text [animated]="true" class="sk-box"></ion-skeleton-text>
+            <ion-skeleton-text [animated]="true" class="sk-box"></ion-skeleton-text>
+          </div>
+        </ion-card-content>
+      </ion-card>
+
+      <div class="kpis">
+        <ion-card class="kpi-card" *ngFor="let i of [1, 2, 3, 4]">
+          <ion-card-content>
+            <ion-skeleton-text [animated]="true" class="sk-avatar"></ion-skeleton-text>
+            <div class="sk-kpi">
+              <ion-skeleton-text [animated]="true" class="sk-line sk-50"></ion-skeleton-text>
+              <ion-skeleton-text [animated]="true" class="sk-line sk-70 sk-tall"></ion-skeleton-text>
+            </div>
+          </ion-card-content>
+        </ion-card>
+      </div>
+
+      <h2 class="section-title"><ion-skeleton-text [animated]="true" class="sk-line sk-50"></ion-skeleton-text></h2>
+      <div class="quick-actions">
+        <ion-skeleton-text *ngFor="let i of [1, 2, 3, 4]" [animated]="true" class="sk-button"></ion-skeleton-text>
+      </div>
+
+      <ion-card class="recent-activity">
+        <ion-card-content>
+          <ion-skeleton-text [animated]="true" class="sk-line sk-40 sk-tall"></ion-skeleton-text>
+          <div class="sk-activity" *ngFor="let i of [1, 2, 3, 4]">
+            <ion-skeleton-text [animated]="true" class="sk-avatar"></ion-skeleton-text>
+            <div class="sk-activity-text">
+              <ion-skeleton-text [animated]="true" class="sk-line sk-70"></ion-skeleton-text>
+              <ion-skeleton-text [animated]="true" class="sk-line sk-30"></ion-skeleton-text>
+            </div>
+          </div>
+        </ion-card-content>
+      </ion-card>
+    </ng-template>
 
     <div class="modal-overlay" *ngIf="showWeeklyBalancesModal" (click)="closeWeeklyBalancesModal()">
       <div class="modal-card" (click)="$event.stopPropagation()">
@@ -192,7 +312,7 @@
                 size="small"
                 fill="outline"
                 [disabled]="generatingPdfBalanceId === balance.idBalance"
-                (click)="generatePdfForBalance(balance.idBalance)">
+                (click)="generatePdfForBalance(balance)">
                 {{ generatingPdfBalanceId === balance.idBalance ? 'Generando...' : 'Generar PDF' }}
               </ion-button>
             </div>
@@ -210,8 +330,9 @@
                 <div class="item-title">{{ report.weekKey }}</div>
                 <div class="item-subtitle">{{ formatDateShort(report.createdAt) }}</div>
               </div>
-              <ion-button size="small" fill="outline" (click)="openPdfUrl(report.pdfUrl)">
-                Abrir PDF
+              <ion-button size="small" fill="outline" [disabled]="downloadingReportId === report.idReporte"
+                (click)="downloadReport(report)">
+                {{ downloadingReportId === report.idReporte ? 'Descargando...' : 'Descargar' }}
               </ion-button>
             </div>
           </div>

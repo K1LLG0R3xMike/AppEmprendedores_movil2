@@ -50,7 +50,6 @@ export class ThemeService {
   }
 
   async setDarkMode(isDark: boolean): Promise<void> {
-    console.log('setDarkMode called with:', isDark);
     this.isDarkMode = isDark;
     
     try {
@@ -58,7 +57,6 @@ export class ThemeService {
         key: this.darkModeKey,
         value: JSON.stringify(this.isDarkMode)
       });
-      console.log('Theme preference saved:', this.isDarkMode);
     } catch (error) {
       console.error('Error saving theme preference:', error);
     }
@@ -71,21 +69,16 @@ export class ThemeService {
   }
 
   private applyTheme(): void {
-    console.log('applyTheme called. isDarkMode:', this.isDarkMode);
-    console.log('Body classes before:', document.body.classList.toString());
     
     document.body.classList.toggle('dark', this.isDarkMode);
     
     // También aplicar al elemento html para mayor compatibilidad
     document.documentElement.classList.toggle('dark', this.isDarkMode);
     
-    console.log('Body classes after:', document.body.classList.toString());
-    console.log('HTML classes after:', document.documentElement.classList.toString());
     
     // Actualizar la meta tag de color de la barra de estado
     this.updateStatusBarColor();
     
-    console.log('Theme applied:', this.isDarkMode ? 'dark' : 'light');
   }
 
   private updateStatusBarColor(): void {

@@ -1,3 +1,30 @@
+<!-- Menú lateral: solo visible en PC (≥992px), reemplaza a la barra de pestañas -->
+<nav class="side-menu" aria-label="Navegación principal">
+  <div class="side-brand">FinanceAI</div>
+
+  <a class="side-link" routerLink="/tabs/dashboard" routerLinkActive="active">
+    <ion-icon aria-hidden="true" name="home"></ion-icon>
+    <span>Inicio</span>
+  </a>
+  <a class="side-link" routerLink="/tabs/product" routerLinkActive="active">
+    <ion-icon aria-hidden="true" name="business"></ion-icon>
+    <span>Productos</span>
+  </a>
+  <a class="side-link" routerLink="/tabs/ia-panel" routerLinkActive="active">
+    <ion-icon aria-hidden="true" name="sparkles"></ion-icon>
+    <span>IA</span>
+  </a>
+  <a class="side-link" routerLink="/tabs/finance" routerLinkActive="active">
+    <ion-icon aria-hidden="true" name="trending-up-outline"></ion-icon>
+    <span>Finanzas</span>
+  </a>
+
+  <a class="side-link side-bottom" routerLink="/tabs/settings" routerLinkActive="active">
+    <ion-icon aria-hidden="true" name="settings-outline"></ion-icon>
+    <span>Configuración</span>
+  </a>
+</nav>
+
 <ion-tabs>
   <ion-tab-bar slot="bottom">
     <ion-tab-button tab="dashboard" href="/tabs/dashboard">

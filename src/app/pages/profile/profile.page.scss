@@ -400,3 +400,8 @@ p, span, div {
     gap: 8px;
   }
 }
+
+// Diseño PC: ancho máximo del contenido (lo usa la regla global de ion-content)
+:host {
+  --page-max-width: 640px;
+}

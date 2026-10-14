@@ -1,0 +1,18 @@
+// Puntos de corte del diseño adaptable a PC.
+// Por debajo de "tablet" se usa el diseño móvil original, sin cambios.
+// Las páginas existentes usan @media (max-width: 768px), por eso tablet empieza en 769px.
+$tablet: 769px;
+$desktop: 992px;
+$sidebar-width: 220px;
+
+@mixin tablet-up {
+  @media (min-width: $tablet) {
+    @content;
+  }
+}
+
+@mixin desktop-up {
+  @media (min-width: $desktop) {
+    @content;
+  }
+}

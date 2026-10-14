@@ -455,3 +455,8 @@ ion-input, ion-button {
 ion-input:focus {
   transform: translateY(-1px);
 }
+
+// Diseño PC: ancho máximo del contenido (lo usa la regla global de ion-content)
+:host {
+  --page-max-width: 480px;
+}

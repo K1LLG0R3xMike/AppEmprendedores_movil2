@@ -342,3 +342,8 @@ ion-toggle {
   --handle-background: white;
   --handle-background-checked: white;
 }
+
+// Diseño PC: ancho máximo del contenido (lo usa la regla global de ion-content)
+:host {
+  --page-max-width: 640px;
+}

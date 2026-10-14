@@ -112,6 +112,20 @@ export class FinancePage implements OnInit {
     await this.loadGastosFijos();
   }
 
+  // Atajos "Nueva venta" / "Nuevo gasto" del Inicio abren el formulario correspondiente
+  ionViewWillEnter(): void {
+    const accion = history.state?.accion;
+    if (accion !== 'venta' && accion !== 'gasto') return;
+
+    history.replaceState({ ...history.state, accion: undefined }, '');
+    if (accion === 'venta') {
+      this.openVentaForm();
+    } else {
+      this.openTransactionForm();
+      this.newTransaction.type = 'expense';
+    }
+  }
+
   private async loadBusinessId(): Promise<void> {
     try {
       const uid = await this.apiService.getUid();

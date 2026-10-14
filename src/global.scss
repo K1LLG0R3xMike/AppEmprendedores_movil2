@@ -1,3 +1,5 @@
+@use "theme/breakpoints" as bp;
+
 /*
  * App Global CSS
  * ----------------------------------------------------------------------------
@@ -105,4 +107,22 @@ ion-button {
 h1, h2, h3, h4, h5, h6, p, span, div {
   color: var(--ion-text-color);
   transition: color 0.3s ease;
+}
+
+/*
+ * Diseño adaptable a PC
+ * -----------------------------------------------------
+ * En celular no cambia nada. Desde tablet el contenido de cada página se centra con un
+ * ancho máximo. Cada página puede ajustar su ancho con --page-max-width en su :host.
+ */
+@include bp.tablet-up {
+  ion-content::part(scroll) {
+    padding-inline: max(0px, calc((100% - var(--page-max-width, 720px)) / 2));
+  }
+}
+
+@include bp.desktop-up {
+  ion-content::part(scroll) {
+    padding-inline: max(0px, calc((100% - var(--page-max-width, 1100px)) / 2));
+  }
 }

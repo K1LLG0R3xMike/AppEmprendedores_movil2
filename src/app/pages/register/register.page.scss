@@ -174,3 +174,8 @@
     padding: 16px;
   }
 }
+
+// Diseño PC: ancho máximo del contenido (lo usa la regla global de ion-content)
+:host {
+  --page-max-width: 480px;
+}

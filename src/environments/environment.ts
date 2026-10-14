@@ -5,8 +5,8 @@
 export const environment = {
   production: false,
   firebaseApiKey: 'AIzaSyA1yWyrDp_wlwZflfgKmw4SSnP7cTbU1Fs', // Reemplaza con tu API key real
-  apiBaseUrl: 'https://back-appemprendedores.onrender.com/api',
-  aiServiceBaseUrl: 'https://ia-service-mk5h.onrender.com'
+  apiBaseUrl: 'http://localhost:3000/api',
+  aiServiceBaseUrl: 'http://localhost:8080'
 };
 
 /*

@@ -1,104 +1,98 @@
 <div class="chat-header">
-  <div class="chat-title">
-    <ion-icon name="sparkles" color="warning"></ion-icon>
-    <span>Asistente IA</span>
+  <div class="chat-header-inner">
+    <button class="icon-btn back-btn" aria-label="Volver al panel de IA" (click)="goBack()">
+      <ion-icon name="chevron-back"></ion-icon>
+    </button>
+    <div class="avatar">
+      <ion-icon name="sparkles"></ion-icon>
+    </div>
+    <div class="chat-title">
+      <span class="name">Asistente FinanceAI</span>
+      <span class="status"><span class="status-dot"></span>Conectado a tus datos</span>
+    </div>
+    <button class="new-chat" *ngIf="messages.length > 0" (click)="newConversation()">
+      <ion-icon name="add"></ion-icon>
+      Nuevo
+    </button>
   </div>
 </div>
 
 <ion-content [fullscreen]="true" class="chat-content">
-  <div class="messages-container">
-    <div class="messages-list">
-      <!-- Welcome message -->
-      <div class="message-wrapper ai-message" *ngIf="messages.length === 0">
-        <div class="message-bubble ai-bubble">
-          <div class="message-avatar">
-            <ion-icon name="sparkles"></ion-icon>
-          </div>
-          <div class="bubble-content">
-            <p>¡Hola! Soy tu asistente de IA para emprendedores. ¿En qué puedo ayudarte hoy?</p>
-          </div>
-        </div>
+  <div class="messages">
+    <!-- Bienvenida con preguntas sugeridas -->
+    <div class="welcome" *ngIf="messages.length === 0 && !loading">
+      <div class="avatar avatar-lg">
+        <ion-icon name="sparkles"></ion-icon>
       </div>
-
-      <!-- Chat messages -->
-      <div *ngFor="let m of messages; let i = index" 
-           class="message-wrapper" 
-           [ngClass]="m.role === 'user' ? 'user-message' : 'ai-message'">
-        <div class="message-bubble" 
-             [ngClass]="m.role === 'user' ? 'user-bubble' : 'ai-bubble'">
-          <div class="message-avatar" *ngIf="m.role === 'assistant'">
-            <ion-icon name="sparkles"></ion-icon>
-          </div>
-          <div class="bubble-content">
-            <p>{{ m.content }}</p>
-          </div>
-          <div class="message-avatar" *ngIf="m.role === 'user'">
-            <ion-icon name="person"></ion-icon>
-          </div>
-        </div>
-        <div class="message-time">
-          {{ getCurrentTime() }}
-        </div>
-      </div>
-
-      <!-- Loading indicator -->
-      <div class="message-wrapper ai-message" *ngIf="loading">
-        <div class="message-bubble ai-bubble">
-          <div class="message-avatar">
-            <ion-icon name="sparkles"></ion-icon>
-          </div>
-          <div class="bubble-content typing">
-            <div class="typing-indicator">
-              <div class="typing-dot"></div>
-              <div class="typing-dot"></div>
-              <div class="typing-dot"></div>
-            </div>
-            <span class="typing-text">Escribiendo...</span>
-          </div>
-        </div>
+      <h2>¿En qué te ayudo hoy?</h2>
+      <p>Respondo con los datos reales de tu negocio: ventas, productos, gastos y rentabilidad.</p>
+      <div class="suggestions">
+        <button class="suggestion" *ngFor="let s of sugerencias" (click)="send(s.texto)">
+          <span class="suggestion-icon">{{ s.icono }}</span>
+          <span>{{ s.texto }}</span>
+        </button>
       </div>
     </div>
-  </div>
-  
-  <!-- Input section -->
-  <div class="input-section">
-    <div class="input-container">
-      <ion-input
-        [(ngModel)]="text"
-        placeholder="Escribe tu mensaje..."
-        class="message-input"
-        (keyup.enter)="send()">
-      </ion-input>
-      <div class="input-actions">
-        <ion-button 
-          fill="clear" 
-          (click)="send()" 
-          [disabled]="loading || !text.trim()"
-          class="send-button">
-          <ion-icon name="send" slot="icon-only"></ion-icon>
-        </ion-button>
+
+    <ng-container *ngFor="let m of messages; let i = index; trackBy: trackByIndex">
+      <!-- Mensaje del usuario -->
+      <div class="msg msg-user" *ngIf="m.role === 'user'">
+        <div class="user-bubble">{{ m.content }}</div>
+        <div class="msg-meta" *ngIf="m.time">{{ formatTime(m.time) }}</div>
       </div>
-    </div>
-    
-    <!-- Action buttons -->
-    <div class="action-buttons" *ngIf="loading || messages.length > 0">
-      <ion-button 
-        fill="outline" 
-        size="small" 
-        (click)="stop()" 
-        [disabled]="!loading"
-        color="medium">
-        <ion-icon name="stop" slot="start"></ion-icon>
-        Detener
-      </ion-button>
-      <ion-button 
-        fill="clear" 
-        size="small" 
-        (click)="reset()" 
-        color="danger">
-        <ion-icon name="refresh" slot="start"></ion-icon>
-        Limpiar
-      </ion-button>
+
+      <!-- Respuesta de la IA -->
+      <div class="msg msg-ai" *ngIf="m.role === 'assistant'">
+        <div class="avatar avatar-sm">
+          <ion-icon name="sparkles"></ion-icon>
+        </div>
+        <div class="ai-body">
+          <div class="ai-card" [class.error]="m.error" [innerHTML]="m.content | markdown"></div>
+          <div class="msg-meta">
+            <span *ngIf="m.time">{{ formatTime(m.time) }}</span>
+            <button class="meta-btn" *ngIf="!m.error" (click)="copy(m, i)">
+              <ion-icon [name]="copiedIndex === i ? 'checkmark' : 'copy-outline'"></ion-icon>
+              {{ copiedIndex === i ? 'Copiado' : 'Copiar' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+
+    <!-- La IA está escribiendo -->
+    <div class="msg msg-ai" *ngIf="loading" aria-live="polite">
+      <div class="avatar avatar-sm">
+        <ion-icon name="sparkles"></ion-icon>
+      </div>
+      <div class="typing" aria-label="La IA está escribiendo">
+        <span></span><span></span><span></span>
+      </div>
     </div>
   </div>
 </ion-content>
+
+<!-- Caja de texto -->
+<div class="input-section">
+  <div class="composer">
+    <textarea
+      #input
+      rows="1"
+      [(ngModel)]="text"
+      (input)="resizeInput()"
+      (keydown)="onKeydown($event)"
+      placeholder="Pregunta sobre tu negocio…"
+      aria-label="Mensaje para el asistente"></textarea>
+    <button
+      *ngIf="!loading"
+      class="send-btn"
+      aria-label="Enviar"
+      [disabled]="!text.trim()"
+      (click)="send()">
+      <ion-icon name="send"></ion-icon>
+    </button>
+    <button *ngIf="loading" class="send-btn stop-btn" aria-label="Detener respuesta" (click)="stop()">
+      <ion-icon name="stop"></ion-icon>
+    </button>
+  </div>
+  <div class="composer-hint">Enter para enviar · Shift+Enter para nueva línea</div>
+</div>

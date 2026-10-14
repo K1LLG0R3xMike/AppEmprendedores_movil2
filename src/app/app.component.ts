@@ -16,7 +16,6 @@ export class AppComponent implements OnInit {
 
     // Suscripcion de diagnostico al estado de autenticacion
     this.authService.isAuthenticated$.subscribe((isAuth) => {
-      console.log('Estado de autenticacion cambio:', isAuth);
     });
   }
 }

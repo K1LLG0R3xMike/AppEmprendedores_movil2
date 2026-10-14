@@ -4,6 +4,7 @@ import { Observable, throwError } from 'rxjs';
 import { catchError, timeout } from 'rxjs/operators';
 import { Preferences } from '@capacitor/preferences';
 import { environment } from '../../environments/environment';
+import { BalanceGeneral, calcularBalanceGeneral, esTransaccionIngreso } from './balance.utils';
 
 interface FirebaseAuthResponse {
   idToken: string;
@@ -121,6 +122,7 @@ export class ApiService {
   private readonly dashboardBalanceComponentsKey = 'dashboard_balance_components';
   private readonly dashboardBalanceMovementsKey = 'dashboard_balance_movements';
   private readonly dashboardWeeklySyncStateKey = 'dashboard_balance_weekly_sync_state';
+  private readonly balanceGeneralCachePrefix = 'balance_general_';
   private readonly dashboardWeeklySyncEndpoint = '/balance-semanal/';
   private readonly balancePdfEndpoint = '/balance-pdf';
   private readonly dashboardBalanceMovementsLimit = 5000;
@@ -218,7 +220,6 @@ export class ApiService {
       returnSecureToken: true
     };
 
-    console.log('[LOGIN] Intentando login para:', email);
 
     try {
       const headers = new HttpHeaders({
@@ -232,9 +233,6 @@ export class ApiService {
         .toPromise();
 
       if (response) {
-        console.log('[LOGIN] Status: 200');
-        console.log('[LOGIN] Login exitoso para:', email, '(uid:', response.localId, ')');
-        console.log('[LOGIN] Token recibido:', response.idToken);
         // Guardar token y UID en el almacenamiento seguro
         await Preferences.set({
           key: 'idToken',
@@ -251,7 +249,6 @@ export class ApiService {
         throw new Error('Respuesta invÃ¡lida del servidor.');
       }
     } catch (error: any) {
-      console.log('[LOGIN] Error:', error);
       throw this.handleHttpError(error);
     }
   }
@@ -298,7 +295,6 @@ export class ApiService {
         .pipe(
           timeout(5000), // Timeout mÃ¡s corto para verificaciÃ³n
           catchError(() => {
-            console.log('[API] Token validation failed');
             return throwError(() => new Error('Token invalid'));
           })
         )
@@ -306,7 +302,6 @@ export class ApiService {
 
       return true;
     } catch (error) {
-      console.log('[API] Token is invalid or expired');
       return false;
     }
   }
@@ -431,7 +426,6 @@ export class ApiService {
     try {
       await Preferences.remove({ key: 'idToken' });
       await Preferences.remove({ key: 'uid' });
-      console.log('[LOGOUT] SesiÃ³n cerrada correctamente');
     } catch (error) {
       console.error('Error cerrando sesiÃ³n:', error);
       throw new Error('Error cerrando sesiÃ³n.');
@@ -485,6 +479,104 @@ export class ApiService {
     }
 
     return normalized;
+  }
+
+  // Balance general calculado con los datos del backend (fuente de verdad).
+  // Usa GET /balance-general/:idNegocio y, si el endpoint no esta disponible
+  // (404, sin conexion, timeout o error 5xx), lo calcula en el front.
+  async getBalanceGeneral(idNegocio: string, capitalInicial: number): Promise<BalanceGeneral> {
+    let balance: BalanceGeneral;
+    try {
+      balance = await this.getBalanceGeneralFromBackend(idNegocio);
+    } catch (error: any) {
+      // Sin permisos o sesion vencida: el calculo en el front fallaria igual
+      if (error?.status === 401 || error?.status === 403) {
+        throw this.handleHttpError(error);
+      }
+      console.warn('[API] Endpoint balance-general no disponible, calculando en el front:', error?.status ?? error);
+      balance = await this.computeBalanceGeneralInFrontend(idNegocio, capitalInicial);
+    }
+
+    await this.setBalanceGeneralCache(idNegocio, balance);
+    return balance;
+  }
+
+  private async getBalanceGeneralFromBackend(idNegocio: string): Promise<BalanceGeneral> {
+    const token = await this.getToken();
+    if (!token) {
+      throw new Error('Usuario no autenticado.');
+    }
+
+    const url = `${this.baseUrl}/balance-general/${encodeURIComponent(idNegocio)}`;
+    const headers = new HttpHeaders({ 'Authorization': `Bearer ${token}` });
+
+    const response = await this.http.get<{ data: any }>(url, { headers })
+      .pipe(timeout(this.requestTimeout))
+      .toPromise();
+
+    const data = response?.data;
+    if (!data || !Number.isFinite(Number(data.balanceTotal))) {
+      throw new Error('Respuesta invalida de balance-general');
+    }
+
+    return {
+      capitalInicial: this.toSafeNumber(data.capitalInicial),
+      ventas: this.toSafeNumber(data.ventas),
+      transaccionesIngreso: this.toSafeNumber(data.transaccionesIngreso),
+      transaccionesEgreso: this.toSafeNumber(data.transaccionesEgreso),
+      gastosFijosPagados: this.toSafeNumber(data.gastosFijosPagados),
+      balanceTotal: this.toSafeNumber(data.balanceTotal),
+      source: 'backend',
+      calculatedAt: data.calculatedAt || new Date().toISOString()
+    };
+  }
+
+  private async computeBalanceGeneralInFrontend(idNegocio: string, capitalInicial: number): Promise<BalanceGeneral> {
+    const [transacciones, productos, gastosTodos] = await Promise.all([
+      this.getTransactionsByBusiness(idNegocio),
+      this.getProductsByBusiness(idNegocio),
+      // El endpoint devuelve los gastos pagados de todos los negocios: se filtra abajo
+      this.getGastosFijosPagados()
+    ]);
+
+    const ventasPorProducto = await Promise.all(
+      productos
+        .map((p: any) => p?.idProducto || p?.id)
+        .filter((idProducto: any) => !!idProducto)
+        .map((idProducto: string) => this.getVentasByProducto(idProducto))
+    );
+
+    const balance = calcularBalanceGeneral({
+      capitalInicial,
+      ventas: ventasPorProducto.flat(),
+      transacciones: transacciones.map((t: any) => ({ tipo: t.tipoOriginal ?? t.tipo, monto: t.monto })),
+      gastosFijosPagados: gastosTodos.filter((g: any) => g?.idNegocio === idNegocio)
+    });
+
+    return { ...balance, source: 'frontend', calculatedAt: new Date().toISOString() };
+  }
+
+  private balanceGeneralCacheKey(idNegocio: string): string {
+    return `${this.balanceGeneralCachePrefix}${idNegocio}`;
+  }
+
+  // Ultimo balance calculado para un negocio (para mostrar algo mientras se recalcula)
+  async getBalanceGeneralCache(idNegocio: string): Promise<BalanceGeneral | null> {
+    try {
+      const { value } = await Preferences.get({ key: this.balanceGeneralCacheKey(idNegocio) });
+      return value ? JSON.parse(value) as BalanceGeneral : null;
+    } catch (error) {
+      console.warn('[API] Error reading balance general cache:', error);
+      return null;
+    }
+  }
+
+  private async setBalanceGeneralCache(idNegocio: string, balance: BalanceGeneral): Promise<void> {
+    try {
+      await Preferences.set({ key: this.balanceGeneralCacheKey(idNegocio), value: JSON.stringify(balance) });
+    } catch (error) {
+      console.warn('[API] Error writing balance general cache:', error);
+    }
   }
 
   private toSafeNumber(value: any): number {
@@ -1019,11 +1111,6 @@ export class ApiService {
       .pipe(timeout(this.requestTimeout))
       .toPromise();
 
-    console.log('[SCHEDULER] Weekly dashboard data synced to backend:', {
-      endpoint: url,
-      payload: snapshot,
-      response
-    });
 
     return response;
   }
@@ -1046,13 +1133,11 @@ export class ApiService {
     reason?: string;
     snapshot?: DashboardWeeklySnapshot;
   }> {
-    console.log('[SCHEDULER] Checking weekly dashboard sync...');
 
     const idToken = await this.getToken();
     const uid = await this.getUid();
 
     if (!idToken || !uid) {
-      console.log('[SCHEDULER] Skipped weekly sync: no_auth_session');
       return { status: 'skipped', reason: 'no_auth_session' };
     }
 
@@ -1062,12 +1147,10 @@ export class ApiService {
       const firstBusiness = businesses?.[0];
       idNegocio = firstBusiness?.['idNegocio'] || firstBusiness?.['id'] || '';
     } catch {
-      console.log('[SCHEDULER] Skipped weekly sync: business_lookup_failed');
       return { status: 'skipped', reason: 'business_lookup_failed' };
     }
 
     if (!idNegocio) {
-      console.log('[SCHEDULER] Skipped weekly sync: no_business');
       return { status: 'skipped', reason: 'no_business' };
     }
 
@@ -1108,11 +1191,9 @@ export class ApiService {
       weeklyEgresos,
       weeklyMovimientos
     };
-    console.log('[SCHEDULER] Weekly payload preview:', previewPayload);
 
     const lastState = await this.getDashboardWeeklySyncStateLocal();
     if (lastState?.weekKey === weekKey && lastState?.idNegocio === idNegocio) {
-      console.log('[SCHEDULER] Skipped weekly sync: already_synced_this_week', { weekKey, idNegocio });
       return { status: 'skipped', reason: 'already_synced_this_week' };
     }
     const safeSnapshotId = `${idNegocio}_${weekKey}_${Date.now()}`.replace(/[^a-zA-Z0-9_-]/g, '_');
@@ -1147,11 +1228,6 @@ export class ApiService {
       syncedAt: nowIso
     });
 
-    console.log('[SCHEDULER] Weekly sync completed:', {
-      weekKey,
-      idNegocio,
-      snapshotId: syncedBalanceId
-    });
 
     return { status: 'synced', snapshot };
   }
@@ -1261,7 +1337,17 @@ export class ApiService {
     }
   }
 
-  async generateBalancePdf(idBalance: string): Promise<any> {
+  // Genera el PDF de un balance semanal (queda registrado en "PDF generados") y lo devuelve como archivo
+  async generateBalancePdf(idBalance: string): Promise<Blob> {
+    return this.requestBalancePdf('POST', `/generar/${encodeURIComponent(idBalance)}`, idBalance);
+  }
+
+  // Vuelve a generar el PDF de un balance para descargarlo
+  async downloadBalancePdf(idBalance: string): Promise<Blob> {
+    return this.requestBalancePdf('GET', `/descargar/${encodeURIComponent(idBalance)}`, idBalance);
+  }
+
+  private async requestBalancePdf(method: 'GET' | 'POST', path: string, idBalance: string): Promise<Blob> {
     if (!idBalance || !idBalance.trim()) {
       throw new Error('El ID del balance es requerido.');
     }
@@ -1269,18 +1355,18 @@ export class ApiService {
     const token = await this.getToken();
     if (!token) throw new Error('Usuario no autenticado.');
 
-    const url = `${this.baseUrl}${this.balancePdfEndpoint}/generar/${idBalance}`;
-    const headers = new HttpHeaders({
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`
-    });
+    const url = `${this.baseUrl}${this.balancePdfEndpoint}${path}`;
+    const headers = new HttpHeaders({ 'Authorization': `Bearer ${token}` });
 
     try {
-      const response = await this.http.post<any>(url, {}, { headers })
-        .pipe(timeout(this.requestTimeout))
+      const blob = await this.http.request(method, url, { headers, responseType: 'blob' })
+        .pipe(timeout(30000))
         .toPromise();
-      return response;
+      if (!blob) throw new Error('Respuesta vacia del servidor.');
+      return blob;
     } catch (error: any) {
+      if (error?.status === 403) throw new Error('No tienes permisos sobre este balance.');
+      if (error?.status === 404) throw new Error('No se encontro el balance semanal.');
       throw this.handleHttpError(error);
     }
   }
@@ -1464,6 +1550,30 @@ export class ApiService {
     }
   }
 
+  // Marca una recomendacion como pendiente / aplicada / descartada
+  async updateAiRecommendationStatus(
+    idRecomendacion: string,
+    estado: 'pendiente' | 'aplicada' | 'descartada'
+  ): Promise<any> {
+    const token = await this.getToken();
+    if (!token) throw new Error('Usuario no autenticado.');
+
+    const url = `${this.baseUrl}/ai-recommendation/${encodeURIComponent(idRecomendacion)}/estado`;
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    });
+
+    try {
+      const response = await this.http.patch<{ data?: any }>(url, { estado }, { headers })
+        .pipe(timeout(this.requestTimeout))
+        .toPromise();
+      return response?.data;
+    } catch (error: any) {
+      throw this.handleHttpError(error);
+    }
+  }
+
   async createHistorialRentabilidad(historialData: {
     idNegocio: string;
     rentabilidadEsperada: number;
@@ -1491,11 +1601,9 @@ export class ApiService {
 
   startWeeklyDashboardSyncScheduler(intervalMs: number = 6 * 60 * 60 * 1000): void {
     if (this.dashboardWeeklySyncTimer) {
-      console.log('[SCHEDULER] Scheduler already running');
       return;
     }
 
-    console.log('[SCHEDULER] Starting weekly scheduler', { intervalMs });
 
     this.runWeeklyDashboardSyncIfNeeded().catch((error) => {
       console.warn('[API] Initial weekly dashboard sync failed:', error);
@@ -1540,7 +1648,6 @@ export class ApiService {
     }
 
     if (error.status === 0) {
-      console.log('[API] Sin conexiÃ³n a internet.');
       return new Error('Sin conexiÃ³n a internet.');
     }
 
@@ -1552,7 +1659,6 @@ export class ApiService {
       return new Error(error.message);
     }
 
-    console.log('[API] Error en el servidor.');
     return new Error('Error en el servidor.');
   }
 
@@ -1596,7 +1702,6 @@ export class ApiService {
     });
 
     try {
-      console.log('ðŸ“§ [GET_USER_EMAIL] Obteniendo email del usuario:', uid);
       
       const response = await this.http.get<{ message: string, email: string | null }>(url, { headers })
         .pipe(
@@ -1604,7 +1709,6 @@ export class ApiService {
         )
         .toPromise();
       
-      console.log('âœ… [GET_USER_EMAIL] Email obtenido:', response?.email);
       return response?.email || null;
     } catch (error) {
       console.error('âŒ [GET_USER_EMAIL] Error obteniendo email:', error);
@@ -1625,7 +1729,6 @@ export class ApiService {
     });
 
     try {
-      console.log('ðŸš€ [CREATE_USER] Enviando datos al backend:', userData);
       
       const response = await this.http.post<any>(url, userData, { headers })
         .pipe(
@@ -1633,7 +1736,6 @@ export class ApiService {
         )
         .toPromise();
       
-      console.log('âœ… [CREATE_USER] Usuario creado exitosamente:', response);
       return response;
     } catch (error) {
       console.error('âŒ [CREATE_USER] Error creando usuario:', error);
@@ -1789,10 +1891,6 @@ export class ApiService {
     if (!token) throw new Error('Usuario no autenticado.');
 
     const url = `${this.baseUrl}/product/${productId}`;
-    console.log('[API] ðŸ”„ UPDATE PRODUCT URL:', url);
-    console.log('[API] ðŸ“‹ Product ID:', productId);
-    console.log('[API] ðŸ¢ Business ID:', businessId);
-    console.log('[API] ðŸ“¤ Original Product Data:', productData);
     
     // Crear el objeto de datos igual que en Postman
     const dataToSend = {
@@ -1803,7 +1901,6 @@ export class ApiService {
       stock: productData.stock
     };
     
-    console.log('[API] ðŸ“¤ Final Data to Send (Postman format):', dataToSend);
     
     const headers = new HttpHeaders({
       'Content-Type': 'application/json',
@@ -1817,7 +1914,6 @@ export class ApiService {
         )
         .toPromise();
       
-      console.log('[API] âœ… UPDATE PRODUCT RESPONSE:', response);
       return response;
     } catch (error: any) {
       console.error('[API] âŒ UPDATE PRODUCT ERROR:', error);
@@ -1879,7 +1975,6 @@ export class ApiService {
     }
 
     const url = `${this.baseUrl}/transaction/`;
-    console.log('[API] ðŸ’° CREATE TRANSACTION URL:', url);
     
     // Normalizar el tipo segÃºn la lÃ³gica del backend
     let tipoNormalizado: number;
@@ -1912,7 +2007,6 @@ export class ApiService {
       descripcion: transactionData.descripcion || ''
     };
     
-    console.log('[API] ðŸ“¤ Transaction Data (normalized):', dataToSend);
     
     const headers = new HttpHeaders({
       'Content-Type': 'application/json',
@@ -1926,7 +2020,6 @@ export class ApiService {
         )
         .toPromise();
 
-      console.log('[API] âœ… Transaction created successfully:', response);
       return response;
     } catch (error: any) {
       console.error('[API] âŒ Error creating transaction:', error);
@@ -2161,7 +2254,6 @@ export class ApiService {
     }
 
     const url = `${this.baseUrl}/transaction/negocios/${idNegocio}/transacciones`;
-    console.log('[API] ðŸ“‹ GET TRANSACTIONS BY BUSINESS URL:', url);
     
     const headers = new HttpHeaders({
       'Content-Type': 'application/json',
@@ -2179,22 +2271,23 @@ export class ApiService {
         )
         .toPromise();
 
-      console.log('[API] âœ… Transactions retrieved successfully:', response);
       
       // Procesar los datos para normalizar el tipo segÃºn la interfaz del frontend
       const processedData = (response?.data || []).map(transaction => {
+        // Datos antiguos guardan el tipo como numero o texto ("income")
+        const tipoFront = esTransaccionIngreso(transaction.tipo) ? 'income' : 'expense';
         return {
           ...transaction,
           // Convertir tipo booleano del backend a string para el frontend
           // false = ingreso -> 'income', true = egreso -> 'expense'
-          typeString: transaction.tipo === false ? 'income' : 'expense',
+          typeString: tipoFront,
           // Mantener el tipo original tambiÃ©n
           tipoOriginal: transaction.tipo,
           // Asegurar que la fecha estÃ© en formato correcto
           date: transaction.fechaISO || transaction.fecha,
           // Agregar propiedades que espera el frontend
           id: transaction.idTransaccion,
-          type: transaction.tipo === false ? 'income' : 'expense',
+          type: tipoFront,
           amount: transaction.monto,
           description: transaction.descripcion || '',
           category: 'General', // Valor por defecto si no viene del backend
@@ -2203,11 +2296,9 @@ export class ApiService {
         };
       });
 
-      console.log('[API] ðŸ“Š Processed transactions for frontend:', processedData);
       return processedData;
     } catch (error: any) {
       if (error.status === 404) {
-        console.log('[API] â„¹ï¸ No transactions found for business:', idNegocio);
         return [];
       }
       console.error('[API] âŒ Error getting transactions:', error);
@@ -2228,9 +2319,6 @@ export class ApiService {
     }
 
     const url = `${this.baseUrl}/business/${idNegocio}`;
-    console.log('[API] ðŸ¢ UPDATE BUSINESS URL:', url);
-    console.log('[API] ðŸ“¤ Business Data:', businessData);
-    console.log('[API] ðŸ”‘ Token preview:', token.substring(0, 20) + '...');
     
     const headers = new HttpHeaders({
       'Content-Type': 'application/json',
@@ -2244,14 +2332,12 @@ export class ApiService {
         )
         .toPromise();
 
-      console.log('[API] âœ… Business updated successfully:', response);
       return response;
     } catch (error: any) {
       console.error('[API] âŒ Error updating business:', error);
       
       // Si es error 401, intentar refrescar token
       if (error.message && error.message.includes('401')) {
-        console.log('[API] ðŸ”„ Token might be expired, checking authentication...');
         
         // Limpiar token expirado
         await this.logout();
@@ -2279,8 +2365,6 @@ export class ApiService {
     }
 
     const url = `${this.baseUrl}/gasto-fijo/`;
-    console.log('[API] ðŸ’³ CREATE GASTO FIJO URL:', url);
-    console.log('[API] ðŸ“¤ Gasto Fijo Data:', gastoData);
     
     const headers = new HttpHeaders({
       'Content-Type': 'application/json',
@@ -2294,7 +2378,6 @@ export class ApiService {
         )
         .toPromise();
 
-      console.log('[API] âœ… Gasto fijo created successfully:', response);
       return response;
     } catch (error: any) {
       console.error('[API] âŒ Error creating gasto fijo:', error);
@@ -2312,7 +2395,6 @@ export class ApiService {
     }
 
     const url = `${this.baseUrl}/gasto-fijo/${idGasto}/mark-as-paid`;
-    console.log('[API] âœ… MARK GASTO FIJO AS PAID URL:', url);
     
     const headers = new HttpHeaders({
       'Content-Type': 'application/json',
@@ -2326,7 +2408,6 @@ export class ApiService {
         )
         .toPromise();
 
-      console.log('[API] âœ… Gasto fijo marked as paid successfully:', response);
       return response;
     } catch (error: any) {
       console.error('[API] âŒ Error marking gasto fijo as paid:', error);
@@ -2408,7 +2489,6 @@ export class ApiService {
     }
 
     const url = `${this.baseUrl}/gasto-fijo/business/${idNegocio}`;
-    console.log('[API] ðŸ“‹ GET GASTOS FIJOS URL:', url);
     
     const headers = new HttpHeaders({
       'Content-Type': 'application/json',
@@ -2422,14 +2502,12 @@ export class ApiService {
         )
         .toPromise();
 
-      console.log('[API] âœ… Gastos fijos retrieved successfully:', response);
       return response?.data || [];
     } catch (error: any) {
       const is404 =
         error?.status === 404 ||
         (typeof error?.message === 'string' && error.message.includes('404'));
       if (is404) {
-        console.log('[API] No gastos fijos found for business:', idNegocio);
         return [];
       }
       console.error('[API] âŒ Error getting gastos fijos:', error);

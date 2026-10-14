@@ -3,7 +3,13 @@ import { fetchEventSource } from '@microsoft/fetch-event-source';
 import { environment } from 'src/environments/environment';
 import { ApiService } from './api-service';
 
-export type ChatMsg = { role: 'user' | 'assistant'; content: string };
+export type ChatMsg = {
+  role: 'user' | 'assistant';
+  content: string;
+  // Solo para mostrar en el chat; no se envian a la IA
+  time?: string;
+  error?: boolean;
+};
 
 export type AiChatContext = {
   uid?: string;
@@ -159,7 +165,10 @@ export class AiService {
         headers,
         signal: opts?.signal,
         body: JSON.stringify({
-          messages,
+          // Solo rol y contenido; los mensajes de error no forman parte de la conversacion
+          messages: messages
+            .filter((m) => !m.error && m.content.trim().length > 0)
+            .map(({ role, content }) => ({ role, content })),
           system: opts?.system,
           context: resolvedContext,
           forceClassicChat: opts?.forceClassicChat
@@ -188,5 +197,35 @@ export class AiService {
         undefined
       );
     }
+  }
+
+  // Analiza el negocio y guarda 3-5 recomendaciones estructuradas (POST /ai/recommendations)
+  async generateRecommendations(idNegocio: string): Promise<any[]> {
+    const token = await this.resolveAuthToken();
+    if (!token) {
+      throw new AiServiceError('Tu sesion expiro. Inicia sesion de nuevo.', 401);
+    }
+
+    let response: Response;
+    try {
+      response = await fetch(`${this.aiBaseUrl}/ai/recommendations`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ idNegocio })
+      });
+    } catch {
+      throw new AiServiceError('No se pudo conectar con el servicio de IA. Verifica red y servidor.');
+    }
+
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      throw new AiServiceError(
+        data?.error || data?.message || `HTTP ${response.status}`,
+        response.status,
+        Number(data?.retry_after_seconds) || undefined,
+        data?.details
+      );
+    }
+    return Array.isArray(data?.data) ? data.data : [];
   }
 }

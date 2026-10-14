@@ -9,7 +9,8 @@ import {
   IonCardHeader,
   IonCardTitle,
   IonIcon,
-  IonButton
+  IonButton,
+  IonSkeletonText
 } from '@ionic/angular/standalone';
 import { ToastController } from '@ionic/angular';
 import { addIcons } from 'ionicons';
@@ -24,11 +25,30 @@ import {
   trendingDownOutline,
   settingsOutline,
   documentTextOutline,
-  listOutline
+  listOutline,
+  chevronBackOutline,
+  chevronForwardOutline,
+  chevronDownOutline,
+  chevronUpOutline,
+  pieChartOutline,
+  receiptOutline,
+  addCircleOutline,
+  removeCircleOutline
 } from 'ionicons/icons';
 import { ThemeService } from '../../services/theme.service';
 import { AuthService } from '../../services/auth';
 import { ApiService, DashboardWeeklySyncStatus } from '../../services/api-service';
+import {
+  BalanceGeneral,
+  ResumenHistorico,
+  aFecha,
+  calcularResumenHistorico,
+  esTransaccionIngreso,
+  calcularResumenMes
+} from '../../services/balance.utils';
+
+// Mismo umbral que la etiqueta "Bajo" de Productos
+const STOCK_BAJO = 10;
 
 interface DashboardActivity {
   title: string;
@@ -50,7 +70,6 @@ interface BalancePdfReportSummary {
   idReporte: string;
   idBalance: string;
   weekKey: string;
-  pdfUrl: string;
   createdAt: string;
 }
 
@@ -67,6 +86,7 @@ interface BalancePdfReportSummary {
     IonCardTitle,
     IonIcon,
     IonButton,
+    IonSkeletonText,
     CommonModule,
     FormsModule
   ]
@@ -81,7 +101,24 @@ export class DashboardPage implements OnInit {
   gastosMes: number = 0;
   productosCount: number = 0;
   rentabilidadMes: number = 0;
+  margenPromedio: number | null = null;
+  productosStockBajo: number = 0;
+  gastosPendientesCount: number = 0;
+  gastosPendientesTotal: number = 0;
   currentBusinessId: string = '';
+  private currentCapitalInicial: number = 0;
+
+  // Mes que muestran las tarjetas de Ingresos / Gastos / Rentabilidad (month: 1-12)
+  selectedYear: number = new Date().getFullYear();
+  selectedMonth: number = new Date().getMonth() + 1;
+  showHistoricos: boolean = false;
+  balanceDetalle: BalanceGeneral | null = null;
+  private movimientos: { ventas: any[]; transacciones: any[]; gastosFijosPagados: any[] } = {
+    ventas: [],
+    transacciones: [],
+    gastosFijosPagados: []
+  };
+  private rentabilidadRequestId = 0;
 
   recentActivities: DashboardActivity[] = [];
   showWeeklyBalancesModal: boolean = false;
@@ -95,6 +132,7 @@ export class DashboardPage implements OnInit {
   pdfReportsLoading: boolean = false;
   pdfReports: BalancePdfReportSummary[] = [];
   generatingPdfBalanceId: string = '';
+  downloadingReportId: string = '';
 
   constructor(
     private router: Router,
@@ -114,18 +152,26 @@ export class DashboardPage implements OnInit {
       trendingUpOutline,
       trendingDownOutline,
       documentTextOutline,
-      listOutline
+      listOutline,
+      chevronBackOutline,
+      chevronForwardOutline,
+      chevronDownOutline,
+      chevronUpOutline,
+      pieChartOutline,
+      receiptOutline,
+      addCircleOutline,
+      removeCircleOutline
     });
   }
 
   async ngOnInit() {
-    await this.loadBalanceFromStorage();
     await this.loadDashboardContext();
     await this.notifyIfWeeklySyncPending();
   }
 
   async ionViewWillEnter() {
-    await this.loadBalanceFromStorage();
+    // Recalcula al volver (p. ej. tras registrar una venta en Finanzas)
+    await this.loadBalanceGeneral();
     await this.notifyIfWeeklySyncPending();
   }
 
@@ -138,22 +184,27 @@ export class DashboardPage implements OnInit {
   }
 
   private formatCurrency(value: number): string {
-    return new Intl.NumberFormat('es-CO', {
+    const abs = new Intl.NumberFormat('es-CO', {
       minimumFractionDigits: 0,
       maximumFractionDigits: 0
-    }).format(value || 0);
+    }).format(Math.abs(value || 0));
+    return value < 0 ? `-$${abs}` : `$${abs}`;
   }
 
-  private formatRelativeTime(dateValue: any): string {
+  // "Hoy", "Ayer" o la fecha corta ("28 mar"; con año si no es el actual)
+  private formatActivityDate(dateValue: any): string {
     const date = new Date(dateValue);
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-    const diffDays = Math.floor(diffHours / 24);
-
-    if (diffHours < 1) return 'Hace minutos';
-    if (diffHours < 24) return `Hace ${diffHours} hora${diffHours > 1 ? 's' : ''}`;
-    return `Hace ${diffDays} dia${diffDays > 1 ? 's' : ''}`;
+    if (Number.isNaN(date.getTime())) return '';
+    const hoy = new Date();
+    const inicioDia = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+    const dias = Math.round((inicioDia(hoy) - inicioDia(date)) / 86400000);
+    if (dias === 0) return 'Hoy';
+    if (dias === 1) return 'Ayer';
+    return new Intl.DateTimeFormat('es-CO', {
+      day: 'numeric',
+      month: 'short',
+      ...(date.getFullYear() !== hoy.getFullYear() ? { year: 'numeric' } : {})
+    }).format(date).replace('.', '');
   }
 
   private normalizeDate(value: any): string {
@@ -164,19 +215,31 @@ export class DashboardPage implements OnInit {
     return new Date().toISOString();
   }
 
-  private async loadBalanceFromStorage(): Promise<void> {
+  private async loadBalanceGeneral(): Promise<void> {
+    const idNegocio = this.currentBusinessId;
+    if (!idNegocio) return;
+
+    // Mostrar el ultimo valor calculado mientras se recalcula
+    const cached = await this.apiService.getBalanceGeneralCache(idNegocio);
+    if (cached && idNegocio === this.currentBusinessId) {
+      this.balanceGeneral = cached.balanceTotal;
+      this.balanceDetalle = cached;
+    }
+
     try {
-      this.balanceGeneral = await this.apiService.getDashboardBalanceLocal();
+      const balance = await this.apiService.getBalanceGeneral(idNegocio, this.currentCapitalInicial);
+      if (idNegocio === this.currentBusinessId) {
+        this.balanceGeneral = balance.balanceTotal;
+        this.balanceDetalle = balance;
+      }
     } catch (error) {
-      console.error('[DASHBOARD] Error loading local balance:', error);
-      this.balanceGeneral = 0;
+      console.error('[DASHBOARD] Error loading balance general:', error);
     }
   }
 
   private async loadDashboardContext(): Promise<void> {
     try {
       this.isLoading = true;
-      await this.loadBalanceFromStorage();
       await this.loadUserData();
 
       const uid = this.authService.uid || await this.apiService.getUid();
@@ -188,44 +251,23 @@ export class DashboardPage implements OnInit {
       const business = businesses[0];
       const idNegocio = business['idNegocio'] || business['id'];
       this.currentBusinessId = idNegocio;
+      this.currentCapitalInicial = Number(business['capitalInicial']) || 0;
+      const balancePromise = this.loadBalanceGeneral();
       this.businessName = business['nombreNegocio'] || 'Negocio';
 
-      const { year, month } = this.getCurrentYearMonth();
-
       const [
-        rentabilidadLive,
-        resumenVentas,
-        gastosFijos,
         transacciones,
         productos,
-        egresosShort,
-        gastosFijosPagados
+        gastosFijosPagados,
+        gastosFijos
       ] = await Promise.all([
-        this.apiService.getRentabilidadLive(idNegocio, year, month).catch(() => null),
-        this.apiService.getResumenVentasByNegocioEnMes(idNegocio, year, month).catch(() => null),
-        this.apiService.getGastosFijosByBusiness(idNegocio).catch(() => ({ totals: {}, data: [] })),
         this.apiService.getTransactionsByBusiness(idNegocio).catch(() => []),
         this.apiService.getProductsByBusiness(idNegocio).catch(() => []),
-        this.apiService.getEgresosByMonthShort(idNegocio, year, month).catch(() => ({ totalEgresos: 0, count: 0 })),
-        this.apiService.getGastosFijosPagados().catch(() => [])
+        this.apiService.getGastosFijosPagados().catch(() => []),
+        this.apiService.getGastosFijosByBusiness(idNegocio).catch(() => [])
       ]);
 
-      const gastosFijosPayload: any = gastosFijos;
-      const totalGastosFijosPayload = Array.isArray(gastosFijosPayload)
-        ? 0
-        : Number(gastosFijosPayload?.totals?.totalGastos ?? 0);
-
-      const totalVentas = Number(resumenVentas?.totalVentas ?? 0);
-      const utilidadVentas = Number(resumenVentas?.utilidadTotal ?? 0);
-      const rentabilidadNeta = Number(rentabilidadLive?.rentabilidadNeta ?? utilidadVentas);
-      const egresos = Number(egresosShort?.totalEgresos ?? 0);
-      const gastosFijosMes = totalGastosFijosPayload;
-      const totalGastosMes = egresos + gastosFijosMes;
-
-      this.ingresosMes = totalVentas;
-      this.gastosMes = totalGastosMes;
-      this.rentabilidadMes = rentabilidadNeta;
-      this.productosCount = (productos || []).length;
+      this.calcularIndicadores(productos || [], Array.isArray(gastosFijos) ? gastosFijos : []);
 
       const productosList = productos || [];
       const productNameById = new Map<string, string>();
@@ -258,11 +300,18 @@ export class DashboardPage implements OnInit {
         return !businessId || businessId === idNegocio;
       });
 
+      this.movimientos = {
+        ventas,
+        transacciones: transacciones || [],
+        gastosFijosPagados: gastosPagadosDelNegocio
+      };
+      const rentabilidadPromise = this.applySelectedMonth();
+
       const actividadesTransacciones = (transacciones || []).map((t: any) => ({
         title: t.description || t.descripcion || 'Transaccion',
         date: this.normalizeDate(t.date || t.fechaISO || t.fecha),
         amount: Math.abs(Number(t.amount || t.monto || 0)),
-        type: (t.type === 'income' || t.tipo === false || t.tipo === 0) ? 'income' as const : 'expense' as const
+        type: esTransaccionIngreso(t.tipoOriginal ?? t.tipo) ? 'income' as const : 'expense' as const
       }));
 
       const actividadesVentas = (ventas || []).map((venta: any) => {
@@ -294,15 +343,105 @@ export class DashboardPage implements OnInit {
         .slice(0, 4)
         .map((activity) => ({
           title: activity.title,
-          time: this.formatRelativeTime(activity.date),
+          time: this.formatActivityDate(activity.date),
           amount: activity.amount,
           type: activity.type
         }));
+
+      await Promise.all([balancePromise, rentabilidadPromise]);
     } catch (error) {
       console.error('[DASHBOARD] Error loading dashboard context:', error);
     } finally {
       this.isLoading = false;
     }
+  }
+
+  // Recalcula Ingresos / Gastos / Rentabilidad para el mes seleccionado
+  private async applySelectedMonth(): Promise<void> {
+    const year = this.selectedYear;
+    const month = this.selectedMonth;
+    const resumen = calcularResumenMes(this.movimientos, year, month);
+    this.ingresosMes = resumen.ingresos;
+    this.gastosMes = resumen.gastos;
+
+    const idNegocio = this.currentBusinessId;
+    if (!idNegocio) return;
+
+    // Si se cambia de mes rapido, ignorar respuestas de meses anteriores
+    const requestId = ++this.rentabilidadRequestId;
+    const rentabilidadLive = await this.apiService.getRentabilidadLive(idNegocio, year, month).catch(() => null);
+    if (requestId !== this.rentabilidadRequestId) return;
+
+    const utilidadVentasMes = this.movimientos.ventas
+      .filter((venta: any) => {
+        const date = aFecha(venta?.fechaVenta ?? venta?.fechaVentaISO ?? venta?.createdAt);
+        return !!date && date.getFullYear() === year && date.getMonth() + 1 === month;
+      })
+      .reduce((sum: number, venta: any) => sum + (Number(venta?.utilidad) || 0), 0);
+    this.rentabilidadMes = Number(rentabilidadLive?.rentabilidadNeta ?? utilidadVentasMes);
+  }
+
+  async changeMonth(delta: number): Promise<void> {
+    if (delta > 0 && this.isCurrentMonthSelected) return;
+
+    const date = new Date(this.selectedYear, this.selectedMonth - 1 + delta, 1);
+    this.selectedYear = date.getFullYear();
+    this.selectedMonth = date.getMonth() + 1;
+    await this.applySelectedMonth();
+  }
+
+  toggleHistoricos(): void {
+    this.showHistoricos = !this.showHistoricos;
+  }
+
+  get isCurrentMonthSelected(): boolean {
+    const { year, month } = this.getCurrentYearMonth();
+    return this.selectedYear === year && this.selectedMonth === month;
+  }
+
+  get selectedMonthLabel(): string {
+    const label = new Intl.DateTimeFormat('es-CO', { month: 'short', year: 'numeric' })
+      .format(new Date(this.selectedYear, this.selectedMonth - 1, 1))
+      .replace('.', '');
+    return label.charAt(0).toUpperCase() + label.slice(1);
+  }
+
+  get resumenHistorico(): ResumenHistorico | null {
+    return this.balanceDetalle ? calcularResumenHistorico(this.balanceDetalle) : null;
+  }
+
+  formatMoney(value: number): string {
+    return this.formatCurrency(value);
+  }
+
+  private calcularIndicadores(productos: any[], gastosFijos: any[]): void {
+    this.productosCount = productos.length;
+    this.productosStockBajo = productos.filter((p) => (Number(p?.stock) || 0) <= STOCK_BAJO).length;
+
+    const margenes = productos
+      .map((p) => ({ precio: Number(p?.precioVenta) || 0, costo: Number(p?.costoProduccion) || 0 }))
+      .filter((p) => p.precio > 0)
+      .map((p) => ((p.precio - p.costo) / p.precio) * 100);
+    this.margenPromedio = margenes.length ? margenes.reduce((a, b) => a + b, 0) / margenes.length : null;
+
+    const pendientes = gastosFijos.filter((g) => !g?.pagado);
+    this.gastosPendientesCount = pendientes.length;
+    this.gastosPendientesTotal = pendientes.reduce((sum, g) => sum + (Number(g?.costoGasto) || 0), 0);
+  }
+
+  get margenPromedioFmt(): string {
+    return this.margenPromedio === null
+      ? 'Sin productos'
+      : `${this.margenPromedio.toLocaleString('es-CO', { maximumFractionDigits: 1 })}%`;
+  }
+
+  // Atajos al formulario correspondiente de Finanzas
+  nuevaVenta(): void {
+    this.router.navigate(['/tabs/finance'], { state: { accion: 'venta' } });
+  }
+
+  nuevoGasto(): void {
+    this.router.navigate(['/tabs/finance'], { state: { accion: 'gasto' } });
   }
 
   private async loadUserData(): Promise<void> {
@@ -379,7 +518,6 @@ export class DashboardPage implements OnInit {
       idReporte,
       idBalance: String(report?.idBalance || '').trim(),
       weekKey: report?.weekKey || '-',
-      pdfUrl: report?.pdfUrl || '',
       createdAt: this.normalizeWeekDate(report?.createdAt || report?.generatedAt)
     };
   }
@@ -536,20 +674,15 @@ export class DashboardPage implements OnInit {
     }
   }
 
-  async generatePdfForBalance(idBalance: string): Promise<void> {
-    if (!idBalance) return;
+  async generatePdfForBalance(balance: WeeklyBalanceSummary): Promise<void> {
+    if (!balance?.idBalance) return;
 
     try {
-      this.generatingPdfBalanceId = idBalance;
-      const response = await this.apiService.generateBalancePdf(idBalance);
-      const pdfUrl = response?.data?.pdfUrl || response?.pdfUrl || '';
-
+      this.generatingPdfBalanceId = balance.idBalance;
+      const pdf = await this.apiService.generateBalancePdf(balance.idBalance);
+      this.guardarPdf(pdf, balance.weekKey);
       await this.loadPdfReports();
-      await this.presentToast('PDF generado correctamente', 'success');
-
-      if (pdfUrl) {
-        window.open(pdfUrl, '_blank');
-      }
+      await this.presentToast('PDF generado y descargado', 'success');
     } catch (error: any) {
       console.error('[DASHBOARD] Error generating PDF:', error);
       await this.presentToast(error?.message || 'No se pudo generar el PDF', 'danger');
@@ -558,9 +691,31 @@ export class DashboardPage implements OnInit {
     }
   }
 
-  openPdfUrl(pdfUrl: string): void {
-    if (!pdfUrl) return;
-    window.open(pdfUrl, '_blank');
+  async downloadReport(report: BalancePdfReportSummary): Promise<void> {
+    if (!report?.idBalance) return;
+
+    try {
+      this.downloadingReportId = report.idReporte;
+      const pdf = await this.apiService.downloadBalancePdf(report.idBalance);
+      this.guardarPdf(pdf, report.weekKey);
+    } catch (error: any) {
+      console.error('[DASHBOARD] Error downloading PDF:', error);
+      await this.presentToast(error?.message || 'No se pudo descargar el PDF', 'danger');
+    } finally {
+      this.downloadingReportId = '';
+    }
+  }
+
+  // Descarga el PDF recibido del backend con el nombre de la semana
+  private guardarPdf(pdf: Blob, weekKey: string): void {
+    const url = URL.createObjectURL(pdf);
+    const enlace = document.createElement('a');
+    enlace.href = url;
+    enlace.download = `balance-${(weekKey || 'semanal').replace(/[^\w-]/g, '')}.pdf`;
+    document.body.appendChild(enlace);
+    enlace.click();
+    document.body.removeChild(enlace);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
 
   get balanceGeneralFmt(): string {

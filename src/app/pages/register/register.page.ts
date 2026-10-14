@@ -157,7 +157,6 @@ export class RegisterPage implements OnInit {
 
   // Handle registration success - como callback en Flutter
   onRegisterSuccess(): void {
-    console.log('Registration successful');
     // Navigate to onboarding for new users (corrección del flujo)
     this.router.navigate(['/onboarding'], { replaceUrl: true });
   }

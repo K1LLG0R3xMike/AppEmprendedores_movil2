@@ -336,3 +336,177 @@ ion-fab {
     }
   }
 }
+
+/* Panel con datos reales */
+.panel-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 48px 0;
+  color: var(--ion-color-medium);
+}
+
+.generate-btn {
+  margin: 0;
+  flex-shrink: 0;
+}
+
+.section-heading {
+  margin: 0 0 12px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ion-text-color);
+}
+
+.recommendations-section .section-heading {
+  margin-top: 8px;
+}
+
+.projection-item.profit.loss .projection-value {
+  color: var(--ion-color-danger);
+}
+
+.projection-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+
+  .section-heading {
+    margin-bottom: 4px;
+  }
+}
+
+.projection-day {
+  font-size: 12px;
+  color: var(--ion-color-medium);
+}
+
+.projection-result {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 12px;
+}
+
+.projection-result-label {
+  font-size: 12px;
+  color: var(--ion-color-medium);
+}
+
+.projection-result-value {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--ion-color-success);
+
+  &.loss {
+    color: var(--ion-color-danger);
+  }
+}
+
+.break-even {
+  margin-top: 12px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  line-height: 1.5;
+  background: var(--ion-color-step-50);
+  color: var(--ion-text-color);
+
+  .ok {
+    color: var(--ion-color-success);
+    font-weight: 600;
+  }
+}
+
+.alert-card.warning {
+  background: rgba(var(--ion-color-warning-rgb), 0.12);
+
+  .alert-content ion-icon,
+  .alert-info h3 {
+    color: var(--ion-color-warning-shade);
+  }
+
+  .alert-info p {
+    color: var(--ion-text-color);
+  }
+}
+
+.no-alerts {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 16px;
+  padding: 0 4px;
+  font-size: 14px;
+  color: var(--ion-color-medium);
+
+  ion-icon {
+    font-size: 20px;
+  }
+}
+
+.empty-recs {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  margin-bottom: 12px;
+  border-radius: 12px;
+  border: 1px dashed var(--ion-color-step-300);
+  color: var(--ion-color-medium);
+
+  ion-icon {
+    font-size: 24px;
+    flex-shrink: 0;
+  }
+
+  p {
+    margin: 0;
+    font-size: 14px;
+  }
+}
+
+.rec-tipo {
+  display: inline-block;
+  margin-bottom: 6px;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: capitalize;
+  background: rgba(232, 111, 0, 0.12);
+  color: #E86F00;
+}
+
+.historial-toggle {
+  margin-top: 4px;
+  font-size: 13px;
+}
+
+.recommendation-card.historial ion-card {
+  opacity: 0.75;
+}
+
+.estado-chip {
+  margin-left: auto;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  background: var(--ion-color-step-150);
+  color: var(--ion-color-medium);
+
+  &.aplicada {
+    background: rgba(var(--ion-color-success-rgb), 0.15);
+    color: var(--ion-color-success-shade);
+  }
+}
+
+// Diseño PC: ancho máximo del contenido (lo usa la regla global de ion-content)
+:host {
+  --page-max-width: 800px;
+}
