@@ -124,20 +124,13 @@ export class BusinessPage implements OnInit {
   }
 
   private async debugAuthState(): Promise<void> {
-    console.log('🔍 [BUSINESS] Estado de autenticación:');
-    console.log('- isAuthenticated:', this.authService.isAuthenticated);
-    console.log('- UID:', this.authService.uid);
-    console.log('- Token exists:', !!(await this.authService.authState$.pipe().toPromise()));
     
     // También verificar el token directamente
     const token = await this.apiService.getToken();
-    console.log('- Token directo:', token ? 'Existe' : 'No existe');
     
     // Verificar si el token es válido
     if (token) {
-      console.log('- Token preview:', token.substring(0, 20) + '...');
       const isValid = await this.apiService.isTokenValid();
-      console.log('- Token is valid:', isValid);
     }
   }
 
@@ -155,13 +148,8 @@ export class BusinessPage implements OnInit {
         return;
       }
 
-      console.log('🔍 [BUSINESS] Cargando negocios para UID:', uid);
-      console.log('🔍 [BUSINESS] URL que se va a consultar: http://192.168.1.2:3000/api/business/user/' + uid);
       
       const response: any = await this.apiService.getBusinessByUserId(uid);
-      console.log('🔍 [BUSINESS] Respuesta completa del API:', response);
-      console.log('🔍 [BUSINESS] Tipo de respuesta:', typeof response);
-      console.log('🔍 [BUSINESS] Es array?:', Array.isArray(response));
       
       // Handle different response formats
       let businessList: any[] = [];
@@ -174,12 +162,10 @@ export class BusinessPage implements OnInit {
         businessList = [response];
       }
       
-      console.log('🔍 [BUSINESS] Lista de negocios procesada:', businessList);
       
       if (businessList && businessList.length > 0) {
         // Cargar el primer negocio encontrado
         const business = businessList[0];
-        console.log('🔍 [BUSINESS] Datos del negocio individual:', business);
         
         this.businessData = {
           id: business.idNegocio || business.id || '',
@@ -196,9 +182,7 @@ export class BusinessPage implements OnInit {
         // Guardar una copia para cancelar cambios
         this.originalBusinessData = { ...this.businessData };
         
-        console.log('✅ [BUSINESS] Datos del negocio procesados:', this.businessData);
       } else {
-        console.log('ℹ️ [BUSINESS] No se encontraron negocios para este usuario');
         await this.showToast('No se encontraron negocios asociados a tu cuenta. Ve a configuración para crear uno.', 'primary');
       }
     } catch (error) {
@@ -271,13 +255,10 @@ export class BusinessPage implements OnInit {
         capitalInicial: Number(this.businessData.capitalInicial) || 0
       };
 
-      console.log('💾 [BUSINESS] Enviando datos de actualización:', updateData);
-      console.log('💾 [BUSINESS] ID del negocio:', businessId);
 
       // Llamar al API para actualizar
       const response = await this.apiService.updateBusiness(businessId, updateData);
       
-      console.log('✅ [BUSINESS] Respuesta del servidor:', response);
 
       // Actualizar datos locales con la respuesta del servidor
       if (response.data) {
@@ -357,7 +338,6 @@ export class BusinessPage implements OnInit {
 
   async handleDelete(): Promise<void> {
     // TODO: Implement delete logic with confirmation
-    console.log('🗑️ [BUSINESS] Eliminar negocio');
     await this.showToast('Función de eliminar en desarrollo', 'warning');
   }
 
@@ -377,7 +357,6 @@ export class BusinessPage implements OnInit {
 
   // Method to manually refresh data
   async refreshData(): Promise<void> {
-    console.log('🔄 [BUSINESS] Refrescando datos manualmente...');
     await this.loadBusinessData();
   }
 }

@@ -144,7 +144,6 @@
               </div>
               <div class="product-details">
                 <h4>{{ product.nombreProducto }}</h4>
-                <p>ID: {{ product.idProducto }}</p>
               </div>
             </div>
             <div class="product-actions">
@@ -177,7 +176,7 @@
               </div>
               <span class="label">Stock</span>
             </div>
-            <div class="metric profit">
+            <div class="metric profit" [class.negative]="+getProfitMargin(product) < 0">
               <span class="value">{{ getProfitMargin(product) }}%</span>
               <span class="label">Margen</span>
             </div>

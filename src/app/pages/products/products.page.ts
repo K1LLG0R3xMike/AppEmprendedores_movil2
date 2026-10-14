@@ -74,38 +74,29 @@ export class ProductsPage implements OnInit {
 
   // Temporary diagnostic method
   async testBackend(): Promise<void> {
-    console.log('[PRODUCTS] 🧪 Manual backend test started...');
     
     try {
       const baseUrl = this.apiService['baseUrl'];
-      console.log('[PRODUCTS] 🌐 Base URL:', baseUrl);
       
       // Test 1: Basic connectivity
-      console.log('[PRODUCTS] Test 1: Basic connectivity');
       try {
         const response = await fetch(baseUrl.replace('/api', ''));
-        console.log('[PRODUCTS] ✅ Backend is running:', response.status);
         this.showToast(`Backend responding: ${response.status}`, 'success');
       } catch (error) {
-        console.log('[PRODUCTS] ❌ Backend not accessible:', error);
         this.showToast('Backend not accessible', 'danger');
         return;
       }
       
       // Test 2: Business endpoint (should work)
-      console.log('[PRODUCTS] Test 2: Business endpoint');
       try {
         const uid = this.authService.uid;
         const businesses = await this.apiService.getBusinessByUserId(uid!);
-        console.log('[PRODUCTS] ✅ Business endpoint works:', businesses.length, 'businesses');
         this.showToast(`Business API works: ${businesses.length} businesses`, 'success');
       } catch (error) {
-        console.log('[PRODUCTS] ❌ Business endpoint failed:', error);
         this.showToast('Business API failed', 'danger');
       }
       
       // Test 3: Products endpoint
-      console.log('[PRODUCTS] Test 3: Products endpoint');
       try {
         const token = await this.apiService.getToken();
         const productsResponse = await fetch(`${baseUrl}/products`, {
@@ -116,19 +107,15 @@ export class ProductsPage implements OnInit {
           }
         });
         
-        console.log('[PRODUCTS] Products endpoint status:', productsResponse.status);
         
         if (productsResponse.ok) {
           const data = await productsResponse.json();
-          console.log('[PRODUCTS] ✅ Products endpoint works:', data);
           this.showToast('Products API works!', 'success');
         } else {
           const errorText = await productsResponse.text();
-          console.log('[PRODUCTS] ❌ Products endpoint error:', errorText);
           this.showToast(`Products API error: ${productsResponse.status}`, 'danger');
         }
       } catch (error) {
-        console.log('[PRODUCTS] ❌ Products endpoint failed:', error);
         this.showToast('Products API failed', 'danger');
       }
       
@@ -169,19 +156,14 @@ export class ProductsPage implements OnInit {
 
   private async loadProducts(): Promise<void> {
     if (!this.currentBusinessId) {
-      console.log('[PRODUCTS] ❌ No business ID available for loading products');
       return;
     }
 
-    console.log('[PRODUCTS] 🔄 Loading products for business:', this.currentBusinessId);
     
     try {
       // Test backend connectivity before trying to load products
-      console.log('[PRODUCTS] 🧪 Testing backend connectivity...');
-      console.log('[PRODUCTS] 🌐 API base URL:', this.apiService['baseUrl']);
       
       this.products = await this.apiService.getProductsByBusiness(this.currentBusinessId);
-      console.log('[PRODUCTS] ✅ Products loaded successfully:', this.products.length, 'items');
     } catch (error) {
       console.error('[PRODUCTS] ❌ Error loading products:', error);
       this.showToast('Error al cargar productos: ' + (error as Error).message, 'danger');
@@ -299,14 +281,9 @@ export class ProductsPage implements OnInit {
         stock: this.productForm.stock!
       };
 
-      console.log('[PRODUCTS] 📦 Product data to send:', productData);
-      console.log('[PRODUCTS] 🔑 Current business ID:', this.currentBusinessId);
-      console.log('[PRODUCTS] 🌐 API base URL:', this.apiService['baseUrl']);
 
       if (this.editingProduct) {
         // Update existing product
-        console.log('[PRODUCTS] 🔄 Updating product:', this.editingProduct.idProducto);
-        console.log('[PRODUCTS] 📋 Product full object:', this.editingProduct);
         
         // Verificar que el producto existe en la lista actual
         const existingProduct = this.products.find(p => p.idProducto === this.editingProduct?.idProducto);
@@ -316,12 +293,6 @@ export class ProductsPage implements OnInit {
           return;
         }
         
-        console.log('[PRODUCTS] 📤 Sending update data:', {
-          nombreProducto: productData.nombreProducto,
-          precioVenta: productData.precioVenta,
-          costoProduccion: productData.costoProduccion,
-          stock: productData.stock
-        });
         
         const updatedProduct = await this.apiService.updateProduct(
           this.editingProduct.idProducto, 
@@ -333,7 +304,6 @@ export class ProductsPage implements OnInit {
           },
           this.currentBusinessId  // Añadir el ID del negocio
         );
-        console.log('[PRODUCTS] ✅ Product updated:', updatedProduct);
         
         // Reload products to get the updated list
         await this.loadProducts();
@@ -341,9 +311,7 @@ export class ProductsPage implements OnInit {
         this.showToast('Producto actualizado exitosamente', 'success');
       } else {
         // Add new product
-        console.log('[PRODUCTS] 🚀 Calling createProduct...');
         const newProduct = await this.apiService.createProduct(productData);
-        console.log('[PRODUCTS] ✅ Product created:', newProduct);
         
         // Reload products to get the updated list
         await this.loadProducts();
@@ -396,9 +364,7 @@ export class ProductsPage implements OnInit {
   async deleteProduct(product: Product): Promise<void> {
     if (confirm(`¿Estás seguro de que quieres eliminar "${product.nombreProducto}"?`)) {
       try {
-        console.log('[PRODUCTS] 🗑️ Deleting product:', product.idProducto);
         await this.apiService.deleteProduct(product.idProducto);
-        console.log('[PRODUCTS] ✅ Product deleted successfully');
         
         // Reload products to get the updated list
         await this.loadProducts();

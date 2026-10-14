@@ -73,12 +73,10 @@ export class LoginPage {
       const email = this.form.value.email!;
       const password = this.form.value.password!;
 
-      console.log('🔄 Intentando login...');
       
       // Usar el AuthService para login
       await this.authService.login(email, password);
       
-      console.log('✅ Login exitoso');
       
       const toast = await this.toastCtrl.create({
         message: 'Login exitoso',
@@ -92,7 +90,6 @@ export class LoginPage {
         try {
           // Navegar a la aplicación principal
           await this.router.navigate(['/tabs'], { replaceUrl: true });
-          console.log('🚀 Navegación completada');
         } catch (navError) {
           console.error('❌ Error en navegación:', navError);
         }

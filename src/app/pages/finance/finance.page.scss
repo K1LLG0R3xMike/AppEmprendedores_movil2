@@ -1,3 +1,5 @@
+@use "../../../theme/breakpoints" as bp;
+
 /* ========================================
    MODERN FINANCE PAGE - IONIC COLORS
    ======================================== */
@@ -996,5 +998,123 @@ ion-content {
         font-size: 13px;
       }
     }
+  }
+}
+
+/* ========================================
+   DISEÑO PC
+   ======================================== */
+
+/* Botón "Nuevo movimiento" del encabezado: solo en PC */
+.header-add {
+  display: none;
+}
+
+@include bp.tablet-up {
+  .finance-page {
+    max-width: 720px;
+    margin: 0 auto;
+  }
+}
+
+@include bp.desktop-up {
+  .finance-page {
+    max-width: 1100px;
+  }
+
+  .header {
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+
+  .header-add {
+    display: flex;
+    margin-right: 0;
+  }
+
+  .fab-container {
+    display: none;
+  }
+
+  .content {
+    padding: 24px;
+  }
+
+  /* Filtros en una sola fila */
+  .filters-content {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .search-container {
+    flex: 1 1 260px;
+  }
+
+  .filter-buttons {
+    padding-bottom: 0;
+  }
+
+  .category-select {
+    width: 220px;
+  }
+
+  /* Transacciones y gastos fijos como filas de tabla */
+  .transactions-container {
+    gap: 0;
+    border: 1px solid var(--ion-color-step-150);
+    border-radius: 12px;
+    overflow: hidden;
+    background: var(--ion-card-background);
+  }
+
+  .transaction-card {
+    border: none;
+    border-bottom: 1px solid var(--ion-color-step-150);
+    border-radius: 0;
+    box-shadow: none;
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    &:hover {
+      transform: none;
+      box-shadow: none;
+      background: var(--ion-color-step-50);
+    }
+  }
+
+  .transaction-content {
+    padding: 10px 16px;
+  }
+
+  .transaction-header {
+    margin-bottom: 2px;
+  }
+
+  .transaction-meta {
+    margin-bottom: 0;
+  }
+
+  .transaction-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .transaction-amount {
+    font-size: 16px;
+    margin: 0;
+    min-width: 140px;
+    text-align: right;
+  }
+
+  /* Formularios de alta con ancho limitado */
+  .add-form-card {
+    width: 100%;
+    max-width: 640px;
+    margin-left: auto;
+    margin-right: auto;
   }
 }

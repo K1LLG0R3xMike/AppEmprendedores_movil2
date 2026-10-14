@@ -1,0 +1,82 @@
+<div class="legend" aria-hidden="true">
+  <span class="key"><span class="line ingresos"></span>Ingresos</span>
+  <span class="key"><span class="line gastos"></span>Gastos</span>
+  <span class="key muted"><span class="line dashed"></span>Proyección</span>
+</div>
+
+<div class="plot">
+  <svg
+    [attr.viewBox]="'0 0 ' + ancho + ' ' + alto"
+    [attr.width]="ancho"
+    [attr.height]="alto"
+    role="img"
+    tabindex="0"
+    [attr.aria-label]="'Ingresos y gastos acumulados del mes. Al cierre se proyectan ingresos de ' + money(serie.cierre.ingresos) + ' y gastos de ' + money(serie.cierre.gastos) + '. Usa las flechas para recorrer los días.'"
+    (pointermove)="onPointerMove($event)"
+    (pointerleave)="limpiar()"
+    (keydown)="onKeyDown($event)"
+    (blur)="limpiar()">
+
+    <!-- Cuadrícula y eje Y -->
+    <g class="grid">
+      <ng-container *ngFor="let t of yTicks">
+        <line [attr.x1]="margen.left" [attr.x2]="ancho - margen.right" [attr.y1]="t.pos" [attr.y2]="t.pos"></line>
+        <text class="axis-label" [attr.x]="margen.left - 8" [attr.y]="t.pos" text-anchor="end" dominant-baseline="middle">{{ t.label }}</text>
+      </ng-container>
+    </g>
+
+    <!-- Eje X: días del mes -->
+    <g>
+      <text *ngFor="let t of xTicks" class="axis-label" [attr.x]="t.pos" [attr.y]="alto - 8" text-anchor="middle">{{ t.label }}</text>
+    </g>
+
+    <!-- Hoy -->
+    <line class="today" [attr.x1]="hoyX" [attr.x2]="hoyX" [attr.y1]="margen.top" [attr.y2]="alto - margen.bottom"></line>
+    <text class="axis-label today-label" [attr.x]="hoyX" [attr.y]="margen.top - 4" text-anchor="middle">Hoy</text>
+
+    <!-- Líneas: real (continua) y proyección (punteada) -->
+    <path class="serie ingresos" [attr.d]="ingresosReal"></path>
+    <path class="serie gastos" [attr.d]="gastosReal"></path>
+    <path class="serie ingresos dashed" [attr.d]="ingresosProyeccion"></path>
+    <path class="serie gastos dashed" [attr.d]="gastosProyeccion"></path>
+
+    <!-- Puntos al cierre + etiquetas directas -->
+    <circle class="end-dot ingresos" [attr.cx]="x(serie.cierre.dia)" [attr.cy]="y(serie.cierre.ingresos)" r="4"></circle>
+    <circle class="end-dot gastos" [attr.cx]="x(serie.cierre.dia)" [attr.cy]="y(serie.cierre.gastos)" r="4"></circle>
+    <g *ngIf="!compacto">
+    <text class="end-label" [attr.x]="x(serie.cierre.dia) + 10" [attr.y]="etiquetasFinales.ingresosY" dominant-baseline="middle">
+      <tspan class="end-name" [attr.x]="x(serie.cierre.dia) + 10" dy="-0.6em">Ingresos</tspan>
+      <tspan [attr.x]="x(serie.cierre.dia) + 10" dy="1.2em">{{ money(serie.cierre.ingresos) }}</tspan>
+    </text>
+    <text class="end-label" [attr.x]="x(serie.cierre.dia) + 10" [attr.y]="etiquetasFinales.gastosY" dominant-baseline="middle">
+      <tspan class="end-name" [attr.x]="x(serie.cierre.dia) + 10" dy="-0.6em">Gastos</tspan>
+      <tspan [attr.x]="x(serie.cierre.dia) + 10" dy="1.2em">{{ money(serie.cierre.gastos) }}</tspan>
+    </text>
+    </g>
+
+    <!-- Línea vertical del cursor -->
+    <g *ngIf="activo as a">
+      <line class="crosshair" [attr.x1]="x(a.dia)" [attr.x2]="x(a.dia)" [attr.y1]="margen.top" [attr.y2]="alto - margen.bottom"></line>
+      <circle class="hover-dot ingresos" [attr.cx]="x(a.dia)" [attr.cy]="y(a.ingresos)" r="4"></circle>
+      <circle class="hover-dot gastos" [attr.cx]="x(a.dia)" [attr.cy]="y(a.gastos)" r="4"></circle>
+    </g>
+  </svg>
+
+  <div class="tooltip" *ngIf="activo as a" [class.left]="tooltipIzquierda"
+    [style.left.px]="x(a.dia)" [style.top.px]="margen.top">
+    <div class="tooltip-title">Día {{ a.dia }} · {{ a.proyectado ? 'proyectado' : 'real' }}</div>
+    <div class="tooltip-row"><span class="line ingresos"></span><strong>{{ money(a.ingresos) }}</strong> Ingresos</div>
+    <div class="tooltip-row"><span class="line gastos"></span><strong>{{ money(a.gastos) }}</strong> Gastos</div>
+    <div class="tooltip-row muted">Resultado: {{ money(a.ingresos - a.gastos) }}</div>
+  </div>
+</div>
+
+<!-- Datos del gráfico para lectores de pantalla -->
+<table class="sr-only">
+  <caption>Ingresos y gastos acumulados del mes</caption>
+  <thead><tr><th scope="col">Día</th><th scope="col">Ingresos</th><th scope="col">Gastos</th><th scope="col">Tipo</th></tr></thead>
+  <tbody>
+    <tr *ngFor="let p of serie.real"><td>{{ p.dia }}</td><td>{{ money(p.ingresos) }}</td><td>{{ money(p.gastos) }}</td><td>Real</td></tr>
+    <tr><td>{{ serie.cierre.dia }}</td><td>{{ money(serie.cierre.ingresos) }}</td><td>{{ money(serie.cierre.gastos) }}</td><td>Proyectado</td></tr>
+  </tbody>
+</table>

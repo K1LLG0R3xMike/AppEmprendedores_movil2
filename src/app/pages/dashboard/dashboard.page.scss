@@ -1,3 +1,5 @@
+@use "../../../theme/breakpoints" as bp;
+
 .dashboard {
   padding: 0;
   background-color: var(--ion-background-color);
@@ -81,14 +83,6 @@
 }
 
 /* Balance Card */
-.balance-card {
-  margin-bottom: 20px;
-  border-radius: 12px;
-  background: var(--ion-card-background);
-  border: 1px solid var(--ion-color-step-150);
-  transition: background-color 0.3s ease, border-color 0.3s ease;
-}
-
 .balance-header {
   display: flex;
   align-items: center;
@@ -101,20 +95,93 @@
   transition: color 0.3s ease;
 }
 
-.balance-value {
-  margin-top: 16px;
-  font-size: 28px;
-  font-weight: bold;
+.month-selector {
+  display: flex;
+  align-items: center;
+  margin-left: auto;
+
+  ion-button {
+    margin: 0;
+    --padding-start: 4px;
+    --padding-end: 4px;
+  }
+}
+
+.month-label {
+  min-width: 72px;
+  font-size: 14px;
+  font-weight: 600;
   text-align: center;
   color: var(--ion-text-color);
-  transition: color 0.3s ease;
+}
+
+.historicos-toggle {
+  margin-top: 12px;
+  font-size: 14px;
+}
+
+.historicos {
+  margin-top: 4px;
+  padding: 12px;
+  border-radius: 10px;
+  background: var(--ion-color-step-50);
+  border: 1px solid var(--ion-color-step-150);
+}
+
+.historico-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 0;
+  font-size: 14px;
+  color: var(--ion-text-color);
+
+  &.total {
+    margin-top: 6px;
+    padding-top: 10px;
+    border-top: 1px solid var(--ion-color-step-150);
+  }
+
+  .green {
+    color: var(--ion-color-success);
+  }
+
+  .red {
+    color: var(--ion-color-danger);
+  }
+}
+
+/* ===== Tarjetas: un solo estilo para todo el Inicio ===== */
+.balance-card,
+.kpi-card,
+.recent-activity {
+  margin: 0 0 16px;
+  border-radius: 16px;
+  border: 1px solid var(--ion-color-step-150);
+  background: var(--ion-card-background);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.section-title {
+  margin: 4px 0 12px;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--ion-text-color);
+}
+
+.balance-value {
+  margin-top: 14px;
+  font-size: 32px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  text-align: center;
+  color: var(--ion-text-color);
 }
 
 .balance-label {
-  font-size: 14px;
+  font-size: 13px;
   text-align: center;
   color: var(--ion-color-medium);
-  transition: color 0.3s ease;
 }
 
 .row {
@@ -124,163 +191,265 @@
   gap: 12px;
 }
 
-.income, .expense {
+.income,
+.expense {
   flex: 1;
   padding: 12px;
-  border-radius: 10px;
-  background: var(--ion-color-step-50);
+  border-radius: 12px;
   text-align: center;
-  border: 1px solid var(--ion-color-step-150);
-  transition: background-color 0.3s ease, border-color 0.3s ease;
-}
 
-.value.green {
-  color: var(--ion-color-success);
-  font-weight: bold;
-}
-
-.value.red {
-  color: var(--ion-color-danger);
-  font-weight: bold;
-}
-
-.section-title {
-  margin: 16px 0 12px;
-  font-weight: bold;
-  color: var(--ion-text-color);
-  transition: color 0.3s ease;
-}
-
-.quick-actions ion-button {
-  flex: 1;
-  font-size: 14px;
-  --background: transparent;
-  --color: var(--ion-text-color);
-  --border-color: #bdbdbd;
-  --border-style: solid;
-  --border-width: 1px;
-  --box-shadow: none;
-  --background-hover: rgba(var(--ion-color-step-150), 0.1);
-  --background-activated: rgba(var(--ion-color-step-200), 0.2);
-  --border-radius: 10px;
-
-  ion-icon {
+  .label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    font-size: 13px;
     color: var(--ion-color-medium);
+
+    span {
+      color: inherit;
+    }
   }
 
-  &:hover {
-    border-color: #9e9e9e;
+  .value {
+    margin-top: 4px;
+    font-size: 18px;
+    font-weight: 700;
   }
 }
 
-/* KPIs */
+.income {
+  background: rgba(var(--ion-color-success-rgb), 0.08);
+}
+
+.expense {
+  background: rgba(var(--ion-color-danger-rgb), 0.08);
+}
+
+.value.green,
+.green {
+  color: var(--ion-color-success);
+}
+
+.value.red,
+.red {
+  color: var(--ion-color-danger);
+}
+
+/* ===== Indicadores ===== */
 .kpis {
-  margin-top: 8px;
-}
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin: 0 0 20px;
 
-.kpi-card {
-  background: var(--ion-card-background);
-  border: 1px solid var(--ion-color-step-150);
-  transition: background-color 0.3s ease, border-color 0.3s ease;
+  .kpi-card {
+    margin: 0;
+  }
 }
 
 .kpi-card ion-card-content {
   display: flex;
-  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 14px;
+}
+
+.kpi-icon {
+  display: flex;
+  flex-shrink: 0;
   align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  font-size: 18px;
+
+  &.orange { background: rgba(232, 111, 0, 0.12); color: #E86F00; }
+  &.green { background: rgba(var(--ion-color-success-rgb), 0.12); color: var(--ion-color-success); }
+  &.red { background: rgba(var(--ion-color-danger-rgb), 0.12); color: var(--ion-color-danger); }
+  &.blue { background: rgba(var(--ion-color-primary-rgb), 0.12); color: var(--ion-color-primary); }
+
+  ion-icon {
+    color: inherit;
+  }
+}
+
+.kpi-text {
+  min-width: 0;
 }
 
 .kpi-label {
-  font-size: 14px;
+  font-size: 12px;
   color: var(--ion-color-medium);
-  transition: color 0.3s ease;
 }
 
 .kpi-value {
-  font-size: 20px;
-  font-weight: bold;
+  margin-top: 2px;
+  font-size: 18px;
+  font-weight: 700;
   color: var(--ion-text-color);
-  transition: color 0.3s ease;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  &.green { color: var(--ion-color-success); }
+  &.red { color: var(--ion-color-danger); }
 }
 
-/* Recent Activity */
-.recent-activity {
-  margin-top: 16px;
+.kpi-hint {
+  margin-top: 2px;
+  font-size: 11px;
+  color: var(--ion-color-medium);
+
+  &.warn {
+    color: var(--ion-color-warning-shade);
+    font-weight: 600;
+  }
 }
 
-.activity-item {
+/* ===== Acciones rápidas ===== */
+.quick-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0 0 20px;
+}
+
+.qa {
   display: flex;
   align-items: center;
+  gap: 10px;
+  min-height: 52px;
+  padding: 10px 12px;
+  border: 1px solid var(--ion-color-step-150);
+  border-radius: 14px;
+  background: var(--ion-card-background);
+  color: var(--ion-text-color);
+  font-size: 14px;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.2s ease, transform 0.15s ease;
+
+  span {
+    color: inherit;
+  }
+
+  ion-icon {
+    flex-shrink: 0;
+    font-size: 20px;
+    color: var(--ion-color-medium);
+  }
+
+  &:hover {
+    border-color: #E86F00;
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+
+  &.primary {
+    border-color: rgba(232, 111, 0, 0.35);
+    background: rgba(232, 111, 0, 0.06);
+
+    ion-icon {
+      color: #E86F00;
+    }
+  }
+}
+
+/* ===== Actividad reciente ===== */
+.recent-activity ion-card-content {
+  padding: 16px;
+}
+
+.card-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 4px;
+
+  .section-title {
+    margin: 0;
+  }
+}
+
+.link-btn {
+  padding: 4px 0;
+  border: none;
+  background: transparent;
+  color: #E86F00;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.act-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
   padding: 12px 0;
   border-bottom: 1px solid var(--ion-color-step-150);
-  transition: border-color 0.3s ease;
+
+  &:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
 }
 
-.activity-item:last-child {
-  border-bottom: none;
-}
-
-.icon {
-  padding: 8px;
+.act-icon {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
+  font-size: 17px;
+
+  &.is-income { background: rgba(var(--ion-color-success-rgb), 0.12); color: var(--ion-color-success); }
+  &.is-expense { background: rgba(var(--ion-color-danger-rgb), 0.12); color: var(--ion-color-danger); }
+
+  ion-icon {
+    color: inherit;
+  }
 }
 
-.green-bg {
-  background: rgba(76, 175, 80, 0.2);
-}
-
-.red-bg {
-  background: rgba(244, 67, 54, 0.2);
-}
-
-.info {
+.act-info {
   flex: 1;
-  margin-left: 12px;
+  min-width: 0;
 }
 
-.title {
+.act-title {
+  font-size: 15px;
   font-weight: 500;
   color: var(--ion-text-color);
-  transition: color 0.3s ease;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.time {
+.act-date {
+  margin-top: 2px;
   font-size: 12px;
   color: var(--ion-color-medium);
-  transition: color 0.3s ease;
 }
 
-.details {
-  text-align: right;
-  color: var(--ion-text-color);
-  transition: color 0.3s ease;
+.act-amount {
+  flex-shrink: 0;
+  font-size: 15px;
+  font-weight: 700;
+
+  &.is-income { color: var(--ion-color-success); }
+  &.is-expense { color: var(--ion-color-danger); }
 }
 
-.amount.green {
-  color: green;
-  font-weight: bold;
-}
-
-.amount.red {
-  color: red;
-  font-weight: bold;
-}
-
-.badge {
-  margin-top: 4px;
-  padding: 2px 8px;
-  border-radius: 8px;
-  font-size: 12px;
-}
-
-.badge.income {
-  background: #d4f8d4;
-  color: green;
-}
-
-.badge.expense {
-  background: #f8d4d4;
-  color: red;
+.act-empty {
+  padding: 16px 0 4px;
+  font-size: 14px;
+  color: var(--ion-color-medium);
 }
 
 /* Modals */
@@ -432,5 +601,85 @@
   .modal-card-large {
     max-width: 100%;
     max-height: 86vh;
+  }
+}
+
+/* Esqueleto de carga */
+ion-skeleton-text {
+  --border-radius: 6px;
+  margin: 0;
+}
+
+.sk-title { width: 220px; height: 28px; margin-bottom: 8px; }
+.sk-subtitle { width: 160px; height: 14px; }
+.sk-line { height: 14px; margin-bottom: 10px; }
+.sk-tall { height: 22px; }
+.sk-30 { width: 30%; }
+.sk-40 { width: 40%; }
+.sk-50 { width: 50%; }
+.sk-70 { width: 70%; }
+.sk-center { margin-left: auto; margin-right: auto; }
+.sk-big { width: 55%; height: 34px; margin: 18px auto 10px; }
+.sk-box { flex: 1; height: 82px; --border-radius: 10px; }
+.sk-button { flex: 1 1 0; min-height: 52px; --border-radius: 14px; }
+.sk-kpi { width: 120px; }
+.sk-avatar { width: 32px; height: 32px; flex-shrink: 0; --border-radius: 50%; }
+
+.sk-activity {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+}
+
+.sk-activity-text {
+  flex: 1;
+
+  .sk-line:last-child { margin-bottom: 0; }
+}
+
+/* PC: el engranaje pasa al menú lateral y el contenido se organiza en cuadrícula */
+@include bp.desktop-up {
+  .header-actions {
+    display: none;
+  }
+
+  .content {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-rows: auto auto 1fr;
+    grid-template-areas:
+      "balance balance kpis"
+      "titulo actividad actividad"
+      "acciones actividad actividad";
+    column-gap: 20px;
+    align-items: start;
+  }
+
+  .balance-card {
+    grid-area: balance;
+    margin: 0;
+  }
+
+  // Indicadores en una columna junto al balance
+  .kpis {
+    grid-area: kpis;
+    grid-template-columns: minmax(0, 1fr);
+    margin: 0;
+  }
+
+  .content > .section-title {
+    grid-area: titulo;
+    margin-top: 24px;
+  }
+
+  .quick-actions {
+    grid-area: acciones;
+    margin: 0;
+  }
+
+  .recent-activity {
+    grid-area: actividad;
+    margin: 24px 0 0;
   }
 }

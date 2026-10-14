@@ -65,52 +65,39 @@ export class SettingsPage implements OnInit {
   }
 
   ngOnInit() {
-    console.log('[SETTINGS] 🚀 ngOnInit started');
     
     // Initialize dark mode from theme service
     this.darkMode = this.themeService.getDarkMode();
-    console.log('[SETTINGS] 🌙 Dark mode initialized:', this.darkMode);
     
     // Load user data
-    console.log('[SETTINGS] 📊 Starting to load user data...');
     this.loadUserData();
   }
 
   // Load user data from backend
   async loadUserData(): Promise<void> {
-    console.log('[SETTINGS] 🚀 Starting loadUserData...');
     this.isLoadingUserData = true;
     
     try {
       // Check if user is authenticated using AuthService like in profile page
-      console.log('[SETTINGS] 🔍 Checking authentication...');
-      console.log('[SETTINGS] - AuthService.isAuthenticated:', this.authService.isAuthenticated);
-      console.log('[SETTINGS] - AuthService.uid:', this.authService.uid);
       
       if (!this.authService.isAuthenticated || !this.authService.uid) {
-        console.log('[SETTINGS] ❌ User not authenticated');
         this.userData.name = 'Usuario no identificado';
         this.userData.email = 'Sin correo';
         return;
       }
 
       const uid = this.authService.uid;
-      console.log('[SETTINGS] 📡 Loading user data for UID:', uid);
 
       // Get user data from backend using the same pattern as profile page
       try {
         const userResponse = await this.apiService.getUserByUid(uid);
-        console.log('[SETTINGS] 👤 User data response:', userResponse);
 
         // Check if data is nested in 'data' property like in profile page
         const actualData = userResponse['data'] || userResponse;
-        console.log('[SETTINGS] - Extracted data:', actualData);
 
         if (actualData && actualData['name']) {
           this.userData.name = actualData['name'];
-          console.log('[SETTINGS] ✅ Name loaded:', this.userData.name);
         } else {
-          console.log('[SETTINGS] ⚠️ No name found in response');
           this.userData.name = 'Sin nombre';
         }
       } catch (userError) {
@@ -121,13 +108,10 @@ export class SettingsPage implements OnInit {
       // Get email from Firebase Auth like in profile page
       try {
         const email = await this.apiService.getUserEmail(uid);
-        console.log('[SETTINGS] 📧 User email:', email);
         
         if (email) {
           this.userData.email = email;
-          console.log('[SETTINGS] ✅ Email loaded:', this.userData.email);
         } else {
-          console.log('[SETTINGS] ⚠️ No email found');
           this.userData.email = 'Sin correo';
         }
       } catch (emailError) {
@@ -135,7 +119,6 @@ export class SettingsPage implements OnInit {
         this.userData.email = 'Error al cargar email';
       }
 
-      console.log('[SETTINGS] 🎯 Final user data:', this.userData);
 
     } catch (error: any) {
       console.error('[SETTINGS] ❌ General error loading user data:', error);
@@ -143,13 +126,11 @@ export class SettingsPage implements OnInit {
       this.userData.email = 'Error al cargar';
     } finally {
       this.isLoadingUserData = false;
-      console.log('[SETTINGS] ✅ loadUserData completed');
     }
   }
 
   // Refresh user data
   async refreshUserData(): Promise<void> {
-    console.log('[SETTINGS] Refreshing user data...');
     await this.loadUserData();
     
     const toast = await this.toastCtrl.create({
@@ -165,7 +146,6 @@ export class SettingsPage implements OnInit {
   }
 
   async toggleDarkMode(): Promise<void> {
-    console.log('Dark mode toggled:', this.darkMode);
     
     try {
       await this.themeService.setDarkMode(this.darkMode);
@@ -192,60 +172,49 @@ export class SettingsPage implements OnInit {
 
   // Security methods
   changePassword(): void {
-    console.log('Change password clicked');
     // TODO: Navigate to change password page or show modal
   }
 
   twoFactorAuth(): void {
-    console.log('Two factor auth clicked');
     // TODO: Navigate to 2FA settings
   }
 
   connectedDevices(): void {
-    console.log('Connected devices clicked');
     // TODO: Show connected devices page
   }
 
   // Help & Support methods
   helpCenter(): void {
-    console.log('Help center clicked');
     // TODO: Navigate to help center or open external link
   }
 
   contactSupport(): void {
-    console.log('Contact support clicked');
     // TODO: Open support chat or email
   }
 
   termsConditions(): void {
-    console.log('Terms and conditions clicked');
     // TODO: Show terms and conditions
   }
 
   privacyPolicy(): void {
-    console.log('Privacy policy clicked');
     // TODO: Show privacy policy
   }
 
   // Language change handler
   onLanguageChange(): void {
-    console.log('Language changed to:', this.language);
     // TODO: Implement language change functionality
   }
 
   // Notification toggles handlers
   onNotificationsChange(): void {
-    console.log('General notifications:', this.notifications);
     // TODO: Update notification preferences
   }
 
   onEmailNotificationsChange(): void {
-    console.log('Email notifications:', this.emailNotifications);
     // TODO: Update email notification preferences
   }
 
   onPushNotificationsChange(): void {
-    console.log('Push notifications:', this.pushNotifications);
     // TODO: Update push notification preferences
   }
 

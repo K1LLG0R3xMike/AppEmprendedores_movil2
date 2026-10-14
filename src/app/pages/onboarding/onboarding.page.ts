@@ -140,7 +140,6 @@ export class OnboardingPage implements OnInit {
   }
 
   ngOnInit() {
-    console.log('🎬 [ONBOARDING] Componente inicializado');
   }
 
   isDarkMode(): boolean {
@@ -394,12 +393,10 @@ export class OnboardingPage implements OnInit {
   // Date Picker Methods - Native HTML date input
   onNativeDateChange(event: any): void {
     const dateValue = event.target.value; // formato YYYY-MM-DD
-    console.log('📅 [DATE_PICKER] Fecha seleccionada (nativa):', dateValue);
     
     if (dateValue) {
       this.userData.birthday = new Date(dateValue);
       this.clearBirthdayError();
-      console.log('📅 [DATE_PICKER] Fecha guardada:', this.userData.birthday);
     }
   }
 
@@ -459,7 +456,6 @@ export class OnboardingPage implements OnInit {
   // Completion
   async completeOnboarding(): Promise<void> {
     try {
-      console.log('🚀 [ONBOARDING] Iniciando proceso de completar onboarding...');
       
       // Preparar datos para el backend (formato exacto que espera el backend)
       const backendUserData = {
@@ -473,11 +469,9 @@ export class OnboardingPage implements OnInit {
         throw new Error('Faltan datos requeridos para crear el usuario');
       }
 
-      console.log('📤 [ONBOARDING] Datos preparados para backend:', backendUserData);
 
       // Enviar datos al backend para crear usuario en Firestore
       await this.apiService.createUser(backendUserData);
-      console.log('✅ [ONBOARDING] Usuario creado en backend exitosamente');
 
       // Preparar datos del negocio para el backend
       const backendBusinessData = {
@@ -487,11 +481,9 @@ export class OnboardingPage implements OnInit {
         capitalInicial: this.businessData.capitalInicial || 0
       };
 
-      console.log('📤 [ONBOARDING] Datos del negocio preparados para backend:', backendBusinessData);
 
       // Enviar datos del negocio al backend
       const businessResponse = await this.apiService.createBusiness(backendBusinessData);
-      console.log('✅ [ONBOARDING] Negocio creado en backend exitosamente');
 
       const createdBusiness: any = (businessResponse as any)?.data || businessResponse;
       const idNegocio = await this.resolveCreatedBusinessId(createdBusiness);
@@ -510,7 +502,6 @@ export class OnboardingPage implements OnInit {
               })
             )
           );
-          console.log('✅ [ONBOARDING] Inventario inicial guardado en backend');
         } catch (inventoryError) {
           inventorySyncPending = true;
           console.error('❌ [ONBOARDING] Error guardando inventario inicial:', inventoryError);
@@ -537,10 +528,8 @@ export class OnboardingPage implements OnInit {
 
       localStorage.setItem('onboardingData', JSON.stringify(localStorageData));
       localStorage.setItem('onboardingCompleted', 'true');
-      console.log('💾 [ONBOARDING] Datos guardados en localStorage como backup');
 
       // Navigate to dashboard (como en Flutter que llama onComplete)
-      console.log('🏠 [ONBOARDING] Navegando a dashboard...');
       this.router.navigate(['/tabs/dashboard']);
 
     } catch (error) {
@@ -568,8 +557,6 @@ export class OnboardingPage implements OnInit {
       localStorage.setItem('onboardingData', JSON.stringify(fallbackData));
       localStorage.setItem('onboardingCompleted', 'true');
       
-      console.log('⚠️ [ONBOARDING] Datos guardados solo localmente debido a error en backend');
-      console.log('🏠 [ONBOARDING] Navegando a dashboard a pesar del error...');
       
       // Aún así navegar al dashboard
       this.router.navigate(['/tabs/dashboard']);

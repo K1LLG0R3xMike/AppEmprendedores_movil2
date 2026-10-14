@@ -1,4 +1,6 @@
-﻿/* Tab Bar Styling - Flutter inspired */
+@use "../../theme/breakpoints" as bp;
+
+/* Tab Bar Styling - Flutter inspired */
 ion-tab-bar {
   --background: var(--ion-card-background, white);
   --color: var(--ion-color-medium, #666666);
@@ -99,4 +101,82 @@ ion-router-outlet {
 /* Animation for tab switching */
 ion-tab-button {
   transition: all 0.2s ease;
+}
+
+/* Menú lateral (PC) - oculto en celular y tablet */
+.side-menu {
+  display: none;
+}
+
+@include bp.desktop-up {
+  .side-menu {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: bp.$sidebar-width;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 20px 12px;
+    background: var(--ion-card-background, #ffffff);
+    border-right: 1px solid var(--ion-color-step-150, #e0e0e0);
+  }
+
+  .side-brand {
+    padding: 4px 12px 20px;
+    font-size: 17px;
+    font-weight: 700;
+    color: #E86F00;
+  }
+
+  .side-link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    color: var(--ion-color-medium, #666666);
+    font-size: 15px;
+    font-weight: 500;
+    text-decoration: none;
+    transition: background-color 0.2s ease, color 0.2s ease;
+
+    ion-icon {
+      font-size: 20px;
+    }
+
+    span {
+      color: inherit;
+    }
+
+    &:hover {
+      background: rgba(232, 111, 0, 0.06);
+    }
+
+    &.active {
+      background: rgba(232, 111, 0, 0.12);
+      color: #E86F00;
+      font-weight: 600;
+    }
+  }
+
+  .side-bottom {
+    margin-top: auto;
+  }
+
+  /* El contenido queda a la derecha del menú y sin barra de pestañas */
+  ion-tabs {
+    left: bp.$sidebar-width;
+    width: calc(100% - #{bp.$sidebar-width});
+  }
+
+  ion-tab-bar {
+    display: none;
+  }
+
+  ion-router-outlet {
+    padding-bottom: 0;
+  }
 }
