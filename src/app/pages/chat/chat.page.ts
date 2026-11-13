@@ -2,7 +2,8 @@ import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/co
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { IonicModule, IonContent, ToastController } from '@ionic/angular';
+import { IonicModule, IonContent } from '@ionic/angular';
+import { ToastController } from '@ionic/angular/standalone';
 import { AiService, AiServiceError, ChatMsg } from 'src/app/services/ai.service';
 import { addIcons } from 'ionicons';
 import { sparkles, send, stop, add, chevronBack, copyOutline, checkmark } from 'ionicons/icons';
